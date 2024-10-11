@@ -1,16 +1,18 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+require('dotenv').config()
 const port = 5000;
 const app = express();
 const router = require("./Routes/authRouter");
 app.use(express.json());
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:5174"],
   })
 );
-
+ 
 app.use("/api/auth", router);
 //  mongoose.connect(
 //   "mongodb+srv://safara:safara@cluster0.t9lecvs.mongodb.net/EMS?retryWrites=true&w=majority&appName=Cluster0"
