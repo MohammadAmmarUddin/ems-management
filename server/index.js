@@ -1,17 +1,36 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
 const port = 5000;
-const app = express()
-const authRouter = require('../server/Routes/authRouter')
-app.use(cors())
-app.use(express.json())
-mongoose.connect('mongodb+srv://safara:safara@cluster0.t9lecvs.mongodb.net/EMS?retryWrites=true&w=majority&appName=Cluster0')
+const app = express();
+const router = require("./Routes/authRouter");
+app.use(express.json());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+  })
+);
 
-app.post('/api/auth',authRouter)
+app.use("/api/auth", router);
+//  mongoose.connect(
+//   "mongodb+srv://safara:safara@cluster0.t9lecvs.mongodb.net/EMS?retryWrites=true&w=majority&appName=Cluster0"
+// );
+const url =
+  "mongodb+srv://safara:safara@cluster0.t9lecvs.mongodb.net/EMS?retryWrites=true&w=majority&appName=Cluster0";
 
-app.get('/',async(req,res)=>{
-    res.send('server is fine ems')
-})
+app.get("/", async (req, res) => {
+  res.send("server is fine ems");
+});
 
-app.listen(console.log("port running", port))
+mongoose
+  .connect(url)
+  .then(() => {
+    // listen for request
+    console.log("Successfully Connected to DB");
+    app.listen(5000, () => {
+      console.log(`running server ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.log(error);
+  });
