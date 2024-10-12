@@ -1,9 +1,19 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  MemoryRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import PrivateRoutes from "./utils/PrivateRoutes";
+import RoleBasedRoute from "./utils/RoleBasedRoute";
+import AdminSummary from "./components/Dashboard/AdminSummary";
+import DepartmentList from "./components/Department/DepartmentList";
+import AddDepartment from "./components/Department/AddDepartment";
 
 function App() {
   return (
@@ -15,15 +25,25 @@ function App() {
           path="/admin-dashboard"
           element={
             <PrivateRoutes>
-              <AdminDashboard />
+              <RoleBasedRoute requiredRole={["admin"]}>
+                
+                <AdminDashboard />
+              </RoleBasedRoute>
             </PrivateRoutes>
           }
-        ></Route>
+        >
+          <Route index element={<AdminSummary/>}></Route>
+          <Route path="/admin-dashboard/departments" element={<DepartmentList/>}></Route>
+          <Route path="/admin-dashboard/add-department" element={<AddDepartment/>}></Route>
+        </Route>
         <Route
           path="/employee-dashboard"
           element={
             <PrivateRoutes>
-              <EmployeeDashboard />
+              <RoleBasedRoute requiredRole={["employee"]}>
+                {" "}
+                <EmployeeDashboard />
+              </RoleBasedRoute>
             </PrivateRoutes>
           }
         ></Route>

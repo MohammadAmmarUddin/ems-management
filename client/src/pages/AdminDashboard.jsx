@@ -1,16 +1,22 @@
-import { useAuth } from "../context/authContext";
+import { Outlet } from "react-router-dom";
+import AdminSideBar from "../components/Dashboard/AdminSideBar";
+import { useAuth } from "../context/AuthContext.jsx";
+import Navbar from "../components/Dashboard/Navbar.jsx";
 
 const AdminDashboard = () => {
-  const { user ,loading} = useAuth();
+  const {  loading } = useAuth();
 
-   if(loading)
-   {
-    return <div>loading...</div>
-   }
+  if (loading) {
+    return <div>loading...</div>;
+  }
 
   return (
-    <div>
-      <h2>admin dashboard,{user && user.name}</h2>
+    <div className="flex">
+      <AdminSideBar />
+      <div className="flex-1 ml-64 bg-gray-300 h-screen">
+        <Navbar />
+         <Outlet/>
+      </div>
     </div>
   );
 };

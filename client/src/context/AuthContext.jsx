@@ -21,9 +21,10 @@ const AuthContext = ({ children }) => {
               },
             }
           );
-          console.log(response.data.success);
-          if (response.data.success) {
+     
+          if (response.data.success===true) {
             setUser(response.data.user);
+         
           } else {
             setUser(null);
           }
