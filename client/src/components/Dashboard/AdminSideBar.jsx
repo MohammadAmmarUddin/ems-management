@@ -5,7 +5,8 @@ import {
   FaTachometerAlt,
   FaUsers,
 } from "react-icons/fa";
-import { IoIosSettings } from "react-icons/io";
+import { AiFillSetting, AiOutlineHourglass } from "react-icons/ai";
+
 const AdminSideBar = () => {
   return (
     <div className="bg-gray-800 text-white h-screen fixed left-0 top-0 bottom-0 space-y-2 w-64">
@@ -26,7 +27,7 @@ const AdminSideBar = () => {
           <span>Department</span>
         </NavLink>
         <NavLink to={"/leaves"}  className={ ({isActive})=>`${isActive ? "bg-green-600": " "} flex  items-center space-x-4 block py-2.5 px-5 rounded`}>
-          <FaTachometerAlt></FaTachometerAlt>
+        <AiOutlineHourglass />
           <span>Leaves</span>
         </NavLink>
         <NavLink to={"/salary"}  className={ ({isActive})=>`${isActive ? "bg-green-600": " "} flex  items-center space-x-4 block py-2.5 px-5 rounded`}>
@@ -34,7 +35,7 @@ const AdminSideBar = () => {
           <span>Salary</span>
         </NavLink>
         <NavLink to={"/setting"}  className={ ({isActive})=>`${isActive ? "bg-green-600": " "} flex  items-center space-x-4 block py-2.5 px-5 rounded`}>
-          <IoIosSettings></IoIosSettings>
+        <AiFillSetting />
           <span>Setting</span>
         </NavLink>
       </div>

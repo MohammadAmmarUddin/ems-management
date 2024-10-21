@@ -1,5 +1,4 @@
-
-const depModel = require('../models/depModel')
+const depModel = require("../models/depModel");
 exports.addDep = async (req, res) => {
   try {
     const { dep_name, dep_desc } = req.body;
@@ -10,7 +9,7 @@ exports.addDep = async (req, res) => {
       dep_name,
       dep_desc,
     });
-    res.send(result);
+    res.status(200).send({success:true,result})
   } catch (error) {
     console.log(error);
   }
@@ -19,11 +18,39 @@ exports.addDep = async (req, res) => {
 exports.getAllDep = async (req, res) => {
   try {
     const result = await depModel.find({});
-    res.send(result);
-  } catch (error) {}
+    res.status(200).send({success:true,result})
+  } catch (error) {
+    console.log(error);
+  }
+};
+exports.getSingleDep = async (req, res) => {
+  try {
+    const result = await depModel.findById(req.params.id);
+    res.status(200).send({success:true,result})
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 exports.deleteDep = async (req, res) => {
   try {
+    const result = await depModel.findByIdAndDelete({ _id: req.params.id });
+    res.status(200).send({success:true,result})
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.updateDep = async (req, res) => {
+  try {
+    const { dep_name, dep_desc } = req.body;
+
+    const result = await depModel.findByIdAndUpdate(
+      req.params.id,
+      { dep_name, dep_desc },
+      { new: true }
+    );
+
+    res.status(200).send({success:true,result})
   } catch (error) {}
 };

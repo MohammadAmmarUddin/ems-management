@@ -3,8 +3,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
   const [error, setError] = useState(null);
   const { login } = useAuth();
   const navigation = useNavigate();
@@ -29,7 +28,8 @@ const Login = () => {
         } else {
           navigation("/employee-dashboard");
         }
-      } else {
+      }
+       else {
         setError("Give Correct Information");
       }
 

@@ -15,8 +15,8 @@ const AddDepartment = () => {
         dep_desc,
       })
       .then((res) => {
-        console.log(res.request.status === 200)
-        if(res.request.status === 200)
+        console.log(res.data.status === 200)
+        if(res.data.status === 200)
         {
           Swal.fire({
             position: "middle",
