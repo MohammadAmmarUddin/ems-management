@@ -1,14 +1,17 @@
 const mongoose = require("mongoose");
 
-const depSchema = new mongoose.Schema({
-  dep_name: {
-    type: String,
-    required: true,
+const depSchema = new mongoose.Schema(
+  {
+    dep_name: {
+      type: String,
+      required: true,
+    },
+    dep_desc: {
+      type: String,
+    },
   },
-  dep_desc: {
-    type: String,
-  },
-});
+  { timestamps: true }
+);
 
 const dep_model = mongoose.model("department", depSchema);
 
