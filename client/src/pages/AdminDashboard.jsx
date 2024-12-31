@@ -4,8 +4,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 import Navbar from "../components/Dashboard/Navbar.jsx";
 
 const AdminDashboard = () => {
-  const {  loading } = useAuth();
-
+  const { user, loading } = useAuth();
+   
+   console.log(user.role);
+   
   if (loading) {
     return <div>loading...</div>;
   }

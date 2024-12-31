@@ -5,8 +5,8 @@ import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import { useAuth } from "../../context/AuthContext";
 
-const DepartmentList = () => {
-  const [departments, setDepartment] = useState([]);
+const GetLeave = () => {
+  const [leaves, setLeaves] = useState([]);
   const [depLoading, setdepLoading] = useState(true);
   const { user,loading } = useAuth();
   console.log("user from dep" , user);
@@ -17,7 +17,7 @@ const DepartmentList = () => {
       const res = await axios.get(
         "http://localhost:5001/api/department/getAllDep"
       );
-      setDepartment(res.data.result);
+      setLeaves(res.data.result);
     } catch (error) {
       console.log(error);
     } finally {
@@ -116,7 +116,7 @@ const DepartmentList = () => {
   return (
     <div>
       <div className="text-center">
-        <h3 className="text-2xl font-bold">Manage Departments</h3>
+        <h3 className="text-2xl font-bold">Manage Leave</h3>
       </div>
       <div className="flex justify-between">
         <input
@@ -125,10 +125,10 @@ const DepartmentList = () => {
           placeholder="Search By Name"
         />
         <Link
-          to="/admin-dashboard/add-department"
+          to="/admin-dashboard/request-leave"
           className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
         >
-          Add New Department
+          Add Leave
         </Link>
       </div>
 
@@ -139,11 +139,11 @@ const DepartmentList = () => {
           selectableRows
           pagination
           columns={columns}
-          data={departments}
+          data={leaves}
         />
       </div>
     </div>
   );
 };
 
-export default DepartmentList;
+export default GetLeave;

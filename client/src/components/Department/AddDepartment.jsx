@@ -1,5 +1,5 @@
 import axios from "axios";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 
 const AddDepartment = () => {
   const handleSubmit = (e) => {
@@ -7,23 +7,23 @@ const AddDepartment = () => {
 
     const form = e.target;
     const dep_name = form.dep_name.value;
+
     const dep_desc = form.dep_desc.value;
 
     axios
-      .post("http://localhost:5000/api/department/add", {
+      .post("http://localhost:5001/api/department/add", {
         dep_name,
         dep_desc,
       })
       .then((res) => {
-        console.log(res.data.status === 200)
-        if(res.data.status === 200)
-        {
+        console.log(res);
+        if (res.data.success === true) {
           Swal.fire({
             position: "middle",
             icon: "success",
             title: "Your work has been saved",
             showConfirmButton: false,
-            timer: 1500
+            timer: 1500,
           });
         }
       });
@@ -43,11 +43,9 @@ const AddDepartment = () => {
               <span className="label-text">Department Name</span>
             </label>
             <input
-              type="text"
               name="dep_name"
-              placeholder="Department Name"
-              className="input input-bordered focus:outline-none hover:border-green-600"
-              required
+              placeholder="Enter Department Name"
+              className="hover:border-green-600 border-2 pl-4"
             />
           </div>
           <div className="form-control">

@@ -1,4 +1,4 @@
-import { useAuth } from "../context/AuthContext.jsx";
+ import { useAuth } from "../context/AuthContext.jsx";
 import { Navigate } from "react-router-dom";
 
 const RoleBasedRoute = ({ children, requiredRole }) => {

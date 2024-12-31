@@ -17,7 +17,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        "http://localhost:5001/api/auth/login",
         { email, password }
       );
       if (response.data.success === true) {
@@ -25,7 +25,10 @@ const Login = () => {
         localStorage.setItem("token", response.data.token);
         if (response.data.user.role === "admin") {
           navigation("/admin-dashboard");
-        } else {
+        } else if(response.data.user.role==="moderator"){
+          navigation("/moderator-dashboard");
+        }
+      else {
           navigation("/employee-dashboard");
         }
       }

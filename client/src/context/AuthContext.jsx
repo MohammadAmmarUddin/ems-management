@@ -14,14 +14,14 @@ const AuthContext = ({ children }) => {
         
         if (token) {
           const response = await axios.get(
-            "http://localhost:5000/api/auth/verify",
+            "http://localhost:5001/api/auth/verify",
             {
               headers: {
                "authorization": `Bearer ${token}`,
               },
             }
           );
-     
+           console.log(response);
           if (response.data.success===true) {
             setUser(response.data.user);
          
@@ -40,6 +40,8 @@ const AuthContext = ({ children }) => {
     };
     verifyUser();
   }, []);
+
+  
   const login = (user) => {
     setUser(user);
   };
@@ -47,6 +49,7 @@ const AuthContext = ({ children }) => {
     setUser(null);
     localStorage.removeItem("token");
   };
+  
   return (
     <userContext.Provider value={{ user, login, logout, loading }}>
       {children}

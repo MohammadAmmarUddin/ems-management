@@ -8,7 +8,7 @@ const EditDepartment = () => {
     const {id} = useParams()
      useEffect(()=>{
        const fetchSingleDep= async() =>{  
-        axios.get(`http://localhost:5000/api/department/getSingleDep/${id}`)
+        axios.get(`http://localhost:5001/api/department/getSingleDep/${id}`)
         .then(res=>{
             setData(res.data.result)
             console.log("single dep result",res.data);
@@ -26,7 +26,7 @@ const EditDepartment = () => {
         const dep_desc = form.dep_desc.value;
     
         axios
-          .put(`http://localhost:5000/api/department/updateDep/${id}`, {
+          .put(`http://localhost:5001/api/department/updateDep/${id}`, {
             dep_name,
             dep_desc,
           })
