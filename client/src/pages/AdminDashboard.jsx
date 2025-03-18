@@ -8,7 +8,7 @@ const AdminDashboard = () => {
    
    console.log(user.role);
    
-  if (loading) {
+  if (user && loading) {
     return <div>loading...</div>;
   }
 

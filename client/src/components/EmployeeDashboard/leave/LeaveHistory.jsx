@@ -2,61 +2,58 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import DataTable from "react-data-table-component";
-import Swal from "sweetalert2";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 
-const GetLeave = () => {
+const LeaveHistory = () => {
   const [leaves, setLeaves] = useState([]);
-  const [depLoading, setdepLoading] = useState(true);
-  const { user,loading } = useAuth();
-  console.log("user from dep" , user);
+  const { user, loading } = useAuth();
   // Fetch departments data
-  const fetchDepartment = async () => {
+  const fetchSingleUserLeave = async () => {
     try {
-      setdepLoading(true);
       const res = await axios.get(
-        "http://localhost:5001/api/department/getAllDep"
+        `http://localhost:5001/api/leave/getLeave/${user._id}`
       );
-      setLeaves(res.data.result);
+      setLeaves(res.data.leaves);
     } catch (error) {
       console.log(error);
-    } finally {
-      setdepLoading(false);
     }
   };
 
   // Initial fetch in useEffect
   useEffect(() => {
-    fetchDepartment();
+    if (!loading) {
+      fetchSingleUserLeave();
+    }
   }, []);
 
+  console.log(leaves);
   // Smoothly remove the department from the local state after deletion
-  const handleDelete = async (rowId) => {
-    try {
-      console.log("handleDelete", rowId);
-      const res = await axios.delete(
-        `http://localhost:5001/api/department/deleteDep/${rowId}`
-      );
+  // const handleDelete = async (rowId) => {
+  //   try {
+  //     console.log("handleDelete", rowId);
+  //     const res = await axios.delete(
+  //       `http://localhost:5001/api/department/deleteDep/${rowId}`
+  //     );
 
-      // Update local state by filtering out the deleted department
-      setDepartment((prevDepartments) =>
-        prevDepartments.filter((department) => department._id !== rowId)
-      );
+  //     // Update local state by filtering out the deleted department
+  //     setDepartment((prevDepartments) =>
+  //       prevDepartments.filter((department) => department._id !== rowId)
+  //     );
 
-      if (res.data.success === true) {
-        Swal.fire({
-          position: "center center",
-          icon: "success",
-          title: "Your work has been saved",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      }
-      console.log("Department deleted successfully");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //     if (res.data.success === true) {
+  //       Swal.fire({
+  //         position: "center center",
+  //         icon: "success",
+  //         title: "Your work has been saved",
+  //         showConfirmButton: false,
+  //         timer: 1500,
+  //       });
+  //     }
+  //     console.log("Department deleted successfully");
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const buttonStyle = {
     backgroundColor: "#007bff",
@@ -76,18 +73,34 @@ const GetLeave = () => {
       sortable: true,
     },
     {
-      name: "Image",
-      selector: (row) => row.image,
+      name: "LEAVE TYPE",
+      selector: (row) => row.leaveType,
       sortable: true,
     },
     {
-      name: "Department",
-      selector: (row) => row.dep_name,
+      name: "FROM",
+      selector: (row) => row.startDate,
       sortable: true,
     },
     {
-      name: "Department Desc",
-      selector: (row) => row.dep_desc,
+      name: "TO",
+      selector: (row) => row.endDate
+      ,
+      sortable: true,
+    },
+    {
+      name: "DESCRIPTION",
+      selector: (row) => row.reason,
+      sortable: true,
+    },
+    {
+      name: "APPLIED DATE",
+      selector: (row) => row.appliedAt,
+      sortable: true,
+    },
+    {
+      name: "STATUS",
+      selector: (row) => row.status,
       sortable: true,
     },
     {
@@ -98,20 +111,16 @@ const GetLeave = () => {
             to={`/admin-dashboard/edit-department/${row._id}`}
             style={buttonStyle}
           >
-            Edit
+            View
           </Link>
-          <button
-            onClick={() => handleDelete(row._id)}
-            style={{ ...buttonStyle, backgroundColor: "#dc3545" }}
-          >
-            Delete
-          </button>
         </>
       ),
     },
   ];
   if (!user && loading) {
-    return <div>loading-----</div>;
+    return (
+      <span className="loading loading-spinner text-[40px] text-secondary top-50% left-50%"></span>
+    );
   }
   return (
     <div>
@@ -125,7 +134,7 @@ const GetLeave = () => {
           placeholder="Search By Name"
         />
         <Link
-          to="/admin-dashboard/request-leave"
+          to="/employee-dashboard/add-leave"
           className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
         >
           Add Leave
@@ -134,7 +143,7 @@ const GetLeave = () => {
 
       <div>
         <DataTable
-          progressPending={depLoading}
+          progressPending={loading}
           highlightOnHover
           selectableRows
           pagination
@@ -146,4 +155,4 @@ const GetLeave = () => {
   );
 };
 
-export default GetLeave;
+export default LeaveHistory;

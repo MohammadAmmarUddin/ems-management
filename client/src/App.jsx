@@ -17,13 +17,19 @@ import EditEmployee from "./components/employee/EditEmployee";
 import EmployeeDashboard from "./components/EmployeeDashboard/EmployeeDashboard";
 import Summary from "./components/EmployeeDashboard/Summary";
 import Profile from "./components/EmployeeDashboard/Profile";
-import AddLeave from "./components/EmployeeDashboard/leave/AddLeave"
+import AddLeave from "./components/EmployeeDashboard/leave/AddLeave";
+import LeaveHistory from "./components/EmployeeDashboard/leave/LeaveHistory";
+import Salary from "./components/Salary/Salary";
+import AddSalary from "./components/Salary/AddSalary";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to={"/admin-dashboard"} />}></Route>
         <Route path="/login" element={<Login />}></Route>
+
+        {/* Admin Dashboard Routes */}
         <Route
           path="/admin-dashboard"
           element={
@@ -43,7 +49,7 @@ function App() {
           <Route
             path="/admin-dashboard/leaves/:id"
             element={<LeaveList />}
-          ></Route>
+          ></Route> {/* You may want to display individual leave info */}
           <Route
             path="/admin-dashboard/addLeave"
             element={<LeaveAdd />}
@@ -57,8 +63,10 @@ function App() {
             element={<EditDepartment />}
           ></Route>
           <Route path="/admin-dashboard/employee" element={<List />}></Route>
-
-          <Route path="/admin-dashboard/add-employee" element={<Add />}></Route>
+          <Route
+            path="/admin-dashboard/add-employee"
+            element={<Add />}
+          ></Route>
           <Route
             path="/admin-dashboard/view-employee/:id"
             element={<ViewEmployee />}
@@ -67,9 +75,14 @@ function App() {
             path="/admin-dashboard/edit-employee/:id"
             element={<EditEmployee />}
           ></Route>
+          <Route path="/admin-dashboard/salary" element={<Salary />}></Route>
+          <Route
+            path="/admin-dashboard/salary/addSalary/:id"
+            element={<AddSalary />}
+          ></Route>
         </Route>
-        {/* Employee Dashboard  */}
 
+        {/* Employee Dashboard Routes */}
         <Route
           path="/employee-dashboard"
           element={
@@ -81,43 +94,19 @@ function App() {
           }
         >
           <Route index element={<Summary />}></Route>
+          <Route path="/employee-dashboard/summary" element={<Summary />}></Route>
+          <Route path="/employee-dashboard/profile" element={<Profile />}></Route>
           <Route
-            path="/employee-dashboard/summary"
-            element={<Summary />}
+            path="/employee-dashboard/leave-history"
+            element={<LeaveHistory />}
           ></Route>
-          <Route
-            path="/employee-dashboard/profile"
-            element={<Profile />}
-          ></Route>
-    
           <Route
             path="/employee-dashboard/add-leave"
-            element={<AddLeave/>}
+            element={<AddLeave />}
           ></Route>
         </Route>
 
-        {/* moderator  */}
-        {/* <Route
-          path="/moderator-dashboard"  
-          element={
-            <PrivateRoutes>
-              <RoleBasedRoute requiredRole={["moderator"]}>
-                <AdminDashboard />
-              </RoleBasedRoute>
-            </PrivateRoutes>
-          }
-        >
-          <Route index element={<AdminSummary />}></Route>
-          <Route
-            path="/moderator-dashboard/departments"
-            element={<DepartmentList />}
-          ></Route>
-          <Route path="/moderator-dashboard/leave" element={<LeaveList />}></Route>
-         
-          <Route path="/moderator-dashboard/employee" element={<List />}></Route>
-          <Route path="/moderator-dashboard/add-employee" element={<Add />}></Route>
-      
-        </Route> */}
+        {/* Signup Route */}
         <Route path="/signup" element={<Signup />}></Route>
       </Routes>
     </BrowserRouter>

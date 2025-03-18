@@ -47,7 +47,7 @@ const SideBar = () => {
             <span>My Profile</span>
           </NavLink>
           <NavLink
-            to={"/employee-dashboard/leave"}
+            to={"/employee-dashboard/leave-History"}
             className={({ isActive }) =>
               `${
                 isActive ? "bg-green-600" : " "

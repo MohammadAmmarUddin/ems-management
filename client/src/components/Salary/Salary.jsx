@@ -4,64 +4,54 @@ import axios from "axios";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../context/AuthContext";
 
-// Function to calculate the number of days between start and end date
-const calculateLeaveDays = (startDate, endDate) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const timeDifference = end - start; // Time difference in milliseconds
-  return Math.ceil(timeDifference / (1000 * 3600 * 24)) + 1; // Convert milliseconds to days, add 1 to include both start and end day
-};
-
-const LeaveList = () => {
+const Salary = () => {
   const [employees, setEmployees] = useState([]);
-  const [leaves, setLeaves] = useState([]);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const { user, loading } = useAuth();
 
-  // Function to fetch employee and leave data
-  const fetchData = async () => {
+  // Fetch employees data
+  const fetchEmployees = async () => {
     try {
-      const [employeeRes, leaveRes] = await Promise.all([
-        axios.get("http://localhost:5001/api/employee/getEmployees"),
-        axios.get("http://localhost:5001/api/leave/getAllleaves"),
-      ]);
-
-      // Set the fetched data
-      setEmployees(employeeRes.data.result);
-      setLeaves(leaveRes.data.result);
+      const res = await axios.get(
+        "http://localhost:5001/api/leave/getAllleaves"
+      );
+      setEmployees(res.data.result);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      alert("There was an issue fetching the data. Please try again.");
+      console.log(error);
     }
   };
 
+  // Initial fetch in useEffect
   useEffect(() => {
-    // Fetch data if user is loaded and authentication is done
     if (user && !loading) {
-      fetchData();
+      fetchEmployees();
     }
-  }, [user, loading]);
+  }, []);
 
-  // Function to get employee details by employeeId
-  const getEmployeeDetails = (employeeId) => {
-    const employee = employees?.find((emp) => emp._id === employeeId);
-    return employee || {};
-  };
-
-  // Handling modal open
+  console.log(selectedEmployee);
+  // Open the View modal
   const handleShowViewModal = (employee) => {
     setSelectedEmployee(employee);
     setShowViewModal(true);
   };
 
-  // Handling modal close
+  // Close the View modal
   const handleCloseViewModal = () => {
     setShowViewModal(false);
     setSelectedEmployee(null);
   };
 
-  // Columns for the DataTable
+  const buttonStyle = {
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    padding: "3px 5px",
+    marginRight: "5px",
+    cursor: "pointer",
+    borderRadius: "4px",
+  };
+  // Columns of table
   const columns = [
     {
       name: "S No",
@@ -70,30 +60,27 @@ const LeaveList = () => {
     },
     {
       name: "Emp ID",
-      selector: (row) => row.employeeId,
+      selector: (row) => row.emp_id,
       sortable: true,
     },
     {
       name: "Name",
-      selector: (row) => {
-        const employee = getEmployeeDetails(row.employeeId);
-        return employee.name || "N/A";
-      },
+      selector: (row) => row.name,
       sortable: true,
     },
     {
       name: "Leave Type",
-      selector: (row) => row.leaveType,
+      selector: (row) => row.leave_type,
       sortable: true,
     },
     {
       name: "Description",
-      selector: (row) => row.reason,
+      selector: (row) => row.dep_name,
       sortable: true,
     },
     {
       name: "Days",
-      selector: (row) => calculateLeaveDays(row.startDate, row.endDate), // Calculate days here
+      selector: (row) => row.days,
       sortable: true,
     },
     {
@@ -104,27 +91,27 @@ const LeaveList = () => {
     {
       name: "Actions",
       cell: (row) => (
-        <button
-          onClick={() => handleShowViewModal(row)}
-          style={{ backgroundColor: "green", color: "#fff", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}
-        >
-          View
-        </button>
+        <>
+          <button
+            onClick={() => handleShowViewModal(row)}
+            style={{
+              ...buttonStyle,
+              backgroundColor: "green",
+              whiteSpace: "nowrap",
+            }}
+          >
+            View
+          </button>
+        </>
       ),
     },
   ];
-
-  // Show loading indicator while fetching data
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div>
       <div className="text-center">
         <h3 className="text-2xl font-bold">Manage Leaves</h3>
       </div>
-
       <div className="flex justify-between my-4">
         <input
           type="text"
@@ -132,40 +119,26 @@ const LeaveList = () => {
           placeholder="Search By Name"
         />
         <Link
-          to="/admin-dashboard/pending-leaves"
+          to={`/admin-dashboard/salary/addSalary/${user._id}`}
           className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
         >
-          Pending Leave
+         Add Leave
         </Link>
-        <Link
-          to="/admin-dashboard/approve-leaves"
-          className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
-        >
-          Approve Leave
-        </Link>
-        <Link
-          to="/admin-dashboard/rejected-leaves"
-          className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
-        >
-          Rejected Leave
-        </Link>
+       
       </div>
 
-      {/* Render leaves table if data exists */}
-      {leaves.length > 0 ? (
+      <div>
         <DataTable
           highlightOnHover
           selectableRows
           pagination
           columns={columns}
-          data={leaves}
+          data={employees}
         />
-      ) : (
-        <div>No leaves found.</div>
-      )}
+      </div>
 
-      {/* Modal to show employee details */}
-      {showViewModal && selectedEmployee && (
+      {/* Modal */}
+      {showViewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
           <div className="bg-white w-11/12 max-w-md rounded-lg shadow-lg">
             <div className="flex justify-between items-center p-4 border-b">
@@ -218,4 +191,4 @@ const LeaveList = () => {
   );
 };
 
-export default LeaveList;
+export default Salary;

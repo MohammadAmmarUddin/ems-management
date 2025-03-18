@@ -3,6 +3,7 @@ const {
   login,
   verify,
   getAllUsers,
+  getSingleUser,
 } = require("../authController/authController.js");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const router = express.Router();
@@ -11,5 +12,6 @@ const router = express.Router();
 router.post("/login", login);
 router.get("/verify", authMiddleware, verify);
 router.get("/getAllUser",  getAllUsers);
+router.get("/getSingleUser/:id",  getSingleUser);
 
 module.exports = router;
