@@ -35,7 +35,6 @@ exports.getEmployee = async (req, res) => {
 exports.editEmployee = async (req, res) => {
   const { id, ...updateData } = req.body;
 
-  console.log("id,updte data", id, updateData);
 
   const updateEmployee = await employeeModel.findByIdAndUpdate(
     id,
@@ -54,6 +53,7 @@ exports.editEmployee = async (req, res) => {
     .status(200)
     .send({ success: true, message: "updated success", updateEmployee });
 };
+const bcrypt = require('bcryptjs'); // Import bcryptjs
 
 exports.addEmployee = async (req, res) => {
   const {
@@ -67,15 +67,34 @@ exports.addEmployee = async (req, res) => {
     password,
   } = req.body;
 
-  const newEmp = await employeeModel.create({
-    emp_id,
-    emp_name,
-    dep_name,
-    salary,
-    role,
-    designation,
-    image,
-    password,
-  });
-  console.log(newEmp);
+  try {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+
+    // Create the new employee with the hashed password
+    const newEmp = await employeeModel.create({
+      emp_id,
+      emp_name,
+      dep_name,
+      salary,
+      role,
+      designation,
+      image,
+      password: hashedPassword, // Store the hashed password
+    });
+
+    // Send a response (You can customize this as needed)
+    res.status(201).json({
+      success: true,
+      message: "Employee added successfully",
+      employee: newEmp,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add employee",
+      error: error.message,
+    });
+  }
 };

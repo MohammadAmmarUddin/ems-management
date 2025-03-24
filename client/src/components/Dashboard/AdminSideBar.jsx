@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   FaBuilding,
   FaMoneyBill,
-  FaTachometerAlt,
+ 
   FaUsers,
 } from "react-icons/fa";
 import { AiFillSetting, AiOutlineHourglass } from "react-icons/ai";

@@ -29,7 +29,7 @@ exports.addLeave = async (req, res) => {
     startDate,
     endDate,
     reason,
-    status: "pending",
+    
   });
 
   res.status(200).send({ result, success: true });

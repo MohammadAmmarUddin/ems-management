@@ -1,14 +1,15 @@
 const User = require("../models/User.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const employee = require("../models/employeeModel.js");
 require('dotenv').config();
 
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    console.log(user);
+    const user = await User.findOne({ email }) || await employee.findOne( {emp_id:email });
+   
     if (!user) {
       res.send({ message: "user not found" });
     }
@@ -25,7 +26,6 @@ exports.login = async (req, res) => {
         expiresIn: "3d",
       }
     );
-    console.log(user);
     res.status(200).send({ token, user, success: true });
   } catch (error) {
     console.log(error);

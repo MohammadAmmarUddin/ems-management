@@ -57,7 +57,7 @@ const Login = () => {
               <span className="label-text">Email</span>
             </label>
             <input
-              type="email"
+              type="text"
               name="email"
               placeholder="email"
               className="input input-bordered cursor   focus:outline-none     border focus:border-green-500  rounded-none"

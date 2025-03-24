@@ -7,7 +7,6 @@ const AddLeave = () => {
   const { user } = useAuth();
   const [leaveData, setLeaveData] = useState({
     userId: user._id,
- 
   });
 
   const onchangehandler = (e) => {
@@ -19,9 +18,11 @@ const AddLeave = () => {
     e.preventDefault();
     console.log(leaveData);
     try {
-      const res = await axios.post("http://localhost:5001/api/leave/addLeave", leaveData);
+      const res = await axios.post(
+        "http://localhost:5001/api/leave/addLeave",
+        leaveData
+      );
 
-      console.log("res of req leae",res);
       if (res.data.success) {
         Swal.fire({
           position: "middle",

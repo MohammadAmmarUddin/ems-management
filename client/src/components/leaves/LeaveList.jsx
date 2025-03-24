@@ -19,6 +19,13 @@ const LeaveList = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const { user, loading } = useAuth();
 
+   
+  const date = new Date(selectedEmployee?.createdAt);
+
+
+  const joiningDate = date.toLocaleString(); // Automatically formats to local date-time format
+ 
+
   // Function to fetch employee and leave data
   const fetchData = async () => {
     try {
@@ -26,9 +33,9 @@ const LeaveList = () => {
         axios.get("http://localhost:5001/api/employee/getEmployees"),
         axios.get("http://localhost:5001/api/leave/getAllleaves"),
       ]);
-
+      console.log("employeeRes", employeeRes);
       // Set the fetched data
-      setEmployees(employeeRes.data.result);
+      setEmployees(employeeRes.data.emp);  // Adjusted based on the response structure you provided
       setLeaves(leaveRes.data.result);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -44,15 +51,27 @@ const LeaveList = () => {
   }, [user, loading]);
 
   // Function to get employee details by employeeId
-  const getEmployeeDetails = (employeeId) => {
-    const employee = employees?.find((emp) => emp._id === employeeId);
-    return employee || {};
+  const getEmployeeDetails = async (employeeId) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/api/employee/getEmployee/${employeeId}`
+      );
+      console.log("response", response);
+      return response.data.employee;
+    } catch (error) {
+      console.error("Error fetching employee details:", error);
+      return null;
+    }
   };
 
-  // Handling modal open
-  const handleShowViewModal = (employee) => {
-    setSelectedEmployee(employee);
-    setShowViewModal(true);
+  // Handling modal open and fetching employee details
+  const handleShowViewModal = async (row) => {
+    const employeeDetails = await getEmployeeDetails(row.employeeId);
+    console.log("employeeDetails", employeeDetails);
+    if (employeeDetails) {
+      setSelectedEmployee(employeeDetails); // Set the selected employee's details
+      setShowViewModal(true);
+    }
   };
 
   // Handling modal close
@@ -76,8 +95,8 @@ const LeaveList = () => {
     {
       name: "Name",
       selector: (row) => {
-        const employee = getEmployeeDetails(row.employeeId);
-        return employee.name || "N/A";
+        const employee = employees?.find((emp) => emp._id === row.employeeId); // Ensure the lookup is correct
+        return employee ? employee.emp_name : "N/A"; // Adjust the field name to match your API response
       },
       sortable: true,
     },
@@ -105,7 +124,7 @@ const LeaveList = () => {
       name: "Actions",
       cell: (row) => (
         <button
-          onClick={() => handleShowViewModal(row)}
+          onClick={() => handleShowViewModal(row)} // Trigger modal with employee details
           style={{ backgroundColor: "green", color: "#fff", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}
         >
           View
@@ -182,18 +201,18 @@ const LeaveList = () => {
                 <div>
                   <img src="/mn.png" width={70} alt="" />
                   <p>
-                    <strong>Name:</strong> {selectedEmployee.name}
+                    <strong>Name:</strong> {selectedEmployee.emp_name}
                   </p>
                   <p>
-                    <strong>Email:</strong> {selectedEmployee.email}
+                    <strong>Employee_Id:</strong> {selectedEmployee.emp_id}
                   </p>
                   <p>
                     <strong>Department:</strong>{" "}
-                    {selectedEmployee.department || "N/A"}
+                    {selectedEmployee.dep_name || "N/A"}
                   </p>
                   <p>
                     <strong>Joining Date:</strong>{" "}
-                    {selectedEmployee.joiningDate || "N/A"}
+                    {joiningDate || "N/A"}
                   </p>
                   <p>
                     <strong>Role:</strong> {selectedEmployee.role || "N/A"}

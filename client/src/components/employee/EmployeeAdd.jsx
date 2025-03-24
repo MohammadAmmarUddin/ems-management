@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import Swal from 'sweetalert2';
 
 const Add = () => {
   // State to hold form data
@@ -27,14 +28,46 @@ const Add = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form Data Submitted:", formData);
-    // Perform API call or data processing here
-
-    const res = await axios.post(
-      "http://localhost:5001/api/employee/addEmployee",
-      formData
-    );
+  
+    try {
+      const res = await axios.post(
+        "http://localhost:5001/api/employee/addEmployee",
+        formData
+      );
+  
+      // Check the response success
+      if (res.data.success === true || res.status === 201) {
+        Swal.fire({
+          title: 'Employee Added Successfully!',
+          text: 'The employee has been added to the system.',
+          icon: 'success',
+          confirmButtonText: 'Okay',
+        });
+        // You can also reset the form data if needed
+        setFormData({
+          emp_id: "",
+          emp_name: "",
+          dep_name: "",
+          salary: "",
+          role: "",
+          designation: "",
+          image: "",
+          password: "",
+        });
+      } else {
+        throw new Error('Failed to add employee');
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'There was an issue adding the employee. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'Okay',
+      });
+    }
   };
-
+  
   return (
     <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto shrink-0 shadow-2xl">
