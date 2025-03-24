@@ -1,9 +1,9 @@
 import axios from "axios";
-import { useState } from "react";
-import Swal from 'sweetalert2';
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 const Add = () => {
-  // State to hold form data
+  // State to hold form data with empty default values
   const [formData, setFormData] = useState({
     emp_id: "",
     emp_name: "",
@@ -14,6 +14,21 @@ const Add = () => {
     image: "",
     password: "",
   });
+
+  // State to hold all employees data (for dropdowns)
+  const [employees, setEmployees] = useState([]);
+
+  // Fetch employee data
+  const fetchEmployeeData = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5001/api/employee/getEmployees"
+      );
+      setEmployees(res.data.emp); // Store all employees for dropdown
+    } catch (error) {
+      console.error("Error fetching employee data", error);
+    }
+  };
 
   // Handle input changes
   const handleChange = (e) => {
@@ -28,22 +43,22 @@ const Add = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form Data Submitted:", formData);
-  
+
     try {
       const res = await axios.post(
         "http://localhost:5001/api/employee/addEmployee",
         formData
       );
-  
+
       // Check the response success
       if (res.data.success === true || res.status === 201) {
         Swal.fire({
-          title: 'Employee Added Successfully!',
-          text: 'The employee has been added to the system.',
-          icon: 'success',
-          confirmButtonText: 'Okay',
+          title: "Employee Added Successfully!",
+          text: "The employee has been added to the system.",
+          icon: "success",
+          confirmButtonText: "Okay",
         });
-        // You can also reset the form data if needed
+        // Reset form data after submission
         setFormData({
           emp_id: "",
           emp_name: "",
@@ -55,19 +70,24 @@ const Add = () => {
           password: "",
         });
       } else {
-        throw new Error('Failed to add employee');
+        throw new Error("Failed to add employee");
       }
     } catch (error) {
       console.error(error);
       Swal.fire({
-        title: 'Error!',
-        text: 'There was an issue adding the employee. Please try again.',
-        icon: 'error',
-        confirmButtonText: 'Okay',
+        title: "Error!",
+        text: "There was an issue adding the employee. Please try again.",
+        icon: "error",
+        confirmButtonText: "Okay",
       });
     }
   };
-  
+
+  // Fetch employee data when component mounts
+  useEffect(() => {
+    fetchEmployeeData();
+  }, []);
+
   return (
     <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto shrink-0 shadow-2xl">
@@ -77,129 +97,173 @@ const Add = () => {
         <form onSubmit={handleSubmit} className="card-body">
           {/* row 1 */}
           <div className="flex gap-x-3">
+            {/* Employee ID Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Id</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="emp_id"
-                placeholder="Employee Id"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.emp_id}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Employee ID</option>
+                {employees.map((employee) => (
+                  <option key={employee._id} value={employee.emp_id}>
+                    {employee.emp_id}
+                  </option>
+                ))}
+              </select>
             </div>
+            {/* Employee Name Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Name</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="emp_name"
-                placeholder="Employee Name"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.emp_name}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Employee Name</option>
+                {employees.map((employee) => (
+                  <option key={employee._id} value={employee.emp_name}>
+                    {employee.emp_name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           {/* row 2 */}
           <div className="flex gap-x-3">
+            {/* Department Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Department Name</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="dep_name"
-                placeholder="Department Name"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.dep_name}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Department</option>
+                {employees.map((employee) => (
+                  <option key={employee._id} value={employee.dep_name}>
+                    {employee.dep_name}
+                  </option>
+                ))}
+              </select>
             </div>
+            {/* Salary Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Salary</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="salary"
-                placeholder="$"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.salary}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Salary</option>
+                {employees.map((employee) => (
+                  <option key={employee._id} value={employee.salary}>
+                    {employee.salary}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           {/* row 3 */}
           <div className="flex gap-x-3">
+            {/* Role Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Role</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="role"
-                placeholder="Role"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.role}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Role</option>
+                {employees.map((employee) => (
+                  <option key={employee._id} value={employee.role}>
+                    {employee.role}
+                  </option>
+                ))}
+              </select>
             </div>
+            {/* Designation Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Designation</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="designation"
-                placeholder="Designation"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.designation}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Designation</option>
+                {employees.map((employee) => (
+                  <option key={employee._id} value={employee.designation}>
+                    {employee.designation}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           {/* row 4 */}
           <div className="flex gap-x-3">
+            {/* Image Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Profile Image</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="image"
-                placeholder="Image"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.image}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Image</option>
+                {employees.map((employee) => (
+                  <option key={employee._id} value={employee.image}>
+                    {employee.image}
+                  </option>
+                ))}
+              </select>
             </div>
+            {/* Password */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Password</span>
               </label>
               <input
-                type="text"
+                type="password"
                 name="password"
                 placeholder="*******"
                 className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.password}
+              
                 onChange={handleChange}
                 required
+                autoComplete="off"
               />
             </div>
           </div>
-          {/* button submit */}
+          {/* Submit Button */}
           <div className="form-control mt-6">
             <button
               type="submit"
