@@ -10,7 +10,7 @@ const AdminSummary = () => {
           icon={<FaUsers />}
           text={"Total Employees"}
           number={"13"}
-          color={"bg-green-600"}
+          color={"bg-primary"}
         />
         <SummaryCard
           icon={<FaBuilding />}
@@ -34,7 +34,7 @@ const AdminSummary = () => {
           icon={<FaUsers />}
           text={"Leaves Applied"}
           number={"13"}
-          color={"bg-green-600"}
+          color={"bg-primary"}
         />
         <SummaryCard
           icon={<FaBuilding />}

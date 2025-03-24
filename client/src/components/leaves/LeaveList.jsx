@@ -152,19 +152,19 @@ const LeaveList = () => {
         />
         <Link
           to="/admin-dashboard/pending-leaves"
-          className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
+          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
           Pending Leave
         </Link>
         <Link
           to="/admin-dashboard/approve-leaves"
-          className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
+          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
           Approve Leave
         </Link>
         <Link
           to="/admin-dashboard/rejected-leaves"
-          className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
+          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
           Rejected Leave
         </Link>

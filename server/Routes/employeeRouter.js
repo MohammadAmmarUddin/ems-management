@@ -3,6 +3,7 @@ const {
   getEmployee,
   addEmployee,
   editEmployee,
+  searchEmployee,
 } = require("../authController/employeeController");
 
 const express = require("express");
@@ -11,6 +12,7 @@ const router = express.Router();
 
 //get
 
+router.get("/searchEmployees", searchEmployee);
 router.get("/getEmployees", getEmployees);
 router.get("/getEmployee/:id", getEmployee);
 

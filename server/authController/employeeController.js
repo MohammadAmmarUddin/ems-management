@@ -1,3 +1,4 @@
+const employee = require("../models/employeeModel");
 const employeeModel = require("../models/employeeModel");
 
 exports.getEmployees = async (req, res) => {
@@ -98,3 +99,22 @@ exports.addEmployee = async (req, res) => {
     });
   }
 };
+
+exports.searchEmployee = async (req, res) => {
+  const searchQuery = req.query.query || ''; // Get the search query from the request
+
+  try {
+    const employees = await employee.find({
+      $or: [
+        { emp_name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search for emp_name
+        { emp_id: { $regex: searchQuery, $options: 'i' } },
+        { role: { $regex: searchQuery, $options: 'i' } },
+        { dep_name: { $regex: searchQuery, $options: 'i' } }
+      ]
+    });
+
+    res.json({ emp: employees });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching employees', error });
+  }
+}

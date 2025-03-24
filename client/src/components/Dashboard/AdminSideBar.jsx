@@ -17,7 +17,7 @@ const AdminSideBar = () => {
 
   return (
     <div className="bg-gray-800 text-white h-screen fixed left-0 top-0 bottom-0 space-y-2 w-64">
-      <div className="bg-green-600 p-5">
+      <div className="bg-primary p-5">
         <h3 className="font-bold text-3xl">Employee MS</h3>
       </div>
 
@@ -27,7 +27,7 @@ const AdminSideBar = () => {
           to={"/dashboard"}
           className={({ isActive }) =>
             `${
-              isActive ? "bg-green-600" : " "
+              isActive ? "bg-primary" : " "
             } flex  items-center space-x-4 block py-2.5 px-5 rounded`
           }
         >
@@ -42,7 +42,7 @@ const AdminSideBar = () => {
               to={"/admin-dashboard/employee"}
               className={({ isActive }) =>
                 `${
-                  isActive ? "bg-green-600" : " "
+                  isActive ? "bg-primary" : " "
                 } flex  items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
@@ -53,7 +53,7 @@ const AdminSideBar = () => {
               to={"/admin-dashboard/departments"}
               className={({ isActive }) =>
                 `${
-                  isActive ? "bg-green-600" : " "
+                  isActive ? "bg-primary" : " "
                 } flex  items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
@@ -64,7 +64,7 @@ const AdminSideBar = () => {
               to={"/admin-dashboard/leave"}
               className={({ isActive }) =>
                 `${
-                  isActive ? "bg-green-600" : " "
+                  isActive ? "bg-primary" : " "
                 } flex  items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
@@ -75,7 +75,7 @@ const AdminSideBar = () => {
               to={"/admin-dashboard/salary"}
               className={({ isActive }) =>
                 `${
-                  isActive ? "bg-green-600" : " "
+                  isActive ? "bg-primary" : " "
                 } flex  items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
@@ -92,7 +92,7 @@ const AdminSideBar = () => {
               to={"/moderator-dashboard/leave"}
               className={({ isActive }) =>
                 `${
-                  isActive ? "bg-green-600" : " "
+                  isActive ? "bg-primary" : " "
                 } flex  items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
@@ -103,7 +103,7 @@ const AdminSideBar = () => {
               to={"/moderator-dashboard/salary"}
               className={({ isActive }) =>
                 `${
-                  isActive ? "bg-green-600" : " "
+                  isActive ? "bg-primary" : " "
                 } flex  items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
@@ -120,7 +120,7 @@ const AdminSideBar = () => {
               to={"/user-dashboard/profile"}
               className={({ isActive }) =>
                 `${
-                  isActive ? "bg-green-600" : " "
+                  isActive ? "bg-primary" : " "
                 } flex  items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >

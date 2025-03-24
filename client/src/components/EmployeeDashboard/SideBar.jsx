@@ -17,7 +17,7 @@ const SideBar = () => {
 
   return (
     <div className="bg-gray-800 text-white h-screen fixed left-0 top-0 bottom-0 space-y-2 w-64">
-      <div className="bg-green-600 p-5">
+      <div className="bg-primary p-5">
         <h3 className="font-bold text-3xl">Employee MS</h3>
       </div>
 
@@ -28,7 +28,7 @@ const SideBar = () => {
             to={"/employee-dashboard/summary"}
             className={({ isActive }) =>
               `${
-                isActive ? "bg-green-600" : " "
+                isActive ? "bg-primary" : " "
               } flex  items-center space-x-4 block py-2.5 px-5 rounded`
             }
           >
@@ -39,7 +39,7 @@ const SideBar = () => {
             to={"/employee-dashboard/profile"}
             className={({ isActive }) =>
               `${
-                isActive ? "bg-green-600" : " "
+                isActive ? "bg-primary" : " "
               } flex  items-center space-x-4 block py-2.5 px-5 rounded`
             }
           >
@@ -50,7 +50,7 @@ const SideBar = () => {
             to={"/employee-dashboard/leave-History"}
             className={({ isActive }) =>
               `${
-                isActive ? "bg-green-600" : " "
+                isActive ? "bg-primary" : " "
               } flex  items-center space-x-4 block py-2.5 px-5 rounded`
             }
           >
@@ -61,7 +61,7 @@ const SideBar = () => {
             to={"/employee-dashboard/salary"}
             className={({ isActive }) =>
               `${
-                isActive ? "bg-green-600" : " "
+                isActive ? "bg-primary" : " "
               } flex  items-center space-x-4 block py-2.5 px-5 rounded`
             }
           >

@@ -44,7 +44,7 @@ const Login = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-r from-green-400 to-slate-500 w-full h-full">
+    <div className=" bg-gradient-to-r bg-primary to-secondary w-full h-full">
       <h2 className="text-center relative top-10 font-bold font-roslindale lg:text-5xl md:text-4xl text-3xl ">
         Employee Management System
       </h2>
@@ -77,7 +77,7 @@ const Login = () => {
             />
           </div>
           <div className="form-control mt-6">
-            <button className="btn bg-teal-500 hover:bg-[#4bdb81] text-white font-semibold text-xl">
+            <button className="btn bg-secondary hover:bg-primary text-white font-semibold text-xl">
               Login
             </button>
           </div>

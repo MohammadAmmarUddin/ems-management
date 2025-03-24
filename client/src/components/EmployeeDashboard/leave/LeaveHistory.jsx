@@ -135,7 +135,7 @@ const LeaveHistory = () => {
         />
         <Link
           to="/employee-dashboard/add-leave"
-          className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
+          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
           Add Leave
         </Link>

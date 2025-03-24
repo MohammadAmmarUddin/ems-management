@@ -6,20 +6,20 @@ import { useAuth } from "../../context/AuthContext";
 
 const List = () => {
   const [employees, setEmployees] = useState([]);
-
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const { user, loading } = useAuth();
-
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const date = new Date(selectedEmployee?.createdAt);
+  const joiningDate = date.toLocaleString(); // Automatically formats to local date-time format
 
-  // Fetch employees data
-  const fetchEmployees = async () => {
+  // Fetch employees data with search functionality
+  const fetchEmployees = async (query = "") => {
     try {
       const res = await axios.get(
-        "http://localhost:5001/api/employee/getEmployees"
+        `http://localhost:5001/api/employee/searchEmployees?query=${query}`
       );
       setEmployees(res.data.emp);
-      console.log(res.data.emp[0]);
     } catch (error) {
       console.log(error);
     }
@@ -30,7 +30,13 @@ const List = () => {
     if (user && !loading) {
       fetchEmployees();
     }
-  }, []);
+  }, [user, loading]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    fetchEmployees(e.target.value); // Fetch filtered employees based on the query
+  };
 
   // Open the View modal
   const handleShowViewModal = (employee) => {
@@ -44,37 +50,31 @@ const List = () => {
     setSelectedEmployee(null);
   };
 
-  const buttonStyle = {
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    padding: "3px 5px",
-    marginRight: "5px",
-    cursor: "pointer",
-    borderRadius: "4px",
-  };
-
-  // Columns of table
+  // Columns for the DataTable
   const columns = [
     {
       name: "S No",
       selector: (row, ind) => ind + 1,
       sortable: true,
+      width: "50px",
     },
     {
       name: "Emp_Id",
       selector: (row) => row.emp_id,
       sortable: true,
+      width: "120px",
     },
     {
       name: "Name",
       selector: (row) => row.emp_name,
       sortable: true,
+      width: "180px",
     },
     {
       name: "Email",
       selector: (row) => row.role,
       sortable: true,
+      width: "150px",
     },
     {
       name: "Department",
@@ -84,33 +84,34 @@ const List = () => {
     {
       name: "Actions",
       cell: (row) => (
-        <>
+        <div className="flex space-x-2">
           <button
             onClick={() => handleShowViewModal(row)}
-            style={{ ...buttonStyle, backgroundColor: "green", whiteSpace: "nowrap" }}
+            className="bg-view text-white p-2 rounded-lg hover:bg-green-600"
           >
             View
           </button>
           <Link
             to={`/admin-dashboard/edit-employee/${row._id}`}
-            style={{ ...buttonStyle, backgroundColor: "blue", whiteSpace: "nowrap" }}
+            className="bg-edit text-white p-2 rounded-lg hover:bg-orange-600"
           >
             Edit
           </Link>
           <Link
             to={`/admin-dashboard/edit-employee/salary-history/${row._id}`}
-            style={{ ...buttonStyle, backgroundColor: "orange", whiteSpace: "nowrap" }}
+            className="bg-accent text-white p-2 rounded-lg hover:bg-yellow-600"
           >
             Salary
           </Link>
           <button
             onClick={() => console.log("Delete functionality not added yet!")}
-            style={{ ...buttonStyle, backgroundColor: "#dc3545", whiteSpace: "nowrap" }}
+            className="bg-delete text-white p-2 rounded-lg hover:bg-red-600"
           >
             Delete
           </button>
-        </>
+        </div>
       ),
+      width: "280px",
     },
   ];
 
@@ -122,24 +123,29 @@ const List = () => {
       <div className="flex justify-between my-4">
         <input
           type="text"
+          value={searchQuery} // Controlled input field
+          onChange={handleSearchChange} // Update query on change
           className="px-4 py-1 border rounded ml-5"
-          placeholder="Search By Name"
+          placeholder="Search By Name, ID, Role, or Department"
         />
         <Link
           to="/admin-dashboard/add-employee"
-          className="px-6 py-1 mr-5 text-white rounded bg-green-600 hover:bg-green-800 font-semibold"
+          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
           Add New Employee
         </Link>
       </div>
 
-      <div>
+      <div className="overflow-hidden">
         <DataTable
           highlightOnHover
           selectableRows
           pagination
           columns={columns}
           data={employees}
+          fixedHeader
+          fixedHeaderScrollHeight="500px"
+          responsive
         />
       </div>
 
@@ -161,18 +167,17 @@ const List = () => {
                 <div>
                   <img src="/mn.png" width={70} alt="" />
                   <p>
-                    <strong>Name:</strong> {selectedEmployee.name}
+                    <strong>Name:</strong> {selectedEmployee.emp_name}
                   </p>
                   <p>
-                    <strong>Email:</strong> {selectedEmployee.email}
+                    <strong>Employee_Id:</strong> {selectedEmployee.emp_id}
                   </p>
                   <p>
                     <strong>Department:</strong>{" "}
-                    {selectedEmployee.department || "N/A"}
+                    {selectedEmployee.dep_name || "N/A"}
                   </p>
                   <p>
-                    <strong>Joining Date:</strong>{" "}
-                    {selectedEmployee.joiningDate || "N/A"}
+                    <strong>Joining Date:</strong> {joiningDate || "N/A"}
                   </p>
                   <p>
                     <strong>Role:</strong> {selectedEmployee.role || "N/A"}

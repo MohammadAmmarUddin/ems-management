@@ -62,7 +62,7 @@ const AddDepartment = () => {
           <div className="form-control mt-6">
             <button
               type="submit"
-              className="btn bg-green-600 hover:bg-green-800 font-semibold text-white"
+              className="btn bg-primary hover:bg-secondary font-semibold text-white"
             >
               Add New Department
             </button>
