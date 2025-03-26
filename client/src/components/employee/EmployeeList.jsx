@@ -12,16 +12,21 @@ const List = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const date = new Date(selectedEmployee?.createdAt);
   const joiningDate = date.toLocaleString(); // Automatically formats to local date-time format
-
+  const [depLoading, setdepLoading] = useState(true);
   // Fetch employees data with search functionality
   const fetchEmployees = async (query = "") => {
     try {
+      setdepLoading(true);
       const res = await axios.get(
         `http://localhost:5001/api/employee/searchEmployees?query=${query}`
       );
       setEmployees(res.data.emp);
     } catch (error) {
+       setdepLoading(false);
       console.log(error);
+    }
+    finally {
+      setdepLoading(false);
     }
   };
 
@@ -115,6 +120,14 @@ const List = () => {
     },
   ];
 
+  // Loading spinner view
+  if (loading || depLoading) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+     <span className="loading loading-spinner text-white loading-6xl"></span>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="text-center">

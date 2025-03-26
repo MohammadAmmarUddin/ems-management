@@ -2,16 +2,21 @@ import { NavLink } from "react-router-dom";
 import {
   FaBuilding,
   FaMoneyBill,
-  FaTachometerAlt,
   FaUsers,
 } from "react-icons/fa";
-import { AiFillSetting, AiOutlineHourglass } from "react-icons/ai";
+import {  AiOutlineHourglass } from "react-icons/ai";
 import { useAuth } from "../../context/AuthContext";
 
 const SideBar = () => {
   const { user, loading } = useAuth();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+        <span className="loading loading-spinner text-white"></span>
+      </div>
+    );
+  }
 
   const role = user?.role; // Access user's role
 

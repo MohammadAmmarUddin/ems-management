@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import {
   FaBuilding,
   FaMoneyBill,
- 
   FaUsers,
 } from "react-icons/fa";
 import { AiFillSetting, AiOutlineHourglass } from "react-icons/ai";
@@ -11,30 +10,23 @@ import { useAuth } from "../../context/AuthContext";
 const AdminSideBar = () => {
   const { user, loading } = useAuth();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+        <div className="loading loading-spinner text-white"></div>
+      </div>
+    );
+  }
 
   const role = user?.role; // Access user's role
 
   return (
     <div className="bg-gray-800 text-white h-screen fixed left-0 top-0 bottom-0 space-y-2 w-64">
       <div className="bg-primary p-5">
-        <h3 className="font-bold text-3xl">Employee MS</h3>
+        <h3 className="font-bold text-3xl font-sourceSans">Employee MS</h3>
       </div>
 
       <div>
-        {/* Common Links for All Roles */}
-        {/* <NavLink
-          to={"/dashboard"}
-          className={({ isActive }) =>
-            `${
-              isActive ? "bg-primary" : " "
-            } flex  items-center space-x-4 block py-2.5 px-5 rounded`
-          }
-        >
-          <FaTachometerAlt />
-          <span>Dashboard</span>
-        </NavLink> */}
-
         {/* Admin-Specific Links */}
         {role === "admin" && (
           <>
@@ -43,7 +35,7 @@ const AdminSideBar = () => {
               className={({ isActive }) =>
                 `${
                   isActive ? "bg-primary" : " "
-                } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+                } flex items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
               <FaUsers />
@@ -54,7 +46,7 @@ const AdminSideBar = () => {
               className={({ isActive }) =>
                 `${
                   isActive ? "bg-primary" : " "
-                } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+                } flex items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
               <FaBuilding />
@@ -65,7 +57,7 @@ const AdminSideBar = () => {
               className={({ isActive }) =>
                 `${
                   isActive ? "bg-primary" : " "
-                } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+                } flex items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
               <AiOutlineHourglass />
@@ -76,7 +68,7 @@ const AdminSideBar = () => {
               className={({ isActive }) =>
                 `${
                   isActive ? "bg-primary" : " "
-                } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+                } flex items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
               <FaMoneyBill />
@@ -93,7 +85,7 @@ const AdminSideBar = () => {
               className={({ isActive }) =>
                 `${
                   isActive ? "bg-primary" : " "
-                } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+                } flex items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
               <AiOutlineHourglass />
@@ -104,7 +96,7 @@ const AdminSideBar = () => {
               className={({ isActive }) =>
                 `${
                   isActive ? "bg-primary" : " "
-                } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+                } flex items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
               <FaMoneyBill />
@@ -121,7 +113,7 @@ const AdminSideBar = () => {
               className={({ isActive }) =>
                 `${
                   isActive ? "bg-primary" : " "
-                } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+                } flex items-center space-x-4 block py-2.5 px-5 rounded`
               }
             >
               <AiFillSetting />

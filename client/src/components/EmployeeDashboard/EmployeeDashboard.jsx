@@ -5,12 +5,13 @@ import Navbar from "../Dashboard/Navbar.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const EmployeeDashboard = () => {
-  const { user, loading } = useAuth();
-
-  console.log(user.role);
-
-  if (loading) {
-    return <div>loading...</div>;
+  const { loading } = useAuth();
+  if (loading ) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+        <span className="loading loading-spinner text-5xl text-white"></span>
+      </div>
+    );
   }
 
   return (

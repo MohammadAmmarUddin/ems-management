@@ -6,10 +6,9 @@ import Navbar from "../components/Dashboard/Navbar.jsx";
 const AdminDashboard = () => {
   const { user, loading } = useAuth();
    
-   console.log(user.role);
    
   if (user && loading) {
-    return <div>loading...</div>;
+    return <div className="loading loading-spinner absolute top-[50%] left-[50%]"></div>;
   }
 
   return (

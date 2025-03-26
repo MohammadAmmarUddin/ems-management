@@ -3,18 +3,35 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 const Profile = () => {
   const [singleUser, setSingleUser] = useState([]);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const [depLoading, setdepLoading] = useState(true);
   const fetchSingleEmployee = async (req, res) => {
-    const response = await axios.get(
-      `http://localhost:5001/api/employee//getEmployee/${user._id}`
-    );
+    try {
+      setdepLoading(true);
+      const response = await axios.get(
+        `http://localhost:5001/api/employee//getEmployee/${user._id}`
+      );
 
-    setSingleUser(response.data.employee);
+      setSingleUser(response.data.employee);
+    } catch (error) {
+      setdepLoading(false);
+    } finally {
+      setdepLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchSingleEmployee();
   }, []);
+  // Loading spinner view
+  if (loading || depLoading) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+        <span className="loading loading-spinner text-white loading-3xl"></span>{" "}
+        {/* Increased size */}
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-50 rounded-lg bg-slate-100 mx-auto">
@@ -26,11 +43,11 @@ const Profile = () => {
 
       <div className="mt-32 ml-4">
         <h2 className="font-bold">Name: {singleUser.emp_name}</h2>
-       { singleUser?.role==="employee" ? <h2 className="font-semibold">Employee_Id: {singleUser.emp_id}
-        
-       </h2>:
-       <h2 className="font-semibold">Email: {singleUser.email}</h2>
-       }
+        {singleUser?.role === "employee" ? (
+          <h2 className="font-semibold">Employee_Id: {singleUser.emp_id}</h2>
+        ) : (
+          <h2 className="font-semibold">Email: {singleUser.email}</h2>
+        )}
         <h2 className="font-semibold">role: {singleUser.role}</h2>
       </div>
     </div>

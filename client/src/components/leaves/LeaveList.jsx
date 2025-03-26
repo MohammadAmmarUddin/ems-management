@@ -18,28 +18,30 @@ const LeaveList = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const { user, loading } = useAuth();
+  const [depLoading, setdepLoading] = useState(true);
 
-   
   const date = new Date(selectedEmployee?.createdAt);
 
-
   const joiningDate = date.toLocaleString(); // Automatically formats to local date-time format
- 
 
   // Function to fetch employee and leave data
   const fetchData = async () => {
     try {
+      setdepLoading(true);
       const [employeeRes, leaveRes] = await Promise.all([
         axios.get("http://localhost:5001/api/employee/getEmployees"),
         axios.get("http://localhost:5001/api/leave/getAllleaves"),
       ]);
       console.log("employeeRes", employeeRes);
       // Set the fetched data
-      setEmployees(employeeRes.data.emp);  // Adjusted based on the response structure you provided
+      setEmployees(employeeRes.data.emp); // Adjusted based on the response structure you provided
       setLeaves(leaveRes.data.result);
     } catch (error) {
+      setdepLoading(false);
       console.error("Error fetching data:", error);
       alert("There was an issue fetching the data. Please try again.");
+    } finally {
+      setdepLoading(false);
     }
   };
 
@@ -125,7 +127,13 @@ const LeaveList = () => {
       cell: (row) => (
         <button
           onClick={() => handleShowViewModal(row)} // Trigger modal with employee details
-          style={{ backgroundColor: "green", color: "#fff", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}
+          style={{
+            backgroundColor: "green",
+            color: "#fff",
+            padding: "5px 10px",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
         >
           View
         </button>
@@ -134,8 +142,14 @@ const LeaveList = () => {
   ];
 
   // Show loading indicator while fetching data
-  if (loading) {
-    return <div>Loading...</div>;
+  // Loading spinner view
+  if (loading || depLoading) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+        <span className="loading loading-spinner text-white loading-3xl"></span>{" "}
+        {/* Increased size */}
+      </div>
+    );
   }
 
   return (
@@ -211,8 +225,7 @@ const LeaveList = () => {
                     {selectedEmployee.dep_name || "N/A"}
                   </p>
                   <p>
-                    <strong>Joining Date:</strong>{" "}
-                    {joiningDate || "N/A"}
+                    <strong>Joining Date:</strong> {joiningDate || "N/A"}
                   </p>
                   <p>
                     <strong>Role:</strong> {selectedEmployee.role || "N/A"}

@@ -8,8 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 const DepartmentList = () => {
   const [departments, setDepartment] = useState([]);
   const [depLoading, setdepLoading] = useState(true);
-  const { user,loading } = useAuth();
-  console.log("user from dep" , user);
+  const {  loading } = useAuth();
   // Fetch departments data
   const fetchDepartment = async () => {
     try {
@@ -33,7 +32,6 @@ const DepartmentList = () => {
   // Smoothly remove the department from the local state after deletion
   const handleDelete = async (rowId) => {
     try {
-      console.log("handleDelete", rowId);
       const res = await axios.delete(
         `http://localhost:5001/api/department/deleteDep/${rowId}`
       );
@@ -110,9 +108,14 @@ const DepartmentList = () => {
       ),
     },
   ];
-  if (!user && loading) {
-    return <div>loading-----</div>;
+  if (loading || depLoading) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+     <span className="loading loading-spinner text-white loading-xl"></span>
+      </div>
+    );
   }
+
   return (
     <div>
       <div className="text-center">

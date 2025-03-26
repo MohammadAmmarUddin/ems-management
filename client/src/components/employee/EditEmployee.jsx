@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { useParams } from "react-router";
+import Swal from "sweetalert2";
 
 const EditEmployee = () => {
   const { id } = useParams();
@@ -20,7 +21,6 @@ const EditEmployee = () => {
     setEmployeeData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fetch employee data
   const fetchEmployee = async () => {
     try {
       const res = await axios.get(
@@ -29,10 +29,10 @@ const EditEmployee = () => {
       setEmployeeData(res.data.employee || {});
     } catch (error) {
       console.error("Error fetching employee data:", error);
+      Swal.fire("Error", "Could not fetch employee data", "error");
     }
   };
 
-  // Initial fetch in useEffect
   useEffect(() => {
     fetchEmployee();
   }, [id]);
@@ -44,10 +44,20 @@ const EditEmployee = () => {
         `http://localhost:5001/api/employee/edit/${id}`,
         employeeData
       );
-      alert("Employee updated successfully!");
+      Swal.fire({
+        title: "Success",
+        text: "Employee updated successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
     } catch (error) {
       console.error("Error updating employee:", error);
-      alert("An error occurred while updating the employee.");
+      Swal.fire({
+        title: "Error",
+        text: "An error occurred while updating the employee.",
+        icon: "error",
+        confirmButtonText: "Try Again",
+      });
     }
   };
 
@@ -58,7 +68,6 @@ const EditEmployee = () => {
           Edit Employee
         </h2>
         <form onSubmit={handleSubmit} className="card-body">
-          {/* ID */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Employee ID</span>
@@ -73,7 +82,6 @@ const EditEmployee = () => {
               required
             />
           </div>
-          {/* Name */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Employee Name</span>
@@ -87,7 +95,6 @@ const EditEmployee = () => {
               className="input input-bordered focus:outline-none hover:border-green-600"
             />
           </div>
-          {/* Department */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Department Name</span>
@@ -101,7 +108,6 @@ const EditEmployee = () => {
               className="input input-bordered focus:outline-none hover:border-green-600"
             />
           </div>
-          {/* Salary */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Salary</span>
@@ -115,7 +121,6 @@ const EditEmployee = () => {
               className="input input-bordered focus:outline-none hover:border-green-600"
             />
           </div>
-          {/* Role */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Role</span>
@@ -129,7 +134,6 @@ const EditEmployee = () => {
               className="input input-bordered focus:outline-none hover:border-green-600"
             />
           </div>
-          {/* Designation */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Designation</span>
@@ -143,7 +147,6 @@ const EditEmployee = () => {
               className="input input-bordered focus:outline-none hover:border-green-600"
             />
           </div>
-          {/* Submit Button */}
           <div className="form-control mt-6">
             <button
               type="submit"

@@ -8,12 +8,12 @@ import AdminSummary from "./components/Dashboard/AdminSummary";
 import DepartmentList from "./components/Department/DepartmentList";
 import AddDepartment from "./components/Department/AddDepartment";
 import EditDepartment from "./components/Department/EditDepartment";
-import List from "./components/employee/EmployeeList";
-import Add from "./components/employee/EmployeeAdd";
-import LeaveList from "./components/leaves/LeaveList";
-import LeaveAdd from "./components/leaves/LeaveAdd";
+import EmployeeList from "./components/employee/EmployeeList";
+import AddEmployee from "./components/employee/EmployeeAdd";
 import ViewEmployee from "./components/employee/ViewEmployee";
 import EditEmployee from "./components/employee/EditEmployee";
+import LeaveList from "./components/leaves/LeaveList";
+import LeaveAdd from "./components/leaves/LeaveAdd";
 import EmployeeDashboard from "./components/EmployeeDashboard/EmployeeDashboard";
 import Summary from "./components/EmployeeDashboard/Summary";
 import Profile from "./components/EmployeeDashboard/Profile";
@@ -26,10 +26,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to={"/admin-dashboard"} />}></Route>
-        <Route path="/login" element={<Login />}></Route>
+        <Route path="/" element={<Navigate to="/admin-dashboard" />} />
+        <Route path="/login" element={<Login />} />
 
-        {/* Admin Dashboard Routes */}
         <Route
           path="/admin-dashboard"
           element={
@@ -40,49 +39,20 @@ function App() {
             </PrivateRoutes>
           }
         >
-          <Route index element={<AdminSummary />}></Route>
-          <Route
-            path="/admin-dashboard/departments"
-            element={<DepartmentList />}
-          ></Route>
-          <Route path="/admin-dashboard/leave" element={<LeaveList />}></Route>
-          <Route
-            path="/admin-dashboard/leaves/:id"
-            element={<LeaveList />}
-          ></Route> {/* You may want to display individual leave info */}
-          <Route
-            path="/admin-dashboard/addLeave"
-            element={<LeaveAdd />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/add-department"
-            element={<AddDepartment />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/edit-department/:id"
-            element={<EditDepartment />}
-          ></Route>
-          <Route path="/admin-dashboard/employee" element={<List />}></Route>
-          <Route
-            path="/admin-dashboard/add-employee"
-            element={<Add />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/view-employee/:id"
-            element={<ViewEmployee />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/edit-employee/:id"
-            element={<EditEmployee />}
-          ></Route>
-          <Route path="/admin-dashboard/salary" element={<Salary />}></Route>
-          <Route
-            path="/admin-dashboard/salary/addSalary/:id"
-            element={<AddSalary />}
-          ></Route>
+          <Route index element={<AdminSummary />} />
+          <Route path="departments" element={<DepartmentList />} />
+          <Route path="add-department" element={<AddDepartment />} />
+          <Route path="edit-department/:id" element={<EditDepartment />} />
+          <Route path="employee" element={<EmployeeList />} />
+          <Route path="add-employee" element={<AddEmployee />} />
+          <Route path="view-employee/:id" element={<ViewEmployee />} />
+          <Route path="edit-employee/:id" element={<EditEmployee />} />
+          <Route path="leave" element={<LeaveList />} />
+          <Route path="addLeave" element={<LeaveAdd />} />
+          <Route path="salary" element={<Salary />} />
+          <Route path="salary/addSalary/:id" element={<AddSalary />} />
         </Route>
 
-        {/* Employee Dashboard Routes */}
         <Route
           path="/employee-dashboard"
           element={
@@ -93,21 +63,14 @@ function App() {
             </PrivateRoutes>
           }
         >
-          <Route index element={<Summary />}></Route>
-          <Route path="/employee-dashboard/summary" element={<Summary />}></Route>
-          <Route path="/employee-dashboard/profile" element={<Profile />}></Route>
-          <Route
-            path="/employee-dashboard/leave-history"
-            element={<LeaveHistory />}
-          ></Route>
-          <Route
-            path="/employee-dashboard/add-leave"
-            element={<AddLeave />}
-          ></Route>
+          <Route index element={<Summary />} />
+          <Route path="summary" element={<Summary />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="leave-history" element={<LeaveHistory />} />
+          <Route path="add-leave" element={<AddLeave />} />
         </Route>
 
-        {/* Signup Route */}
-        <Route path="/signup" element={<Signup />}></Route>
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </BrowserRouter>
   );

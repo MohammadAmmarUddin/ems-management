@@ -16,7 +16,12 @@ export default {
         delete: '#F44336', // Red for Delete
         edit: '#FF9800',   // Amber for Edit
         add: '#2196F3',    // Blue for Add
-      }
+      },
+      fontFamily: {
+        orbitron: ['Orbitron', 'sans-serif'], // Adding Orbitron font family
+        exo: ['"Exo 2"', 'sans-serif'], // Adding Exo 2 font family
+        sourceSans: ['"Source Sans 3"', 'sans-serif'], // Adding Source Sans 3 font family
+      },
     },
   },
   plugins: [

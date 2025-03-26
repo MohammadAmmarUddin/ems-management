@@ -4,7 +4,6 @@ import { useAuth } from "../../context/AuthContext";
 const Summary= () => {
 
     const {user}= useAuth()
-    console.log(user);
     return (
         <div  className="flex rounded bg-white">
         
