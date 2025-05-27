@@ -1,5 +1,5 @@
 const express = require("express");
-const { getAllDep, addDep, deleteDep, updateDep, getSingleDep } = require("../authController/depController");
+const { getAllDep, addDep, deleteDep, updateDep, getSingleDep } = require("../controller/depController");
 
 const router = express.Router();
 //post

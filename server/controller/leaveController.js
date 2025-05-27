@@ -1,6 +1,7 @@
 const employeeModel = require("../models/employeeModel");
 const leave = require("../models/leave");
 
+
 exports.getAllLeaves = async (req, res) => {
   const result = await leave.find({});
   res.status(200).send({ result, success: true });
@@ -36,48 +37,35 @@ exports.addLeave = async (req, res) => {
 };
 
 exports.approveLeave = async (req, res) => {
-  const { id } = req.params;
-
-  const leaveRequest = await leave.findById(id);
-  if (!leaveRequest) {
-    return res.status(404).send({ success: false, message: "Leave request not found" });
+  try {
+    console.log(`Approving leave with ID: ${req.params.id}`);
+     const { id } = req.params;
+    const result = await leave.findByIdAndUpdate(
+       id,
+      { status: "Approved" },
+      { new: true }
+    );
+    res.status(200).json({ message: "Result approved", result });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to approve result" });
   }
-
-  if (leaveRequest.status === "approved") {
-    return res.status(400).send({ success: false, message: "Leave is already approved" });
-  }
-
-  if (leaveRequest.status === "rejected") {
-    return res.status(400).send({ success: false, message: "Leave is already rejected" });
-  }
-
-  leaveRequest.status = "approved";
-  const result = await leaveRequest.save();
-
-  res.status(200).send({ success: true, message: "Leave approved", leave: result });
 };
 
 exports.rejectLeave = async (req, res) => {
-  const { id } = req.params;
-
-  const leaveRequest = await leave.findById(id);
-  if (!leaveRequest) {
-    return res.status(404).send({ success: false, message: "Leave request not found" });
+  try {
+   console.log(`Rejecting leave with ID: ${req.params.id}`);
+     const { id } = req.params;
+    const result = await leave.findByIdAndUpdate(
+      id,
+      { status: "Rejected" },
+      { new: true }
+    );
+    res.status(200).json({ message: "Leave rejected", result });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to reject leave" });
   }
-
-  if (leaveRequest.status === "approved") {
-    return res.status(400).send({ success: false, message: "Leave is already approved" });
-  }
-
-  if (leaveRequest.status === "rejected") {
-    return res.status(400).send({ success: false, message: "Leave is already rejected" });
-  }
-
-  leaveRequest.status = "rejected";
-  const result = await leaveRequest.save();
-
-  res.status(200).send({ success: true, message: "Leave rejected", leave: result });
 };
+
 
 exports.getLeavesByStatus = async (req, res) => {
   const { status } = req.params;

@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 
 const EditEmployee = () => {
   const { id } = useParams();
-
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const [employeeData, setEmployeeData] = useState({
     emp_id: "",
     emp_name: "",
@@ -24,7 +24,7 @@ const EditEmployee = () => {
   const fetchEmployee = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/api/employee/getEmployee/${id}`
+        `${baseUrl}/api/employee/getEmployee/${id}`
       );
       setEmployeeData(res.data.employee || {});
     } catch (error) {
@@ -41,7 +41,7 @@ const EditEmployee = () => {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `http://localhost:5001/api/employee/edit/${id}`,
+        `${baseUrl}/api/employee/edit/${id}`,
         employeeData
       );
       Swal.fire({

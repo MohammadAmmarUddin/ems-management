@@ -9,12 +9,12 @@ const Salary = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const { user, loading } = useAuth();
-
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   // Fetch employees data
   const fetchEmployees = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5001/api/leave/getAllleaves"
+        `${baseUrl}/api/leave/getAllleaves`
       );
       setEmployees(res.data.result);
     } catch (error) {

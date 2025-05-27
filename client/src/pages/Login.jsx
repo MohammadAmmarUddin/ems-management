@@ -8,6 +8,7 @@ const Login = () => {
   const [error, setError] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,9 +19,9 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/auth/login",
+        `${baseUrl}/api/auth/login`,
         { email, password }
-      );
+      ); 
 
       if (response.data.success === true) {
         login(response.data.user);

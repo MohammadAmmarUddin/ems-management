@@ -9,10 +9,10 @@ const leaveRouter = require("./Routes/leaveRouter");
 const depRouter = require("./Routes/depRouter");
 const employeeRouter = require("./Routes/employeeRouter");
 app.use(express.json());
-
+const baseUrl = process.env.Base_URL;
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: baseUrl,
   })
 );
 app.use("/api/department", depRouter);

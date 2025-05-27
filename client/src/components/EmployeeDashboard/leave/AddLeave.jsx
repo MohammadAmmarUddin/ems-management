@@ -5,6 +5,7 @@ import { useAuth } from "../../../context/AuthContext";
 
 const AddLeave = () => {
   const { user } = useAuth();
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const [leaveData, setLeaveData] = useState({
     userId: user._id,
   });
@@ -19,7 +20,7 @@ const AddLeave = () => {
     console.log(leaveData);
     try {
       const res = await axios.post(
-        "http://localhost:5001/api/leave/addLeave",
+        `${baseUrl}/api/leave/addLeave`,
         leaveData
       );
 

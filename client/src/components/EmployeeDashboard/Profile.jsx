@@ -5,11 +5,12 @@ const Profile = () => {
   const [singleUser, setSingleUser] = useState([]);
   const { user, loading } = useAuth();
   const [depLoading, setdepLoading] = useState(true);
+   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const fetchSingleEmployee = async (req, res) => {
     try {
       setdepLoading(true);
       const response = await axios.get(
-        `http://localhost:5001/api/employee//getEmployee/${user._id}`
+        `${baseUrl}/api/employee//getEmployee/${user._id}`
       );
 
       setSingleUser(response.data.employee);

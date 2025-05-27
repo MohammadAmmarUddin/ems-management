@@ -9,12 +9,13 @@ const DepartmentList = () => {
   const [departments, setDepartment] = useState([]);
   const [depLoading, setdepLoading] = useState(true);
   const {  loading } = useAuth();
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   // Fetch departments data
   const fetchDepartment = async () => {
     try {
       setdepLoading(true);
       const res = await axios.get(
-        "http://localhost:5001/api/department/getAllDep"
+        `${baseUrl}/api/department/getAllDep`
       );
       setDepartment(res.data.result);
     } catch (error) {
@@ -33,7 +34,7 @@ const DepartmentList = () => {
   const handleDelete = async (rowId) => {
     try {
       const res = await axios.delete(
-        `http://localhost:5001/api/department/deleteDep/${rowId}`
+        `${baseUrl}/api/department/deleteDep/${rowId}`
       );
 
       // Update local state by filtering out the deleted department

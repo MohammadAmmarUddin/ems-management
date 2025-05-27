@@ -7,11 +7,12 @@ import { useAuth } from "../../../context/AuthContext";
 const LeaveHistory = () => {
   const [leaves, setLeaves] = useState([]);
   const { user, loading } = useAuth();
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   // Fetch departments data
   const fetchSingleUserLeave = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/api/leave/getLeave/${user._id}`
+        `${baseUrl}/api/leave/getLeave/${user._id}`
       );
       setLeaves(res.data.leaves);
     } catch (error) {

@@ -4,7 +4,7 @@ const {
   addEmployee,
   editEmployee,
   searchEmployee,
-} = require("../authController/employeeController");
+} = require("../controller/employeeController");
 
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware.js");

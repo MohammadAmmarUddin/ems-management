@@ -6,9 +6,10 @@ import Swal from "sweetalert2";
 const EditDepartment = () => { 
     const [data,setData]= useState([])
     const {id} = useParams()
+    const baseUrl = import.meta.env.VITE_EMS_Base_URL;
      useEffect(()=>{
        const fetchSingleDep= async() =>{  
-        axios.get(`http://localhost:5001/api/department/getSingleDep/${id}`)
+        axios.get(`${baseUrl}/api/department/getSingleDep/${id}`)
         .then(res=>{
             setData(res.data.result)
             console.log("single dep result",res.data);
@@ -26,7 +27,7 @@ const EditDepartment = () => {
         const dep_desc = form.dep_desc.value;
     
         axios
-          .put(`http://localhost:5001/api/department/updateDep/${id}`, {
+          .put(`${baseUrl}/api/department/updateDep/${id}`, {
             dep_name,
             dep_desc,
           })

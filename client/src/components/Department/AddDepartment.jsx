@@ -10,11 +10,11 @@ const AddDepartment = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false); // Track if dropdown is visible
 
   const inputRef = useRef(null); // To keep track of input field
-
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   // Fetch department data
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get("http://localhost:5001/api/department/getAllDep");
+      const res = await axios.get(`${baseUrl}/api/department/getAllDep`);
       if (res.data.result && res.data.success === true) {
         setDepartments(res.data.result); // Store department objects
         setFilteredDepartments(res.data.result); // Filter suggestions
@@ -60,7 +60,7 @@ const AddDepartment = () => {
 
     // POST to add department
     axios
-      .post("http://localhost:5001/api/department/add", { dep_name, dep_desc })
+      .post(`${baseUrl}/api/department/add`, { dep_name, dep_desc })
       .then((res) => {
         if (res.data.success === true) {
           Swal.fire({

@@ -10,11 +10,11 @@ const AddSalary = () => {
   const [salaryData, setsalaryData] = useState({
     userId: user._id,
   });
-
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const fetchDepartment = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5001/api/department/getAllDep"
+        `${baseUrl}/api/department/getAllDep`
       );
       setDepartment(res.data.result);
     } catch (error) {
@@ -30,7 +30,7 @@ const AddSalary = () => {
   const fetchEmployees = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5001/api/employee/getEmployees"
+        `${baseUrl}/api/employee/getEmployees`
       );
       setEmployees(res.data.emp);
       console.log(res.data.emp[0]);
@@ -56,7 +56,7 @@ const AddSalary = () => {
     console.log(salaryData);
     try {
       const res = await axios.post(
-        "http://localhost:5001/api/leave/AddSalary",
+        `${baseUrl}/api/leave/AddSalary`,
         salaryData
       );
 

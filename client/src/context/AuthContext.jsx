@@ -6,7 +6,7 @@ export const userContext = createContext();
 const AuthContext = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   useEffect(() => {
     const verifyUser = async () => {
       try {
@@ -14,7 +14,7 @@ const AuthContext = ({ children }) => {
         
         if (token) {
           const response = await axios.get(
-            "http://localhost:5001/api/auth/verify",
+            `${baseUrl}/api/auth/verify`,
             {
               headers: {
                "authorization": `Bearer ${token}`,

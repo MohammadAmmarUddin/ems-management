@@ -4,7 +4,9 @@ const {
   verify,
   getAllUsers,
   getSingleUser,
-} = require("../authController/authController.js");
+  forgetPassword,
+  resetPassword,
+} = require("../controller/authController.js");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const router = express.Router();
 
@@ -13,5 +15,7 @@ router.post("/login", login);
 router.get("/verify", authMiddleware, verify);
 router.get("/getAllUser",  getAllUsers);
 router.get("/getSingleUser/:id",  getSingleUser);
+router.post("/forgetPassword", forgetPassword);
+router.post("/resetPassword/:token", resetPassword);
 
 module.exports = router;

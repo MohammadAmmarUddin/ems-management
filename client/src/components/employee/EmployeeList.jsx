@@ -13,12 +13,13 @@ const List = () => {
   const date = new Date(selectedEmployee?.createdAt);
   const joiningDate = date.toLocaleString(); // Automatically formats to local date-time format
   const [depLoading, setdepLoading] = useState(true);
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   // Fetch employees data with search functionality
   const fetchEmployees = async (query = "") => {
     try {
       setdepLoading(true);
       const res = await axios.get(
-        `http://localhost:5001/api/employee/searchEmployees?query=${query}`
+        `${baseUrl}/api/employee/searchEmployees?query=${query}`
       );
       setEmployees(res.data.emp);
     } catch (error) {

@@ -17,12 +17,12 @@ const Add = () => {
 
   // State to hold all employees data (for dropdowns)
   const [employees, setEmployees] = useState([]);
-
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   // Fetch employee data
   const fetchEmployeeData = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5001/api/employee/getEmployees"
+        `${baseUrl}/api/employee/getEmployees`
       );
       setEmployees(res.data.emp); // Store all employees for dropdown
     } catch (error) {
@@ -46,7 +46,7 @@ const Add = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5001/api/employee/addEmployee",
+        `${baseUrl}/api/employee/addEmployee`,
         formData
       );
 
@@ -97,45 +97,35 @@ const Add = () => {
         <form onSubmit={handleSubmit} className="card-body">
           {/* row 1 */}
           <div className="flex gap-x-3">
-            {/* Employee ID Dropdown */}
+            {/* Employee ID Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Id</span>
               </label>
-              <select
+              <input
+                type="text"
                 name="emp_id"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.emp_id}
                 onChange={handleChange}
                 required
-              >
-                <option value="">Select Employee ID</option>
-                {employees.map((employee) => (
-                  <option key={employee._id} value={employee.emp_id}>
-                    {employee.emp_id}
-                  </option>
-                ))}
-              </select>
+                placeholder="Enter Employee ID"
+              />
             </div>
-            {/* Employee Name Dropdown */}
+            {/* Employee Name Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Name</span>
               </label>
-              <select
+              <input
+                type="text"
                 name="emp_name"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.emp_name}
                 onChange={handleChange}
                 required
-              >
-                <option value="">Select Employee Name</option>
-                {employees.map((employee) => (
-                  <option key={employee._id} value={employee.emp_name}>
-                    {employee.emp_name}
-                  </option>
-                ))}
-              </select>
+                placeholder="Enter Employee Name"
+              />
             </div>
           </div>
           {/* row 2 */}
@@ -160,25 +150,20 @@ const Add = () => {
                 ))}
               </select>
             </div>
-            {/* Salary Dropdown */}
+            {/* Salary Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Salary</span>
               </label>
-              <select
+              <input
+                type="number"
                 name="salary"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.salary}
                 onChange={handleChange}
                 required
-              >
-                <option value="">Select Salary</option>
-                {employees.map((employee) => (
-                  <option key={employee._id} value={employee.salary}>
-                    {employee.salary}
-                  </option>
-                ))}
-              </select>
+                placeholder="Enter Salary"
+              />
             </div>
           </div>
           {/* row 3 */}
@@ -226,27 +211,22 @@ const Add = () => {
           </div>
           {/* row 4 */}
           <div className="flex gap-x-3">
-            {/* Image Dropdown */}
+            {/* Image Input */}
             <div className="form-control w-full">
               <label className="label">
-                <span className="label-text">Profile Image</span>
+                <span className="label-text">Profile Image URL</span>
               </label>
-              <select
+              <input
+                type="text"
                 name="image"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.image}
                 onChange={handleChange}
                 required
-              >
-                <option value="">Select Image</option>
-                {employees.map((employee) => (
-                  <option key={employee._id} value={employee.image}>
-                    {employee.image}
-                  </option>
-                ))}
-              </select>
+                placeholder="Enter Image URL"
+              />
             </div>
-            {/* Password */}
+            {/* Password Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Password</span>
@@ -254,11 +234,11 @@ const Add = () => {
               <input
                 type="password"
                 name="password"
-                placeholder="*******"
                 className="input input-bordered focus:outline-none hover:border-green-600"
-              
+                value={formData.password}
                 onChange={handleChange}
                 required
+                placeholder="Enter Password"
                 autoComplete="off"
               />
             </div>
