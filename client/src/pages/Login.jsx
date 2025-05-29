@@ -19,20 +19,23 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        `${baseUrl}/api/auth/login`,
+        `${baseUrl}/api/employee/login`,
         { email, password }
       ); 
-
+     console.log("response from login", response.data);
       if (response.data.success === true) {
         login(response.data.user);
         localStorage.setItem("token", response.data.token);
 
         // Show SweetAlert based on role and navigate accordingly
         Swal.fire({
-          title: "Success!",
-          text: "You have logged in successfully!",
-          icon: "success",
-          confirmButtonText: "OK",
+
+  position: "top-end",
+  icon: "success",
+  title: "Logged in successfully",
+  showConfirmButton: false,
+  timer: 1500
+
         }).then(() => {
           if (response.data.user.role === "admin") {
             navigate("/admin-dashboard");

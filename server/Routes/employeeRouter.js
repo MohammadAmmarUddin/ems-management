@@ -4,6 +4,12 @@ const {
   addEmployee,
   editEmployee,
   searchEmployee,
+  resetPassword,
+  forgetPassword,
+  getSingleUser,
+  getAllUsers,
+  verify,
+  login,
 } = require("../controller/employeeController");
 
 const express = require("express");
@@ -23,5 +29,11 @@ router.post("/addEmployee", addEmployee);
 //put update
 
 router.put("/edit/:id", editEmployee);
+router.post("/login", login);
+router.get("/verify",authMiddleware,verify);
+router.get("/getAllUser",  getAllUsers);
+router.get("/getSingleUser/:id",  getSingleUser);
+router.post("/forgetPassword", forgetPassword);
+router.post("/resetPassword/:token", resetPassword);
 
 module.exports = router;

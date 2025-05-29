@@ -34,8 +34,9 @@ function App() {
           element={
             <PrivateRoutes>
               <RoleBasedRoute requiredRole={["admin"]}>
+
                 <AdminDashboard />
-              </RoleBasedRoute>
+                  </RoleBasedRoute>
             </PrivateRoutes>
           }
         >

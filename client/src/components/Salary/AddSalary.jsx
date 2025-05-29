@@ -83,7 +83,6 @@ const AddSalary = () => {
     }
   };
 
-  console.log(departments);
 
   return (
     <div className="mt-10">
