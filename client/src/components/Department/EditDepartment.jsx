@@ -1,23 +1,17 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const EditDepartment = () => { 
     const [data,setData]= useState([])
     const {id} = useParams()
     const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-     useEffect(()=>{
-       const fetchSingleDep= async() =>{  
-        axios.get(`${baseUrl}/api/department/getSingleDep/${id}`)
-        .then(res=>{
-            setData(res.data.result)
-            console.log("single dep result",res.data);
-        })
-       }
-     fetchSingleDep()
-     },[])
+    const navigate= useNavigate()
+   
 
+
+    
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -43,6 +37,8 @@ const EditDepartment = () => {
                 timer: 1500
               });
             }
+            refetch();
+            navigate("/admin-dashboard/departments");
           });
     
         form.reset();

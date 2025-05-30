@@ -1,57 +1,33 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import { useAuth } from "../../context/AuthContext";
+import useDepartments from "../../hooks/FetchDepartment";
 
 const DepartmentList = () => {
-  const [departments, setDepartment] = useState([]);
-  const [depLoading, setdepLoading] = useState(true);
+  // const [departments, setDepartment] = useState([]);
   const {  loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  // Fetch departments data
-  const fetchDepartment = async () => {
-    try {
-      setdepLoading(true);
-      const res = await axios.get(
-        `${baseUrl}/api/department/getAllDep`
-      );
-      setDepartment(res.data.result);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setdepLoading(false);
-    }
-  };
+  const { data: departments,refetch, isLoading, isError, error } = useDepartments(baseUrl);
 
-  // Initial fetch in useEffect
-  useEffect(() => {
-    fetchDepartment();
-  }, []);
-
-  // Smoothly remove the department from the local state after deletion
   const handleDelete = async (rowId) => {
     try {
       const res = await axios.delete(
         `${baseUrl}/api/department/deleteDep/${rowId}`
       );
 
-      // Update local state by filtering out the deleted department
-      setDepartment((prevDepartments) =>
-        prevDepartments.filter((department) => department._id !== rowId)
-      );
-
       if (res.data.success === true) {
+      
         Swal.fire({
           position: "center center",
           icon: "success",
-          title: "Your work has been saved",
+          title: "Department deleted successfully",
           showConfirmButton: false,
           timer: 1500,
         });
+          refetch();
       }
-      console.log("Department deleted successfully");
     } catch (error) {
       console.log(error);
     }
@@ -74,11 +50,7 @@ const DepartmentList = () => {
       selector: (row, ind) => ind + 1,
       sortable: true,
     },
-    {
-      name: "Image",
-      selector: (row) => row.image,
-      sortable: true,
-    },
+   
     {
       name: "Department",
       selector: (row) => row.dep_name,
@@ -110,7 +82,7 @@ const DepartmentList = () => {
     },
   ];
 
-  if (loading) {
+  if (isLoading || loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -138,7 +110,7 @@ const DepartmentList = () => {
 
       <div>
         <DataTable
-          progressPending={depLoading}
+          progressPending={isLoading}
           highlightOnHover
           selectableRows
           pagination

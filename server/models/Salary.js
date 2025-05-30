@@ -22,7 +22,7 @@ const salarySchema = new mongoose.Schema(
     },
 
     payDate: {
-      type: Number,
+      type: Date,
     },
     createdAt: { type: Date, default: Date.now },
     updateAt: { type: Date, default: Date.now },

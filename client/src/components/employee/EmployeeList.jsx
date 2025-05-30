@@ -1,56 +1,27 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../context/AuthContext";
-
+import useEmployees from "../../hooks/FetchEmployee";
 const List = () => {
-  const [employees, setEmployees] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const { user, loading } = useAuth();
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+
+  const [searchQuery, setSearchQuery] = useState(""); // for future search
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  const { data: employees = [], isLoading, isError, error } = useEmployees({ baseUrl, user, loading });
+
   const date = new Date(selectedEmployee?.createdAt);
-  const joiningDate = date.toLocaleString(); // Automatically formats to local date-time format
-  const [depLoading, setdepLoading] = useState(true);
-  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  // Fetch employees data with search functionality
-  const fetchEmployees = async (query = "") => {
-    try {
-      setdepLoading(true);
-      const res = await axios.get(
-        `${baseUrl}/api/employee/searchEmployees?query=${query}`
-      );
-      setEmployees(res.data.emp);
-    } catch (error) {
-       setdepLoading(false);
-      console.log(error);
-    }
-    finally {
-      setdepLoading(false);
-    }
-  };
+  const joiningDate = date.toLocaleString();
 
-  // Initial fetch in useEffect
-  useEffect(() => {
-    if (user && !loading) {
-      fetchEmployees();
-    }
-  }, [user, loading]);
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    fetchEmployees(e.target.value); // Fetch filtered employees based on the query
-  };
-
-  // Open the View modal
+  // View modal handlers
   const handleShowViewModal = (employee) => {
     setSelectedEmployee(employee);
     setShowViewModal(true);
   };
 
-  // Close the View modal
   const handleCloseViewModal = () => {
     setShowViewModal(false);
     setSelectedEmployee(null);
@@ -121,25 +92,35 @@ const List = () => {
     },
   ];
 
- 
-  
-  if (loading || depLoading) {
+  // Loader
+  if (loading || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
   }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="text-center text-red-500 mt-10">
+        <p>Error fetching employees: {error.message}</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="text-center">
         <h3 className="text-2xl font-bold">Manage Employees</h3>
       </div>
+
       <div className="flex justify-between my-4">
         <input
           type="text"
-          value={searchQuery} // Controlled input field
-          onChange={handleSearchChange} // Update query on change
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)} // You can implement search later
           className="px-4 py-1 border rounded ml-5"
           placeholder="Search By Name, ID, Role, or Department"
         />
@@ -181,22 +162,11 @@ const List = () => {
               {selectedEmployee ? (
                 <div>
                   <img src="/mn.png" width={70} alt="" />
-                  <p>
-                    <strong>Name:</strong> {selectedEmployee.emp_name}
-                  </p>
-                  <p>
-                    <strong>Employee_Id:</strong> {selectedEmployee.emp_id}
-                  </p>
-                  <p>
-                    <strong>Department:</strong>{" "}
-                    {selectedEmployee.dep_name || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Joining Date:</strong> {joiningDate || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Role:</strong> {selectedEmployee.role || "N/A"}
-                  </p>
+                  <p><strong>Name:</strong> {selectedEmployee.emp_name}</p>
+                  <p><strong>Employee_Id:</strong> {selectedEmployee.emp_id}</p>
+                  <p><strong>Department:</strong> {selectedEmployee.dep_name || "N/A"}</p>
+                  <p><strong>Joining Date:</strong> {joiningDate || "N/A"}</p>
+                  <p><strong>Role:</strong> {selectedEmployee.role || "N/A"}</p>
                 </div>
               ) : (
                 <p>No employee selected.</p>

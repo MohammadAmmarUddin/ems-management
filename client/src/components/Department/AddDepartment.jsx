@@ -1,30 +1,22 @@
 import axios from "axios";
 import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
-
+    import { useNavigate } from 'react-router-dom';
+import useDepartments from "../../hooks/FetchDepartment";
 const AddDepartment = () => {
-  const [departments, setDepartments] = useState([]);
   const [selectedDepName, setSelectedDepName] = useState("");
   const [inputValue, setInputValue] = useState(""); // For capturing user input
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false); // Track if dropdown is visible
-
   const inputRef = useRef(null); // To keep track of input field
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  // Fetch department data
-  const fetchDepartments = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}/api/department/getAllDep`);
-      if (res.data.result && res.data.success === true) {
-        setDepartments(res.data.result); // Store department objects
-        setFilteredDepartments(res.data.result); // Filter suggestions
-      }
-    } catch (error) {
-      console.error("Error fetching departments", error);
-    }
-  };
+  const navigate= useNavigate();
+  
 
-  // Handle input change
+ const { data: departments,refetch, isLoading, isError, error } = useDepartments(baseUrl);
+
+
+
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInputValue(value);
@@ -66,10 +58,12 @@ const AddDepartment = () => {
           Swal.fire({
             position: "middle",
             icon: "success",
-            title: "Your work has been saved",
+            title: "New Department Added Successfully",
             showConfirmButton: false,
             timer: 1500,
-          });
+          });refetch(); 
+             navigate("/admin-dashboard/departments"); 
+               
         }
       })
       .catch((error) => {
@@ -83,27 +77,16 @@ const AddDepartment = () => {
       });
 
     form.reset();
-    setInputValue(""); // Reset the input field after form submission
+    setInputValue("");
+
+   // Refetch departments to update the list
+      // Redirect to departments page after submission
+
   };
 
-  // Close dropdown when clicking outside
-  const handleClickOutside = (e) => {
-    if (inputRef.current && !inputRef.current.contains(e.target)) {
-      setDropdownVisible(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchDepartments();
+  
 
-    // Add event listener to detect clicks outside the dropdown
-    document.addEventListener("mousedown", handleClickOutside);
-
-    // Clean up event listener
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   return (
     <div className="mt-10">

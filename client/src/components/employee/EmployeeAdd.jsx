@@ -169,25 +169,24 @@ const Add = () => {
           {/* row 3 */}
           <div className="flex gap-x-3">
             {/* Role Dropdown */}
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Role</span>
-              </label>
-              <select
-                name="role"
-                className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.role}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Role</option>
-                {employees.map((employee) => (
-                  <option key={employee._id} value={employee.role}>
-                    {employee.role}
-                  </option>
-                ))}
-              </select>
-            </div>
+           {/* Role Dropdown */}
+<div className="form-control w-full">
+  <label className="label">
+    <span className="label-text">Role</span>
+  </label>
+  <select
+    name="role"
+    className="input input-bordered focus:outline-none hover:border-green-600"
+    value={formData.role}
+    onChange={handleChange}
+    required
+  >
+    <option value="">Select Role</option>
+    <option value="admin">Admin</option>
+    <option value="employee">Employee</option>
+    <option value="moderator">Moderator</option>
+  </select>
+</div>
             {/* Designation Dropdown */}
             <div className="form-control w-full">
               <label className="label">

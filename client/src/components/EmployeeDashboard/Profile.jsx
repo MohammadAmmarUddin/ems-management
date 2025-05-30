@@ -10,7 +10,7 @@ const Profile = () => {
     try {
       setdepLoading(true);
       const response = await axios.get(
-        `${baseUrl}/api/employee//getEmployee/${user._id}`
+        `${baseUrl}/api/employee/getEmployee/${user._id}`
       );
 
       setSingleUser(response.data.employee);

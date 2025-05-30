@@ -27,34 +27,7 @@ const LeaveHistory = () => {
     }
   }, []);
 
-  console.log(leaves);
-  // Smoothly remove the department from the local state after deletion
-  // const handleDelete = async (rowId) => {
-  //   try {
-  //     console.log("handleDelete", rowId);
-  //     const res = await axios.delete(
-  //       `http://localhost:5001/api/department/deleteDep/${rowId}`
-  //     );
-
-  //     // Update local state by filtering out the deleted department
-  //     setDepartment((prevDepartments) =>
-  //       prevDepartments.filter((department) => department._id !== rowId)
-  //     );
-
-  //     if (res.data.success === true) {
-  //       Swal.fire({
-  //         position: "center center",
-  //         icon: "success",
-  //         title: "Your work has been saved",
-  //         showConfirmButton: false,
-  //         timer: 1500,
-  //       });
-  //     }
-  //     console.log("Department deleted successfully");
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  
 
   const buttonStyle = {
     backgroundColor: "#007bff",
