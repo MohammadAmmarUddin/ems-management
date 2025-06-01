@@ -10,6 +10,7 @@ const {
   getAllUsers,
   verify,
   login,
+  totalEmployeesCount,
 } = require("../controller/employeeController");
 
 const express = require("express");
@@ -20,6 +21,7 @@ const router = express.Router();
 
 router.get("/searchEmployees", searchEmployee);
 router.get("/getEmployees", getEmployees);
+router.get("/getEmployeesCount", totalEmployeesCount);
 router.get("/getEmployee/:id", getEmployee);
 
 // post

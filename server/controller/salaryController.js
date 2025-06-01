@@ -1,7 +1,38 @@
+const { group } = require("console");
 const employee = require("../models/employeeModel");
 const salary = require("../models/Salary");
 
+exports.totalSalary = async (req, res) => {
 
+  try{
+    const totalSalary= await salary.aggregate([
+     { $group:{
+
+        _id: null,
+        totalAmount: {$sum: "$netSalary"},
+        totalCount: {$sum:1}
+      }}
+       
+    ])
+
+
+    res.status(200).send({ success: true,  totalSalary });
+  }
+  catch(error){
+    res.status(500).send({ success: false, message: "Error calculating total salary", error: error.message });
+  }
+}
+
+// exports.salaryCount = async (req, res) => {
+//  try{
+//     const count = await salary.estimatedDocumentCount();
+//     res.status(200).send({ success: true, countSalary: count });
+//  }
+//  catch(error){
+//   res.status(500).send({ success: false, message: "Error counting salaries", error: error.message });
+
+//  }
+// }
  exports.getSalaryById=async (req, res) => {
   const { id } = req.params;
   try {

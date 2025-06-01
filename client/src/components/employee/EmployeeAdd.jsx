@@ -1,13 +1,16 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import {  useState} from "react";
 import Swal from "sweetalert2";
-
+import useDepartments from "../../hooks/FetchDepartment";
+import { useNavigate } from "react-router-dom";
 const Add = () => {
   // State to hold form data with empty default values
   const [formData, setFormData] = useState({
     emp_id: "",
     emp_name: "",
     dep_name: "",
+    emp_email: "",
+    emp_phone: "",
     salary: "",
     role: "",
     designation: "",
@@ -16,22 +19,14 @@ const Add = () => {
   });
 
   // State to hold all employees data (for dropdowns)
-  const [employees, setEmployees] = useState([]);
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  // Fetch employee data
-  const fetchEmployeeData = async () => {
-    try {
-      const res = await axios.get(
-        `${baseUrl}/api/employee/getEmployees`
-      );
-      setEmployees(res.data.emp); // Store all employees for dropdown
-    } catch (error) {
-      console.error("Error fetching employee data", error);
-    }
-  };
 
+  const {data:departments,refetch, isLoading}= useDepartments(baseUrl);
+   
+ const navigate = useNavigate();
   // Handle input changes
   const handleChange = (e) => {
+   
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
@@ -39,55 +34,85 @@ const Add = () => {
     }));
   };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Form Data Submitted:", formData);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  console.log("Form Data Submitted:", formData);
 
-    try {
-      const res = await axios.post(
-        `${baseUrl}/api/employee/addEmployee`,
-        formData
-      );
+  // Basic validation before sending
+  if (!formData.emp_phone || formData.emp_phone.trim() === "") {
+    Swal.fire({
+      title: "Phone number is required!",
+      text: "Please enter a valid phone number.",
+      icon: "warning",
+      confirmButtonText: "Okay",
+    });
+    return;
+  }
 
-      // Check the response success
-      if (res.data.success === true || res.status === 201) {
-        Swal.fire({
-          title: "Employee Added Successfully!",
-          text: "The employee has been added to the system.",
-          icon: "success",
-          confirmButtonText: "Okay",
-        });
-        // Reset form data after submission
-        setFormData({
-          emp_id: "",
-          emp_name: "",
-          dep_name: "",
-          salary: "",
-          role: "",
-          designation: "",
-          image: "",
-          password: "",
-        });
-      } else {
-        throw new Error("Failed to add employee");
-      }
-    } catch (error) {
-      console.error(error);
+  try {
+    const res = await axios.post(
+      `${baseUrl}/api/employee/addEmployee`,
+      formData
+    );
+
+    if (res.data.success === true || res.status === 201) {
       Swal.fire({
-        title: "Error!",
-        text: "There was an issue adding the employee. Please try again.",
-        icon: "error",
-        confirmButtonText: "Okay",
+  position: "center-center",
+  icon: "success",
+  title: "Employee Added Successfully!",
+   text: "The employee has been added to the system.",
+  showConfirmButton: false,
+  timer: 1500
+});
+     
+      setFormData({
+        emp_id: "",
+        emp_name: "",
+        dep_name: "",
+        emp_email: "",
+        emp_phone: "",
+        salary: "",
+        role: "",
+        designation: "",
+        image: "",
+        password: "",
       });
+      refetch(); // Refetch departments to update the dropdown
+      navigate("/admin-dashboard/employee");
+    } else {
+      throw new Error("Failed to add employee");
     }
-  };
+  } catch (error) {
+    console.error(error);
 
-  // Fetch employee data when component mounts
-  useEffect(() => {
-    fetchEmployeeData();
-  }, []);
+    let message = "There was an issue adding the employee. Please try again.";
 
+    // Detect duplicate key error for phone
+    if (
+      error.response?.data?.code === 11000 ||
+      error.message.includes("E11000") ||
+      error?.message?.includes("duplicate key")
+    ) {
+      message = "This phone number is already used by another employee.";
+    }
+
+    Swal.fire({
+      title: "Error!",
+      text: message,
+      icon: "error",
+      confirmButtonText: "Okay",
+    });
+  }
+};
+
+
+if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    );
+  }
   return (
     <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto shrink-0 shadow-2xl">
@@ -103,7 +128,7 @@ const Add = () => {
                 <span className="label-text">Employee Id</span>
               </label>
               <input
-                type="text"
+                type="number"
                 name="emp_id"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.emp_id}
@@ -128,6 +153,39 @@ const Add = () => {
               />
             </div>
           </div>
+          {/* row 1 extended */}
+          <div className="flex gap-x-3">
+            {/* Employee ID Input */}
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Employee Email</span>
+              </label>
+              <input
+                type="email"
+                name="emp_email"
+                className="input input-bordered focus:outline-none hover:border-green-600"
+                value={formData.emp_email}
+                onChange={handleChange}
+                required
+                placeholder="Enter Employee Email"
+              />
+            </div>
+            {/* Employee Name Input */}
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Employee Phone</span>
+              </label>
+              <input
+                type="text"
+                name="emp_phone"
+                className="input input-bordered focus:outline-none hover:border-green-600"
+                value={formData.emp_phone}
+                onChange={handleChange}
+                required
+                placeholder="Enter Employee Phone Number"
+              />
+            </div>
+          </div>
           {/* row 2 */}
           <div className="flex gap-x-3">
             {/* Department Dropdown */}
@@ -143,9 +201,9 @@ const Add = () => {
                 required
               >
                 <option value="">Select Department</option>
-                {employees.map((employee) => (
-                  <option key={employee._id} value={employee.dep_name}>
-                    {employee.dep_name}
+                {departments?.map((department) => (
+                  <option key={department._id} value={department.dep_name}>
+                    {department.dep_name}
                   </option>
                 ))}
               </select>
@@ -200,11 +258,27 @@ const Add = () => {
                 required
               >
                 <option value="">Select Designation</option>
-                {employees.map((employee) => (
-                  <option key={employee._id} value={employee.designation}>
-                    {employee.designation}
-                  </option>
-                ))}
+                 <option value="Software Engineer">Software Engineer</option>
+                <option value="Project Manager">Project Manager</option>
+                <option value="HR Manager">HR Manager</option>
+                <option value="Data Analyst">Data Analyst</option>
+                <option value="System Administrator">System Administrator</option>
+                <option value="Quality Assurance">Quality Assurance</option>
+                <option value="UI/UX Designer">UI/UX Designer</option>
+                <option value="Business Analyst">Business Analyst</option>
+                <option value="Network Engineer">Network Engineer</option>
+                <option value="Database Administrator">Database Administrator</option>
+                <option value="DevOps Engineer">DevOps Engineer</option>
+                <option value="Front-end Developer">Front-end Developer</option>
+                <option value="Back-end Developer">Back-end Developer</option>
+                <option value="Full-stack Developer">Full-stack Developer</option>
+                <option value="Technical Support">Technical Support</option>
+                <option value="Content Writer">Content Writer</option>
+                <option value="Graphic Designer">Graphic Designer</option>
+                <option value="Sales Executive">Sales Executive</option>
+                <option value="Marketing Specialist">Marketing Specialist</option>
+                <option value="Customer Service Representative">Customer Service Representative</option>
+                <option value="Research Scientist">Research Scientist</option>
               </select>
             </div>
           </div>

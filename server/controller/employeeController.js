@@ -4,11 +4,24 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+exports.totalEmployeesCount = async (req, res) => {
+
+  try {
+    const totalEmployees = await employeeModel.estimatedDocumentCount();
+    res.status(200).json({ success: true, totalEmployees });
+  } catch (error) {
+    console.error("Error fetching total employees count:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+
 exports.getEmployees = async (req, res) => {
   const emp = await employeeModel.find({});
 
   res.status(200).send({ emp, success: true });
 };
+
 
 exports.getEmployee = async (req, res) => {
   try {
@@ -63,6 +76,8 @@ exports.addEmployee = async (req, res) => {
     emp_id,
     emp_name,
     dep_name,
+    emp_email,
+    emp_phone,
     salary,
     role,
     designation,
@@ -79,6 +94,8 @@ exports.addEmployee = async (req, res) => {
       emp_id,
       emp_name,
       dep_name,
+      emp_email,
+      emp_phone,
       salary,
       role,
       designation,
@@ -131,7 +148,7 @@ exports.login = async (req, res) => {
       (await employee.findOne({  $or: [
         { emp_email: email },
         { emp_name: email },
-        { phone: email }
+        { emp_phone: email }
       ] }));
 
     if (!user) {
@@ -197,7 +214,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 exports.verify = async (req, res) => {
-  console.log("verfiy is hitting");
+ 
   
   return res.status(200).send({ success: true, user: req.user });
 };

@@ -1,4 +1,44 @@
 const depModel = require("../models/depModel");
+
+exports.getDepartmentDistribution = async (req, res) => {
+  try {
+    const result = await depModel.aggregate([
+      {
+        $lookup: {
+          from: "employees",
+          localField: "dep_name",
+          foreignField: "dep_name",
+          as: "employees"
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          value: { $size: "$employees" }
+        }
+      }
+    ]);
+
+    res.status(200).json(result); // ✅ Return to frontend
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message
+    });
+  }
+};
+
+exports.countDep = async (req, res) => {
+
+   try{
+      const count= await depModel.estimatedDocumentCount();
+      res.status(200).send({success:true,countDep:count})
+
+   }
+   catch(error){
+     res.status(500).send({success:false,message:"Error counting departments",error:error.message});
+   }
+}
 exports.addDep = async (req, res) => {
   try {
     const { dep_name, dep_desc } = req.body;

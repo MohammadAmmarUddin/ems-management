@@ -1,14 +1,17 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaBuilding,
+  FaHome,
   FaMoneyBill,
   FaUsers,
 } from "react-icons/fa";
 import { AiFillSetting, AiOutlineHourglass } from "react-icons/ai";
+import { FiLogOut } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
 
 const AdminSideBar = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -17,109 +20,96 @@ const AdminSideBar = () => {
       </div>
     );
   }
-  const role = user?.role; // Access user's role
+
+  const role = user?.role;
+
+  const linkClass = ({ isActive }) =>
+    `flex items-center space-x-4 py-2.5 px-5 rounded transition-colors ${
+      isActive ? "bg-primary text-white" : "text-gray-300 hover:bg-gray-700"
+    }`;
+
+  const handleLogout = () => {
+    logout(); // Clear auth
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   return (
-    <div className="bg-gray-800 text-white h-screen fixed left-0 top-0 bottom-0 space-y-2 w-64">
-      <div className="bg-primary p-5">
-        <h3 className="font-bold text-3xl font-sourceSans">Employee MS</h3>
-      </div>
-
+    <div className="bg-gray-800 text-white h-screen fixed left-0 top-0 bottom-0 flex flex-col justify-between w-64">
+      {/* Top: Brand and Links */}
       <div>
-        {/* Admin-Specific Links */}
-        {role === "admin" && (
-          <>
-            <NavLink
-              to={"/admin-dashboard/employee"}
-              className={({ isActive }) =>
-                `${
-                  isActive ? "bg-primary" : " "
-                } flex items-center space-x-4 block py-2.5 px-5 rounded`
-              }
-            >
-              <FaUsers />
-              <span>Employee</span>
-            </NavLink>
-            <NavLink
-              to={"/admin-dashboard/departments"}
-              className={({ isActive }) =>
-                `${
-                  isActive ? "bg-primary" : " "
-                } flex items-center space-x-4 block py-2.5 px-5 rounded`
-              }
-            >
-              <FaBuilding />
-              <span>Department</span>
-            </NavLink>
-            <NavLink
-              to={"/admin-dashboard/leave"}
-              className={({ isActive }) =>
-                `${
-                  isActive ? "bg-primary" : " "
-                } flex items-center space-x-4 block py-2.5 px-5 rounded`
-              }
-            >
-              <AiOutlineHourglass />
-              <span>Leaves</span>
-            </NavLink>
-            <NavLink
-              to={"/admin-dashboard/salary"}
-              className={({ isActive }) =>
-                `${
-                  isActive ? "bg-primary" : " "
-                } flex items-center space-x-4 block py-2.5 px-5 rounded`
-              }
-            >
-              <FaMoneyBill />
-              <span>Salary</span>
-            </NavLink>
-          </>
-        )}
+        <div className="bg-primary p-5">
+          <h3 className="font-bold text-3xl font-sourceSans">EMS Panel</h3>
+        </div>
 
-        {/* Moderator-Specific Links */}
-        {role === "moderator" && (
-          <>
-            <NavLink
-              to={"/moderator-dashboard/leave"}
-              className={({ isActive }) =>
-                `${
-                  isActive ? "bg-primary" : " "
-                } flex items-center space-x-4 block py-2.5 px-5 rounded`
-              }
-            >
-              <AiOutlineHourglass />
-              <span>Leaves</span>
-            </NavLink>
-            <NavLink
-              to={"/moderator-dashboard/salary"}
-              className={({ isActive }) =>
-                `${
-                  isActive ? "bg-primary" : " "
-                } flex items-center space-x-4 block py-2.5 px-5 rounded`
-              }
-            >
-              <FaMoneyBill />
-              <span>Salary</span>
-            </NavLink>
-          </>
-        )}
+        <div className="mt-2 space-y-1">
+          {/* Admin Links */}
+          {role === "admin" && (
+            <>
+              <NavLink to="/admin-dashboard" end className={linkClass}>
+                <FaHome />
+                <span>Home</span>
+              </NavLink>
+              <NavLink to="/admin-dashboard/employee" className={linkClass}>
+                <FaUsers />
+                <span>Employee</span>
+              </NavLink>
+              <NavLink to="/admin-dashboard/departments" className={linkClass}>
+                <FaBuilding />
+                <span>Department</span>
+              </NavLink>
+              <NavLink to="/admin-dashboard/leave" className={linkClass}>
+                <AiOutlineHourglass />
+                <span>Leaves</span>
+              </NavLink>
+              <NavLink to="/admin-dashboard/salary" className={linkClass}>
+                <FaMoneyBill />
+                <span>Salary</span>
+              </NavLink>
+              <NavLink to="/admin-dashboard/attendance" className={linkClass}>
+                <FaUsers />
+                <span>Attendance</span>
+              </NavLink>
+            </>
+          )}
 
-        {/* User-Specific Links */}
-        {role === "user" && (
-          <>
-            <NavLink
-              to={"/user-dashboard/profile"}
-              className={({ isActive }) =>
-                `${
-                  isActive ? "bg-primary" : " "
-                } flex items-center space-x-4 block py-2.5 px-5 rounded`
-              }
-            >
+          {/* Moderator Links */}
+          {role === "moderator" && (
+            <>
+              <NavLink to="/moderator-dashboard/leave" className={linkClass}>
+                <AiOutlineHourglass />
+                <span>Leaves</span>
+              </NavLink>
+              <NavLink to="/moderator-dashboard/salary" className={linkClass}>
+                <FaMoneyBill />
+                <span>Salary</span>
+              </NavLink>
+            </>
+          )}
+
+          {/* User Links */}
+          {role === "user" && (
+            <NavLink to="/user-dashboard/profile" className={linkClass}>
               <AiFillSetting />
               <span>Profile</span>
             </NavLink>
-          </>
-        )}
+          )}
+        </div>
+      </div>
+
+      {/* Bottom: Settings and Logout */}
+      <div className="p-4 border-t border-gray-700 space-y-2">
+        <NavLink to="/settings" className={linkClass}>
+          <AiFillSetting />
+          <span>Settings</span>
+        </NavLink>
+        <button
+          onClick={handleLogout}
+          className="flex items-center space-x-4 py-2.5 px-5 text-red-400 hover:bg-red-600 hover:text-white w-full rounded transition-colors"
+        >
+          <FiLogOut />
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   );
