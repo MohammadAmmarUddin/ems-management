@@ -12,7 +12,6 @@ const useDepartments = (baseUrl) => {
   return useQuery({
     queryKey: ["departments"],
     queryFn: () => fetchDepartments(baseUrl),
-    staleTime: 1000 * 60 * 5, // optional: data stays fresh for 5 minutes
   });
 };
 

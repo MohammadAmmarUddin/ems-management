@@ -13,7 +13,6 @@ const useLeaves = ({ baseUrl, user, loading }) => {
     queryKey: ["leaves"],
     queryFn: () => fetchLeaves(baseUrl),
     enabled: !!user && !loading,
-    staleTime: 1000 * 60 * 5, // optional: cache for 5 minutes
   });
 };
 

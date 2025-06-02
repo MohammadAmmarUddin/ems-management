@@ -22,25 +22,27 @@ import { MdOutlineAttachMoney } from "react-icons/md";
 import SummaryCard from "./SummaryCard";
 import {
   useDepartmentCount,
+  useDepartmentDistribution,
   useEmployeesCount,
+  useLeaveStats,
+  useMonthlySalaryData,
   useSalaryAggregation,
 } from "../../hooks/UseAdminDashboard";
 import { useEffect } from "react";
+import useDepartments from "../../hooks/FetchDepartment";
 
 // Chart colors
-const COLORS = ["#4F46E5", "#F59E0B", "#EF4444", "#10B981"];
-
-const departmentData = [
-  { name: "HR", value: 3 },
-  { name: "Tech", value: 6 },
-  { name: "Sales", value: 4 },
-  { name: "Support", value: 2 },
-];
-
-const leaveStats = [
-  { name: "Approved", value: 6 },
-  { name: "Pending", value: 5 },
-  { name: "Rejected", value: 2 },
+const COLORS = [
+  "#4F46E5", // Indigo
+  "#F59E0B", // Amber
+  "#EF4444", // Red
+  "#10B981", // Emerald
+  "#3B82F6", // Blue
+  "#A855F7", // Purple
+  "#EC4899", // Pink
+  "#22D3EE", // Cyan
+  "#84CC16", // Lime
+  "#F97316", // Orange
 ];
 
 const salaryData = [
@@ -51,32 +53,46 @@ const salaryData = [
 ];
 
 const AdminSummary = () => {
-    // State to hold all employees data (for dropdowns)
+  // State to hold all employees data (for dropdowns)
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+
+  // const { data: departments, isLoading: isDepartmentsLoading } =
+  //   useDepartments(baseUrl);
 
   const {
     data: countDep,
 
-      isLoading: isDepLoading
-  
-  } = useDepartmentCount();
+    isLoading: isDepLoading,
+  } = useDepartmentCount(baseUrl);
 
-const {data: totalSalary,  isLoading: isSalaryLoading, } = useSalaryAggregation();
-      
+  const { data: totalSalary, isLoading: isSalaryLoading } =
+    useSalaryAggregation(baseUrl);
+  const { data: usersCount, isLoading: isUserCountLoading } =
+    useEmployeesCount(baseUrl);
+  const { data: departmentData = [], isLoading: isDeptChartLoading } =
+    useDepartmentDistribution(baseUrl);
 
+  const { data: leaveStats, isLoading: isLeaveStatsLoading } =
+    useLeaveStats(baseUrl);
+  console.log("Leave Stats:", leaveStats);
+  const { data: monthlySalaryData, isLoading: isMonthlySalaryLoading } =
+    useMonthlySalaryData(baseUrl);
 
+  const isLoading =
+    isDepLoading ||
+    isSalaryLoading ||
+    isUserCountLoading ||
+    isDeptChartLoading ||
+    isLeaveStatsLoading ||
+    isMonthlySalaryLoading;
 
-  const {data: usersCount,isLoading: isUserCountLoading} = useEmployeesCount(baseUrl);
-
-const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
-    if(isLoading){
-     return (
+  if (isLoading) {
+    return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+        <div className="animate-spin  rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
-    }
-
+  }
 
   return (
     <div className="p-6 md:p-10 font-sourceSans">
@@ -89,7 +105,7 @@ const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
         <SummaryCard
           icon={<FaUsers className="text-white text-3xl" />}
           text="Total Users"
-          number= {usersCount}
+          number={usersCount}
           color="bg-[#4F46E5]"
         />
         <SummaryCard
@@ -101,14 +117,14 @@ const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
         <SummaryCard
           icon={<MdOutlineAttachMoney className="text-white text-3xl" />}
           text="Total Salary Amount"
-          number={ totalSalary[0].totalAmount}
+          number={totalSalary[0].totalAmount}
           color="bg-[#EF4444]"
         />
         <SummaryCard
           icon={<FaMoneyBillWave className="text-white text-3xl" />}
           text="Total Salary Count"
           number={totalSalary[0].totalCount}
-          color="bg-[#EF4444]"
+          color="bg-[#10B981]"
         />
       </div>
 
@@ -130,7 +146,10 @@ const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
                 label
               >
                 {departmentData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />
@@ -143,7 +162,7 @@ const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
             Monthly Salary
           </h4>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={salaryData}>
+            <BarChart data={monthlySalaryData}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
@@ -163,25 +182,37 @@ const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
           <SummaryCard
             icon={<FaUsers className="text-white text-2xl" />}
             text="Leaves Applied"
-            number="13"
+            number={leaveStats.totalLeaves || 0}
             color="bg-blue-500"
           />
           <SummaryCard
             icon={<FaClock className="text-white text-2xl" />}
             text="Leaves Pending"
-            number="5"
+            number={
+              leaveStats?.statusBreakdown.find(
+                (status) => status.name === "Pending"
+              )?.value || 0
+            }
             color="bg-yellow-500"
           />
           <SummaryCard
             icon={<FaTimesCircle className="text-white text-2xl" />}
             text="Leaves Rejected"
-            number="2"
+            number={
+              leaveStats?.statusBreakdown.find(
+                (status) => status.name === "Rejected"
+              )?.value || 0
+            }
             color="bg-red-500"
           />
           <SummaryCard
             icon={<FaCheckCircle className="text-white text-2xl" />}
             text="Leaves Approved"
-            number="6"
+            number={
+              leaveStats?.statusBreakdown.find(
+                (status) => status.name === "Approved"
+              )?.value || 0
+            }
             color="bg-green-500"
           />
         </div>
@@ -194,7 +225,7 @@ const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={leaveStats}
+                data={leaveStats?.statusBreakdown || []}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -203,9 +234,13 @@ const isLoading = isDepLoading || isSalaryLoading || isUserCountLoading;
                 outerRadius={100}
                 label
               >
-                {leaveStats.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
+                {Array.isArray(leaveStats?.statusBreakdown) &&
+                  leaveStats.statusBreakdown.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
               </Pie>
               <Legend />
             </PieChart>

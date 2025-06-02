@@ -3,6 +3,8 @@ import { useState } from "react";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../context/AuthContext";
 import useEmployees from "../../hooks/FetchEmployee";
+import Swal from "sweetalert2";
+import axios from "axios";
 const List = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
@@ -11,7 +13,13 @@ const List = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-  const { data: employees = [], isLoading, isError, error } = useEmployees({ baseUrl, user, loading });
+  const {
+    data: employees = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useEmployees({ baseUrl, user });
 
   const date = new Date(selectedEmployee?.createdAt);
   const joiningDate = date.toLocaleString();
@@ -25,6 +33,50 @@ const List = () => {
   const handleCloseViewModal = () => {
     setShowViewModal(false);
     setSelectedEmployee(null);
+  };
+  const handleDeleteEmployee = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      const token = localStorage.getItem("token");
+      try {
+        const { data } = await axios.delete(
+          `${baseUrl}/api/employee/deleteEmployee/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include only if needed
+            },
+          }
+        );
+
+        if (data.success) {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Employee deleted successfully",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+          refetch(); // Refresh the list
+        } else {
+          Swal.fire("Failed!", "Something went wrong.", "error");
+        }
+      } catch (error) {
+        Swal.fire(
+          "Error!",
+          error.response?.data?.message || error.message,
+          "error"
+        );
+      }
+    }
   };
 
   // Columns for the DataTable
@@ -81,7 +133,7 @@ const List = () => {
             Salary
           </Link>
           <button
-            onClick={() => console.log("Delete functionality not added yet!")}
+            onClick={() => handleDeleteEmployee(row._id)}
             className="bg-delete text-white p-2 rounded-lg hover:bg-red-600"
           >
             Delete
@@ -162,11 +214,22 @@ const List = () => {
               {selectedEmployee ? (
                 <div>
                   <img src="/mn.png" width={70} alt="" />
-                  <p><strong>Name:</strong> {selectedEmployee.emp_name}</p>
-                  <p><strong>Employee_Id:</strong> {selectedEmployee.emp_id}</p>
-                  <p><strong>Department:</strong> {selectedEmployee.dep_name || "N/A"}</p>
-                  <p><strong>Joining Date:</strong> {joiningDate || "N/A"}</p>
-                  <p><strong>Role:</strong> {selectedEmployee.role || "N/A"}</p>
+                  <p>
+                    <strong>Name:</strong> {selectedEmployee.emp_name}
+                  </p>
+                  <p>
+                    <strong>Employee_Id:</strong> {selectedEmployee.emp_id}
+                  </p>
+                  <p>
+                    <strong>Department:</strong>{" "}
+                    {selectedEmployee.dep_name || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Joining Date:</strong> {joiningDate || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Role:</strong> {selectedEmployee.role || "N/A"}
+                  </p>
                 </div>
               ) : (
                 <p>No employee selected.</p>

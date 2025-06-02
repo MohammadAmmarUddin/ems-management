@@ -11,6 +11,7 @@ const {
   verify,
   login,
   totalEmployeesCount,
+  deleteEmployee,
 } = require("../controller/employeeController");
 
 const express = require("express");
@@ -38,4 +39,6 @@ router.get("/getSingleUser/:id",  getSingleUser);
 router.post("/forgetPassword", forgetPassword);
 router.post("/resetPassword/:token", resetPassword);
 
+
+router.delete("/deleteEmployee/:id", authMiddleware, deleteEmployee)
 module.exports = router;

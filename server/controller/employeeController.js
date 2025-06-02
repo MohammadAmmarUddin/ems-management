@@ -280,3 +280,21 @@ exports.resetPassword = async (req, res) => {
     res.send({ status: false, message: "Something went wrong!" });
   }
 };
+
+exports.deleteEmployee = async (req, res) => {
+
+  const {id}= req.params;
+  try {
+    const deletedEmployee= await employeeModel.findByIdAndDelete(id);
+    if (!deletedEmployee) {
+      return res.status(404).json({ success: false, message: "Employee not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Employee deleted successfully" });
+    
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+    
+  }
+
+}

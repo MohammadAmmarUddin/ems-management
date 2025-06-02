@@ -1,8 +1,7 @@
 import { useParams } from "react-router-dom";
 
 const ViewEmployee = () => {
-      
-    const {id} = useParams();
+  const { id } = useParams();
 
   return (
     <div>

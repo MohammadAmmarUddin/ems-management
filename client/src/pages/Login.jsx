@@ -34,6 +34,10 @@ const Login = () => {
           title: "Logged in successfully",
           showConfirmButton: false,
           timer: 1500,
+
+          backdrop: "rgba(0, 0, 0, 0.2)",
+          color: "#065F46", // text color (like green-800)
+          iconColor: "#10B981", // success green (like green-500)
         }).then(() => {
           const role = response.data.user.role;
           if (role === "admin") navigate("/admin-dashboard");
@@ -72,7 +76,10 @@ const Login = () => {
           Welcome Back
         </h2>
         <p className="text-center text-lg text-gray-600 font-medium mt-1 mb-6">
-          To the <span className="text-primary font-semibold italic">Employee Management System</span>
+          To the{" "}
+          <span className="text-primary font-semibold italic">
+            Employee Management System
+          </span>
         </p>
 
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}

@@ -12,7 +12,6 @@ const fetchSalaries = async (baseUrl) => {
     queryKey: ['salaries'],
     queryFn:()=> fetchSalaries(baseUrl),
     enabled: !!user && !loading,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
 

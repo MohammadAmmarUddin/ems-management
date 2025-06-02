@@ -36,7 +36,6 @@ const Add = () => {
 
  const handleSubmit = async (e) => {
   e.preventDefault();
-  console.log("Form Data Submitted:", formData);
 
   // Basic validation before sending
   if (!formData.emp_phone || formData.emp_phone.trim() === "") {
@@ -79,6 +78,7 @@ const Add = () => {
       });
       refetch(); // Refetch departments to update the dropdown
       navigate("/admin-dashboard/employee");
+       refetch(); 
     } else {
       throw new Error("Failed to add employee");
     }

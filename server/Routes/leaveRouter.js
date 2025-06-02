@@ -4,7 +4,9 @@ const {
   getLeave,
   addLeave,
   approveLeave,
-  rejectLeave
+  rejectLeave,
+  getLeaveStatusStats,
+  getLeaveCountSperate,
 } = require("../controller/leaveController");
 
 const router = express.Router();
@@ -12,6 +14,8 @@ const router = express.Router();
 // GET
 router.get("/getAllLeaves", getAllLeaves);
 router.get("/getLeave/:id", getLeave);
+router.get("/stats", getLeaveStatusStats);
+router.get("/seperate-stats", getLeaveCountSperate);
 
 // POST
 router.post("/addLeave", addLeave);
