@@ -19,12 +19,13 @@ const Login = () => {
     const password = form.password.value;
 
     try {
-      const response = await axios.post(`${baseUrl}/api/employee/login`, {
+      const response = await axios.post(`${baseUrl}/api/user/login`, {
         email,
         password,
       });
 
       if (response.data.success === true) {
+        console.log("Login successful:", response.data);
         login(response.data.user);
         localStorage.setItem("token", response.data.token);
 

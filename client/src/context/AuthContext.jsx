@@ -7,46 +7,39 @@ const AuthContext = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-useEffect(() => {
-  const verifyUser =async() => {
-    const token = localStorage.getItem("token");
+  useEffect(() => {
+    const verifyUser = async () => {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response =await axios.get(`${baseUrl}/api/employee/verify`, {
-        headers: {
-       Authorization: `Bearer ${token}`,
-        },
-      });
-
-      
-
-      if (response.data.success) {
-        setUser(response.data.user);
-      } else {
+      if (!token) {
         setUser(null);
         setLoading(false);
-   
+        return;
       }
-    } catch (error) {
-      setUser(null);
-    
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  verifyUser();
-}, []);
+      try {
+        const response = await axios.get(`${baseUrl}/api/user/verify`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        if (response.data.success) {
+          setUser(response.data.user);
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    verifyUser();
+  }, []);
 
-  
   const login = (user) => {
     setUser(user);
   };
@@ -55,7 +48,6 @@ useEffect(() => {
     localStorage.removeItem("token");
   };
 
-  
   return (
     <userContext.Provider value={{ user, login, logout, loading }}>
       {children}

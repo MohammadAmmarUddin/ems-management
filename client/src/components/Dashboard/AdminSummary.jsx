@@ -28,8 +28,6 @@ import {
   useMonthlySalaryData,
   useSalaryAggregation,
 } from "../../hooks/UseAdminDashboard";
-import { useEffect } from "react";
-import useDepartments from "../../hooks/FetchDepartment";
 
 // Chart colors
 const COLORS = [
@@ -43,13 +41,6 @@ const COLORS = [
   "#22D3EE", // Cyan
   "#84CC16", // Lime
   "#F97316", // Orange
-];
-
-const salaryData = [
-  { name: "Jan", salary: 20000 },
-  { name: "Feb", salary: 25000 },
-  { name: "Mar", salary: 22000 },
-  { name: "Apr", salary: 27000 },
 ];
 
 const AdminSummary = () => {

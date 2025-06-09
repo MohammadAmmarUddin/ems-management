@@ -4,16 +4,12 @@ const {
   addEmployee,
   editEmployee,
   searchEmployee,
-  resetPassword,
-  forgetPassword,
   getSingleUser,
-  getAllUsers,
-  verify,
-  login,
+
   totalEmployeesCount,
   deleteEmployee,
+  upload,
 } = require("../controller/employeeController");
-
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const router = express.Router();
@@ -27,18 +23,13 @@ router.get("/getEmployee/:id", getEmployee);
 
 // post
 
-router.post("/addEmployee", addEmployee);
+router.post("/addEmployee", upload.single("profileImage"), addEmployee);
 
 //put update
 
 router.put("/edit/:id", editEmployee);
-router.post("/login", login);
-router.get("/verify",authMiddleware,verify);
-router.get("/getAllUser",  getAllUsers);
-router.get("/getSingleUser/:id",  getSingleUser);
-router.post("/forgetPassword", forgetPassword);
-router.post("/resetPassword/:token", resetPassword);
 
+router.get("/getSingleUser/:id", getSingleUser);
 
-router.delete("/deleteEmployee/:id", authMiddleware, deleteEmployee)
+router.delete("/deleteEmployee/:id", authMiddleware, deleteEmployee);
 module.exports = router;
