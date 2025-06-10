@@ -1,6 +1,8 @@
 const employee = require("../models/employeeModel");
 const employeeModel = require("../models/employeeModel");
 const userModel = require("../models/User");
+const fs = require("fs");
+const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
@@ -85,8 +87,10 @@ exports.editEmployee = async (req, res) => {
     .status(200)
     .send({ success: true, message: "updated success", updateEmployee });
 };
-
 exports.addEmployee = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const {
       employeeId,
@@ -99,32 +103,45 @@ exports.addEmployee = async (req, res) => {
       gender,
       salary,
       role,
-
       designation,
       password,
     } = req.body;
 
-    console.log("file image req.body", req.body);
-
-    const existingUser = await userModel.findOne({ email: emp_email });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Email already exists" });
+    if (!employeeId || !emp_name || !emp_email || !emp_phone || !password) {
+      throw new Error("Required fields are missing.");
     }
+
+    const profileImage = req.file ? req.file.filename : "";
+
+    // Check for duplicate email
+    const existingUser = await userModel
+      .findOne({ email: emp_email })
+      .session(session);
+    if (existingUser) throw new Error("Email already exists");
+
+    // Check for duplicate phone
+    const existingPhone = await userModel
+      .findOne({ phone: emp_phone })
+      .session(session);
+    if (existingPhone) throw new Error("Phone number already exists");
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
     const newUser = new userModel({
       name: emp_name,
       email: emp_email,
       password: hashedPassword,
       role,
-      profileImage: req.file ? req.file.filename : "",
+      phone: emp_phone,
+      profileImage,
     });
 
-    const saveNewUser = await newUser.save();
+    const savedUser = await newUser.save({ session });
 
+    // Create employee and link to user via user _id or shared email
     const newEmployee = new employee({
-      userId: saveNewUser._id,
       employeeId,
       emp_name,
       department,
@@ -136,18 +153,45 @@ exports.addEmployee = async (req, res) => {
       salary,
       role,
       designation,
-      profileImage: req.file ? req.file.filename : "",
+      profileImage,
+      userId: savedUser._id, // optional link if your schema supports it
     });
 
-    await newEmployee.save();
+    const savedEmployee = await newEmployee.save({ session });
+
+    // Update user with employeeId (if needed)
+    savedUser.employeeId = savedEmployee._id;
+    await savedUser.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(201).json({
       success: true,
-      message: "Employee Created!",
-      employee: newEmployee,
+      message: "User and Employee created successfully",
+      employee: savedEmployee,
+      user: savedUser,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error adding employee" });
+    await session.abortTransaction();
+    session.endSession();
+
+    // Delete uploaded file if exists
+    if (req.file) {
+      const imagePath = path.join(
+        __dirname,
+        "../public/uploads",
+        req.file.filename
+      );
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Transaction failed",
+    });
   }
 };
 
@@ -213,6 +257,7 @@ exports.getAllUsers = async (req, res) => {
 exports.deleteEmployee = async (req, res) => {
   const { id } = req.params;
   try {
+    const emp = await employeeModel.findById(id);
     const deletedEmployee = await employeeModel.findByIdAndDelete(id);
     if (!deletedEmployee) {
       return res
@@ -220,6 +265,18 @@ exports.deleteEmployee = async (req, res) => {
         .json({ success: false, message: "Employee not found" });
     }
 
+    if (emp.profileImage) {
+      const imagePath = path.join(
+        __dirname,
+        "../public/uploads",
+        emp.profileImage
+      );
+
+      // Check if file exists before deleting
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
     res
       .status(200)
       .json({ success: true, message: "Employee deleted successfully" });

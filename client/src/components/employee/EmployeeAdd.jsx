@@ -21,6 +21,23 @@ const Add = () => {
     password: "",
   });
 
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const isValidPhone = (phone) => /^\d{10,15}$/.test(phone); // adjust min/max as per your requirement
+
+  const isStrongPassword = (password) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+
+  const isValidImage = (file) =>
+    file && file.type.startsWith("image/") && file.size <= 2 * 1024 * 1024; // max 2MB
+
+  const isValidDOB = (dob) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    return age >= 18 && age <= 65;
+  };
+
   // State to hold all employees data (for dropdowns)
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   // const cloud_name = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -43,18 +60,65 @@ const Add = () => {
   //     profileImage: e.target.files[0],
   //   }));
   // };
-  console.log("image", formData.profileImage);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("formData", formData);
-    if (!formData.emp_phone || formData.emp_phone.trim() === "") {
-      Swal.fire({
-        title: "Phone number is required!",
-        text: "Please enter a valid phone number.",
-        icon: "warning",
-        confirmButtonText: "Okay",
-      });
-      return;
+
+    const {
+      emp_email,
+      emp_phone,
+      password,
+      profileImage,
+      dob,
+      emp_name,
+      employeeId,
+    } = formData;
+
+    if (!employeeId || !emp_name) {
+      return Swal.fire(
+        "Error",
+        "Employee ID and Name are required.",
+        "warning"
+      );
+    }
+
+    if (!isValidEmail(emp_email)) {
+      return Swal.fire(
+        "Invalid Email",
+        "Enter a valid email address.",
+        "warning"
+      );
+    }
+
+    if (!isValidPhone(emp_phone)) {
+      return Swal.fire(
+        "Invalid Phone",
+        "Enter a valid phone number (10-15 digits).",
+        "warning"
+      );
+    }
+
+    if (!isStrongPassword(password)) {
+      return Swal.fire(
+        "Weak Password",
+        "Password must be at least 8 characters with upper/lowercase and numbers.",
+        "warning"
+      );
+    }
+
+    if (!isValidImage(profileImage)) {
+      return Swal.fire(
+        "Invalid Image",
+        "Image must be under 2MB and of type JPG/PNG.",
+        "warning"
+      );
+    }
+
+    if (!isValidDOB(dob)) {
+      return Swal.fire(
+        "Invalid DOB",
+        "Employee must be between 18 and 65 years old.",
+        "warning"
+      );
     }
 
     try {
@@ -66,23 +130,11 @@ const Add = () => {
       const res = await axios.post(
         `${baseUrl}/api/employee/addEmployee`,
         data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      if (res.data.success === true || res.status === 201) {
-        Swal.fire({
-          position: "center-center",
-          icon: "success",
-          title: "Employee Added Successfully!",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-
-        // Reset the form
+      if (res.data.success || res.status === 201) {
+        Swal.fire("Success", "Employee Added Successfully!", "success");
         setFormData({
           employeeId: "",
           emp_name: "",
@@ -98,16 +150,13 @@ const Add = () => {
           profileImage: "",
           password: "",
         });
-
         refetch();
         navigate("/admin-dashboard/employee");
       } else {
         throw new Error("Failed to add employee");
       }
     } catch (error) {
-      console.error(error);
-
-      let message = "There was an issue adding the employee. Please try again.";
+      let message = "Failed to add employee. Try again.";
       if (
         error.response?.data?.code === 11000 ||
         error.message.includes("E11000") ||
@@ -116,12 +165,7 @@ const Add = () => {
         message = "This phone number is already used by another employee.";
       }
 
-      Swal.fire({
-        title: "Error!",
-        text: message,
-        icon: "error",
-        confirmButtonText: "Okay",
-      });
+      Swal.fire("Error", message, "error");
     }
   };
 
@@ -386,6 +430,13 @@ const Add = () => {
                 }
                 required
               />
+              {formData.profileImage && (
+                <img
+                  src={URL.createObjectURL(formData.profileImage)}
+                  alt="Preview"
+                  className="w-24 h-24 object-cover mt-2 rounded border"
+                />
+              )}
             </div>
             {/* Password Input */}
             <div className="form-control w-full">
@@ -395,6 +446,7 @@ const Add = () => {
               <input
                 type="password"
                 name="password"
+                title="Min 8 characters, with uppercase, lowercase, and numbers"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.password}
                 onChange={handleChange}

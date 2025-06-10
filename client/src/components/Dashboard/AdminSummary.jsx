@@ -108,13 +108,13 @@ const AdminSummary = () => {
         <SummaryCard
           icon={<MdOutlineAttachMoney className="text-white text-3xl" />}
           text="Total Salary Amount"
-          number={totalSalary[0].totalAmount}
+          number={totalSalary[0]?.totalAmount}
           color="bg-[#EF4444]"
         />
         <SummaryCard
           icon={<FaMoneyBillWave className="text-white text-3xl" />}
           text="Total Salary Count"
-          number={totalSalary[0].totalCount}
+          number={totalSalary[0]?.totalCount}
           color="bg-[#10B981]"
         />
       </div>
