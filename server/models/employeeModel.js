@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const { Schema } = require("mongoose");
-const { type } = require("os");
 const employeeSchema = new mongoose.Schema(
   {
     userId: {
@@ -8,11 +7,11 @@ const employeeSchema = new mongoose.Schema(
       ref: "users",
       required: true,
     },
-    employeeId: { type: String, unique: true },
+    employeeId: { type: String },
     emp_name: { type: String },
-    emp_email: { type: String, unique: true },
+    emp_email: { type: String, required: true, unique: true },
     emp_phone: { type: String, required: true, unique: true },
-    gender: { type: String, enum: ["male", "felmale", "other"] },
+    gender: { type: String, enum: ["male", "female", "other"] },
 
     dob: { type: Date },
     marital_status: {
@@ -22,7 +21,7 @@ const employeeSchema = new mongoose.Schema(
 
     department: {
       type: Schema.Types.ObjectId,
-      ref: "departments",
+      ref: "department",
       required: true,
     },
     salary: { type: String },

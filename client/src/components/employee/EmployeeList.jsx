@@ -107,7 +107,7 @@ const List = () => {
     },
     {
       name: "Department",
-      selector: (row) => row.dep_name,
+      selector: (row) => row.department?.dep_name,
       sortable: true,
     },
     {

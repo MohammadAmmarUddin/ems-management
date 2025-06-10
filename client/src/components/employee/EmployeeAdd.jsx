@@ -54,12 +54,7 @@ const Add = () => {
       [name]: value,
     }));
   };
-  // const handleFileChange = (e) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     profileImage: e.target.files[0],
-  //   }));
-  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -126,14 +121,15 @@ const Add = () => {
       for (const key in formData) {
         data.append(key, formData[key]);
       }
-
+      console.log(formData);
+      console.log("Form Data:", data);
       const res = await axios.post(
         `${baseUrl}/api/employee/addEmployee`,
         data,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-
-      if (res.data.success || res.status === 201) {
+      console.log("Response:", res.data);
+      if (res.data.success === true || res.status === 201) {
         Swal.fire("Success", "Employee Added Successfully!", "success");
         setFormData({
           employeeId: "",
@@ -152,20 +148,9 @@ const Add = () => {
         });
         refetch();
         navigate("/admin-dashboard/employee");
-      } else {
-        throw new Error("Failed to add employee");
       }
     } catch (error) {
-      let message = "Failed to add employee. Try again.";
-      if (
-        error.response?.data?.code === 11000 ||
-        error.message.includes("E11000") ||
-        error?.message?.includes("duplicate key")
-      ) {
-        message = "This phone number is already used by another employee.";
-      }
-
-      Swal.fire("Error", message, "error");
+      Swal.fire("Error", error.message, "error");
     }
   };
 
@@ -182,7 +167,7 @@ const Add = () => {
         <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
           Add Employee
         </h2>
-        <form onSubmit={handleSubmit} className="card-body">
+        <form onSubmit={handleSubmit} className="card-body" autoComplete="off">
           {/* row 1 */}
           <div className="flex gap-x-3">
             {/* Employee ID Input */}
@@ -306,7 +291,7 @@ const Add = () => {
                 <option value="">Select Role</option>
                 <option value="admin">Admin</option>
                 <option value="employee">Employee</option>
-                <option value="moderator">Moderator</option>
+                <option value="HR">HR</option>
               </select>
             </div>
             {/* Designation Dropdown */}

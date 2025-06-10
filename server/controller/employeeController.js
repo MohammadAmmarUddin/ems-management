@@ -89,9 +89,9 @@ exports.editEmployee = async (req, res) => {
 };
 exports.addEmployee = async (req, res) => {
   const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
+    await session.startTransaction();
+
     const {
       employeeId,
       emp_name,
@@ -113,22 +113,24 @@ exports.addEmployee = async (req, res) => {
 
     const profileImage = req.file ? req.file.filename : "";
 
-    // Check for duplicate email
-    const existingUser = await userModel
-      .findOne({ email: emp_email })
-      .session(session);
-    if (existingUser) throw new Error("Email already exists");
+    if (req.file) {
+      const imagePath = path.join(__dirname, "../public/uploads", profileImage);
+      if (!fs.existsSync(imagePath)) {
+        throw new Error("Uploaded profile image not found.");
+      }
+    }
 
-    // Check for duplicate phone
-    const existingPhone = await userModel
-      .findOne({ phone: emp_phone })
-      .session(session);
+    // Check for existing email and phone
+    const [existingEmail, existingPhone] = await Promise.all([
+      userModel.findOne({ email: emp_email }).session(session),
+      userModel.findOne({ phone: emp_phone }).session(session),
+    ]);
+
+    if (existingEmail) throw new Error("Email already exists");
     if (existingPhone) throw new Error("Phone number already exists");
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const newUser = new userModel({
       name: emp_name,
       email: emp_email,
@@ -140,7 +142,10 @@ exports.addEmployee = async (req, res) => {
 
     const savedUser = await newUser.save({ session });
 
-    // Create employee and link to user via user _id or shared email
+    if (!savedUser || !savedUser._id) {
+      throw new Error("User creation failed");
+    }
+
     const newEmployee = new employee({
       employeeId,
       emp_name,
@@ -154,29 +159,21 @@ exports.addEmployee = async (req, res) => {
       role,
       designation,
       profileImage,
-      userId: savedUser._id, // optional link if your schema supports it
+      userId: savedUser._id,
     });
 
     const savedEmployee = await newEmployee.save({ session });
 
-    // Update user with employeeId (if needed)
-    savedUser.employeeId = savedEmployee._id;
-    await savedUser.save({ session });
-
     await session.commitTransaction();
-    session.endSession();
-
     res.status(201).json({
       success: true,
       message: "User and Employee created successfully",
       employee: savedEmployee,
-      user: savedUser,
     });
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
+    console.error("Error in addEmployee:", error);
 
-    // Delete uploaded file if exists
     if (req.file) {
       const imagePath = path.join(
         __dirname,
@@ -190,8 +187,10 @@ exports.addEmployee = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: error.message || "Transaction failed",
+      message: error.message || "Failed to add employee",
     });
+  } finally {
+    session.endSession(); // Always end session in finally
   }
 };
 
@@ -247,10 +246,16 @@ exports.getSingleUser = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const result = await employee.find({});
+    const result = await employeeModel
+      .find({})
+      .populate("department", "dep_name"); // Populate only dep_name from department
+
     res.status(200).send({ result, success: true });
   } catch (error) {
     console.log(error);
+    res
+      .status(500)
+      .send({ success: false, message: "Failed to fetch employees" });
   }
 };
 
