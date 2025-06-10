@@ -76,7 +76,9 @@ exports.getSingleDep = async (req, res) => {
 
 exports.deleteDep = async (req, res) => {
   try {
-    const result = await depModel.findByIdAndDelete({ _id: req.params.id });
+    const { id } = req.params;
+    const deleteDepartment = await depModel.findById({ _id: id });
+    await deleteDepartment.deleteOne();
     res.status(200).send({ success: true, result });
   } catch (error) {
     console.log(error);

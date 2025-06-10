@@ -10,6 +10,7 @@ const employeeRouter = require("./Routes/employeeRouter");
 const salaryRouter = require("./Routes/salaryRoute");
 const userRouter = require("./Routes/userRouter");
 app.use(express.json());
+app.use(express.static("public"));
 const baseUrl = process.env.Base_URL;
 app.use(
   cors({

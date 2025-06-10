@@ -11,7 +11,7 @@ const List = () => {
 
   const [searchQuery, setSearchQuery] = useState(""); // for future search
   const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState([]);
 
   const {
     data: employees = [],
@@ -20,7 +20,7 @@ const List = () => {
     error,
     refetch,
   } = useEmployees({ baseUrl, user });
-
+  console.log("selectedEmployee", selectedEmployee);
   const date = new Date(selectedEmployee?.createdAt);
   const joiningDate = date.toLocaleString();
 
@@ -89,7 +89,7 @@ const List = () => {
     },
     {
       name: "Emp_Id",
-      selector: (row) => row.emp_id,
+      selector: (row) => row.employeeId,
       sortable: true,
       width: "120px",
     },
@@ -213,22 +213,26 @@ const List = () => {
             <div className="p-4">
               {selectedEmployee ? (
                 <div>
-                  <img src="/mn.png" width={70} alt="" />
+                  <img
+                    src={`http://localhost:5001/uploads/${selectedEmployee?.profileImage}`}
+                    width={70}
+                    alt=""
+                  />
                   <p>
-                    <strong>Name:</strong> {selectedEmployee.emp_name}
+                    <strong>Name:</strong> {selectedEmployee?.emp_name}
                   </p>
                   <p>
-                    <strong>Employee_Id:</strong> {selectedEmployee.emp_id}
+                    <strong>Employee_Id:</strong> {selectedEmployee?.employeeId}
                   </p>
                   <p>
                     <strong>Department:</strong>{" "}
-                    {selectedEmployee.dep_name || "N/A"}
+                    {selectedEmployee?.department?.dep_name || "N/A"}
                   </p>
                   <p>
                     <strong>Joining Date:</strong> {joiningDate || "N/A"}
                   </p>
                   <p>
-                    <strong>Role:</strong> {selectedEmployee.role || "N/A"}
+                    <strong>Role:</strong> {selectedEmployee?.role || "N/A"}
                   </p>
                 </div>
               ) : (
