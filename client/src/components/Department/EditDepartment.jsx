@@ -1,51 +1,46 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
-const EditDepartment = () => { 
-    const [data,setData]= useState([])
-    const {id} = useParams()
-    const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-    const navigate= useNavigate()
-   
+const EditDepartment = () => {
+  const [data, setData] = useState([]);
+  const { id } = useParams();
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+  const navigate = useNavigate();
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("id", id);
+    const form = e.target;
+    const dep_name = form.dep_name.value;
+    const dep_desc = form.dep_desc.value;
 
-    
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-       console.log("id",id);
-        const form = e.target;
-        const dep_name = form.dep_name.value;
-        const dep_desc = form.dep_desc.value;
-    
-        axios
-          .put(`${baseUrl}/api/department/updateDep/${id}`, {
-            dep_name,
-            dep_desc,
-          })
-          .then((res) => {
-            console.log(res);
-            if(res.data.success )
-            {
-              Swal.fire({
-                position: "middle",
-                icon: "success",
-                title: "Your work has been saved",
-                showConfirmButton: false,
-                timer: 1500
-              });
-            }
-            refetch();
-            navigate("/admin-dashboard/departments");
+    axios
+      .put(`${baseUrl}/api/department/updateDep/${id}`, {
+        dep_name,
+        dep_desc,
+      })
+      .then((res) => {
+        console.log(res);
+        if (res.data.success) {
+          Swal.fire({
+            position: "middle",
+            icon: "success",
+            title: "Your work has been saved",
+            showConfirmButton: false,
+            timer: 1500,
           });
-    
-        form.reset();
-      };
-    
-    return (
-        <div className="mt-10">
+        }
+        refetch();
+        navigate("/admin-dashboard/departments");
+      });
+
+    form.reset();
+  };
+
+  return (
+    <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto max-w-md shrink-0 shadow-2xl">
         <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
           Edit Department
@@ -87,7 +82,7 @@ const EditDepartment = () => {
         </form>
       </div>
     </div>
-    );
+  );
 };
 
 export default EditDepartment;

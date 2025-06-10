@@ -68,25 +68,84 @@ exports.getEmployee = async (req, res) => {
 };
 
 exports.editEmployee = async (req, res) => {
-  const { id, ...updateData } = req.body;
+  try {
+    const { id } = req.params;
+    const {
+      employeeId,
+      emp_name,
+      department,
+      emp_email,
+      emp_phone,
+      marital_status,
+      dob,
+      gender,
+      salary,
+      role,
+      designation,
+      password,
+    } = req.body;
 
-  const updateEmployee = await employeeModel.findByIdAndUpdate(
-    id,
-    {
-      $set: req.body,
-    },
+    const updateFields = {
+      employeeId,
+      emp_name,
+      department,
+      emp_email,
+      emp_phone,
+      marital_status,
+      dob,
+      gender,
+      salary,
+      role,
+      designation,
+    };
+    // Handle optional password update
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateFields.password = hashedPassword;
+    }
 
-    { new: true }
-  );
+    const employee = await employeeModel.findById(id);
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Employee not found" });
+    }
 
-  if (!updateEmployee) {
-    res.send({ success: false });
+    // Handle optional image upload (local)
+    if (req.file) {
+      // Delete old image if it exists
+      if (employee.profileImage) {
+        const oldImagePath = path.join(
+          __dirname,
+          "..",
+          "uploads",
+          employee.profileImage
+        );
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+
+      updateFields.profileImage = req.file.filename; // just save the filename
+    }
+
+    const updatedEmployee = await employeeModel.findByIdAndUpdate(
+      id,
+      { $set: updateFields },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Employee updated successfully",
+      updateEmployee: updatedEmployee,
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
-
-  res
-    .status(200)
-    .send({ success: true, message: "updated success", updateEmployee });
 };
+
 exports.addEmployee = async (req, res) => {
   const session = await mongoose.startSession();
   try {

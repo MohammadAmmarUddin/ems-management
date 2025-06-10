@@ -91,11 +91,24 @@ const List = () => {
       name: "Emp_Id",
       selector: (row) => row.employeeId,
       sortable: true,
-      width: "120px",
+      width: "150px",
     },
     {
       name: "Name",
       selector: (row) => row.emp_name,
+      sortable: true,
+      width: "180px",
+    },
+    {
+      name: "Image",
+      selector: (row) => (
+        <img
+          src={`http://localhost:5001/uploads/${row.profileImage}`}
+          width={30}
+          className="rounded-full"
+          alt=""
+        />
+      ),
       sortable: true,
       width: "180px",
     },
@@ -141,6 +154,7 @@ const List = () => {
         </div>
       ),
       width: "280px",
+      center: true,
     },
   ];
 

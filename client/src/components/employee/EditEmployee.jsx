@@ -7,73 +7,140 @@ import useDepartments from "../../hooks/FetchDepartment";
 import useEmployeeById from "../../hooks/FetchEmployeeById";
 
 const EditEmployee = () => {
-  // Grab the `id` param from the URL
   const { id } = useParams();
   const navigate = useNavigate();
-
-  // Base URL from env variable
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
-  // State to hold form values
   const [formData, setFormData] = useState({
-    emp_id: "",
+    employeeId: "",
     emp_name: "",
-    dep_name: "",
+    department: "",
     emp_email: "",
     emp_phone: "",
+    marital_status: "",
+    dob: "",
+    gender: "",
     salary: "",
     role: "",
     designation: "",
-    image: "",
+    profileImage: null,
     password: "",
+    imageUrl: "", // For displaying existing image
   });
 
-  // Loading states
-  const [isLoadingEmployee, setIsLoadingEmployee] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Fetch departments for dropdown
-  const {
-    data: departments,
-    refetch: refetchDepartments,
-    isLoading: isDeptLoading,
-  } = useDepartments(baseUrl);
-
-  console.log(departments);
-
+  const { data: departments, isLoading: isDeptLoading } =
+    useDepartments(baseUrl);
   const { data: employeeById } = useEmployeeById(baseUrl, id);
 
-  console.log(employeeById);
+  // Validation functions
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPhone = (phone) => /^\d{10,15}$/.test(phone);
+  const isStrongPassword = (password) =>
+    password === "" || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+  const isValidDOB = (dob) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    return age >= 18 && age <= 65;
+  };
 
-  // Handle input changes
+  // Set form data when employee data is fetched
+  useEffect(() => {
+    if (employeeById) {
+      setFormData({
+        employeeId: employeeById.employeeId || "",
+        emp_name: employeeById.emp_name || "",
+        emp_email: employeeById.emp_email || "",
+        department: employeeById.department.dep_name || "",
+        emp_phone: employeeById.emp_phone || "",
+        marital_status: employeeById.marital_status || "",
+        dob: employeeById.dob
+          ? new Date(employeeById.dob).toISOString().split("T")[0]
+          : "",
+        gender: employeeById.gender || "",
+        salary: employeeById.salary || "",
+        role: employeeById.role || "",
+        designation: employeeById.designation || "",
+        profileImage: null,
+        password: "",
+        imageUrl: employeeById.profileImage || "",
+      });
+    }
+  }, [employeeById]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      profileImage: e.target.files[0],
+      imageUrl: URL.createObjectURL(e.target.files[0]),
     }));
   };
 
-  // Handle form submission (PUT update)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple validation: ensure phone is not empty
-    if (!formData.emp_phone || formData.emp_phone.trim() === "") {
-      Swal.fire({
-        title: "Phone number is required!",
-        text: "Please enter a valid phone number.",
-        icon: "warning",
-        confirmButtonText: "Okay",
-      });
-      return;
+    // Validation checks
+    if (!formData.employeeId || !formData.emp_name) {
+      return Swal.fire(
+        "Error",
+        "Employee ID and Name are required.",
+        "warning"
+      );
+    }
+
+    if (!isValidEmail(formData.emp_email)) {
+      return Swal.fire(
+        "Invalid Email",
+        "Enter a valid email address.",
+        "warning"
+      );
+    }
+
+    if (!isValidPhone(formData.emp_phone)) {
+      return Swal.fire(
+        "Invalid Phone",
+        "Enter a valid phone number (10-15 digits).",
+        "warning"
+      );
+    }
+
+    if (formData.password && !isStrongPassword(formData.password)) {
+      return Swal.fire(
+        "Weak Password",
+        "Password must be at least 8 characters with upper/lowercase and numbers.",
+        "warning"
+      );
+    }
+
+    if (formData.dob && !isValidDOB(formData.dob)) {
+      return Swal.fire(
+        "Invalid DOB",
+        "Employee must be between 18 and 65 years old.",
+        "warning"
+      );
     }
 
     try {
       setIsSubmitting(true);
+      const data = new FormData();
+
+      // Append all form data
+      for (const key in formData) {
+        if (key !== "imageUrl") {
+          data.append(key, formData[key]);
+        }
+      }
+
       const res = await axios.put(
         `${baseUrl}/api/employee/updateEmployee/${id}`,
-        formData
+        data,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       if (res.data.success) {
@@ -84,10 +151,7 @@ const EditEmployee = () => {
           showConfirmButton: false,
           timer: 1500,
         });
-        // After a short delay, navigate back to employee list
-        setTimeout(() => {
-          navigate("/admin-dashboard/employee");
-        }, 1600);
+        setTimeout(() => navigate("/admin-dashboard/employee"), 1600);
       } else {
         throw new Error("Failed to update employee");
       }
@@ -96,7 +160,6 @@ const EditEmployee = () => {
       let message =
         "There was an issue updating the employee. Please try again.";
 
-      // Detect duplicate key error for phone or email
       if (
         error.response?.data?.code === 11000 ||
         error.message.includes("E11000") ||
@@ -120,8 +183,7 @@ const EditEmployee = () => {
     }
   };
 
-  // Show a loader while fetching or departments are still loading
-  if (isLoadingEmployee || isDeptLoading) {
+  if (isDeptLoading || !employeeById) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -135,26 +197,23 @@ const EditEmployee = () => {
         <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
           Edit Employee
         </h2>
-        <form onSubmit={handleSubmit} className="card-body">
+        <form onSubmit={handleSubmit} className="card-body" autoComplete="off">
           {/* row 1 */}
           <div className="flex gap-x-3">
-            {/* Employee ID Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Id</span>
               </label>
               <input
-                type="number"
-                name="emp_id"
+                type="text"
+                name="employeeId"
                 className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.emp_id}
+                value={formData.employeeId}
                 onChange={handleChange}
                 required
                 placeholder="Enter Employee ID"
-                disabled // Usually you don't allow editing the unique emp_id
               />
             </div>
-            {/* Employee Name Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Name</span>
@@ -173,7 +232,6 @@ const EditEmployee = () => {
 
           {/* row 1 extended */}
           <div className="flex gap-x-3">
-            {/* Employee Email Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Email</span>
@@ -188,7 +246,6 @@ const EditEmployee = () => {
                 placeholder="Enter Employee Email"
               />
             </div>
-            {/* Employee Phone Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Phone</span>
@@ -207,27 +264,25 @@ const EditEmployee = () => {
 
           {/* row 2 */}
           <div className="flex gap-x-3">
-            {/* Department Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Department Name</span>
               </label>
               <select
-                name="dep_name"
+                name="department"
                 className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.dep_name}
+                value={formData.department._id}
                 onChange={handleChange}
                 required
               >
                 <option value="">Select Department</option>
                 {departments?.map((department) => (
-                  <option key={department._id} value={department.dep_name}>
+                  <option key={department._id} value={department._id}>
                     {department.dep_name}
                   </option>
                 ))}
               </select>
             </div>
-            {/* Salary Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Salary</span>
@@ -246,7 +301,6 @@ const EditEmployee = () => {
 
           {/* row 3 */}
           <div className="flex gap-x-3">
-            {/* Role Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Role</span>
@@ -261,10 +315,9 @@ const EditEmployee = () => {
                 <option value="">Select Role</option>
                 <option value="admin">Admin</option>
                 <option value="employee">Employee</option>
-                <option value="moderator">Moderator</option>
+                <option value="HR">HR</option>
               </select>
             </div>
-            {/* Designation Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Designation</span>
@@ -312,24 +365,82 @@ const EditEmployee = () => {
             </div>
           </div>
 
-          {/* row 4 */}
+          {/* row 6 */}
           <div className="flex gap-x-3">
-            {/* Image URL Input */}
             <div className="form-control w-full">
               <label className="label">
-                <span className="label-text">Profile Image URL</span>
+                <span className="label-text">Gender</span>
               </label>
-              <input
-                type="text"
-                name="image"
+              <select
+                name="gender"
                 className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.image}
+                value={formData.gender}
                 onChange={handleChange}
                 required
-                placeholder="Enter Image URL"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Marital Status</span>
+              </label>
+              <select
+                name="marital_status"
+                className="input input-bordered focus:outline-none hover:border-green-600"
+                value={formData.marital_status}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Marital Status</option>
+                <option value="single">Single</option>
+                <option value="married">Married</option>
+                <option value="divorced">Divorced</option>
+                <option value="widowed">Widowed</option>
+              </select>
+            </div>
+
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Date of Birth</span>
+              </label>
+              <input
+                type="date"
+                name="dob"
+                className="input input-bordered focus:outline-none hover:border-green-600"
+                value={formData.dob}
+                onChange={handleChange}
+                required
               />
             </div>
-            {/* Password Input */}
+          </div>
+
+          {/* row 4 */}
+          <div className="flex gap-x-3">
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Profile Image</span>
+              </label>
+              <input
+                type="file"
+                name="profileImage"
+                accept="image/*"
+                className="file-input file-input-bordered w-full"
+                onChange={handleFileChange}
+              />
+              {(formData.imageUrl || formData.profileImage) && (
+                <img
+                  src={`${baseUrl}/uploads/${
+                    formData.imageUrl || formData.profileImage
+                  }`}
+                  alt="Preview"
+                  className="w-24 h-24 object-cover mt-2 rounded border"
+                />
+              )}
+            </div>
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Password</span>
@@ -337,6 +448,7 @@ const EditEmployee = () => {
               <input
                 type="password"
                 name="password"
+                title="Min 8 characters, with uppercase, lowercase, and numbers"
                 className="input input-bordered focus:outline-none hover:border-green-600"
                 value={formData.password}
                 onChange={handleChange}
@@ -357,7 +469,7 @@ const EditEmployee = () => {
                   : "bg-primary hover:bg-secondary"
               }`}
             >
-              {isSubmitting ? "Updating…" : "Update Employee"}
+              {isSubmitting ? "Updating..." : "Update Employee"}
             </button>
           </div>
         </form>

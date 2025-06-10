@@ -27,7 +27,7 @@ router.post("/addEmployee", upload.single("profileImage"), addEmployee);
 
 //put update
 
-router.put("/edit/:id", editEmployee);
+router.put("/updateEmployee/:id", upload.single("profileImage"), editEmployee);
 
 router.get("/getSingleUser/:id", getSingleUser);
 
