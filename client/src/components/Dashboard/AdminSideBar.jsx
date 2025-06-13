@@ -1,6 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaBuilding,
+  FaCalendarAlt,
+  FaChartBar,
   FaHome,
   FaMoneyBill,
   FaUsers,
@@ -67,8 +69,15 @@ const AdminSideBar = () => {
                 <span>Salary</span>
               </NavLink>
               <NavLink to="/admin-dashboard/attendance" className={linkClass}>
-                <FaUsers />
+                <FaCalendarAlt />
                 <span>Attendance</span>
+              </NavLink>
+              <NavLink
+                to="/admin-dashboard/attendanceReport"
+                className={linkClass}
+              >
+                <FaChartBar />
+                <span>Attendance Report</span>
               </NavLink>
             </>
           )}

@@ -9,6 +9,7 @@ const depRouter = require("./Routes/depRouter");
 const employeeRouter = require("./Routes/employeeRouter");
 const salaryRouter = require("./Routes/salaryRoute");
 const userRouter = require("./Routes/userRouter");
+const attendanceRouter = require("./Routes/attendanceRouter");
 app.use(express.json());
 app.use(express.static("public"));
 const baseUrl = process.env.Base_URL;
@@ -22,6 +23,7 @@ app.use("/api/employee", employeeRouter);
 app.use("/api/leave", leaveRouter);
 app.use("/api/salary", salaryRouter);
 app.use("/api/user", userRouter);
+app.use("/api/attendance", attendanceRouter);
 //  mongoose.connect(
 //   "mongodb+srv://safara:safara@cluster0.t9lecvs.mongodb.net/EMS?retryWrites=true&w=majority&appName=Cluster0"
 // );
