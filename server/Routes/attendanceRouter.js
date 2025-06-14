@@ -1,6 +1,7 @@
 const {
   getAttendances,
   updateAttendance,
+  attendanceReport,
 } = require("../controller/attendanceController");
 const authMiddleware = require("../middleware/authMiddleware");
 const express = require("express");
@@ -15,5 +16,7 @@ router.put(
   defaultAttendanceMiddleware,
   updateAttendance
 );
+
+router.get("/report", authMiddleware, attendanceReport);
 
 module.exports = router;

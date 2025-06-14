@@ -49,3 +49,42 @@ exports.updateAttendance = async (req, res) => {
     console.log("update attendance error", error);
   }
 };
+
+exports.attendanceReport = async (req, res) => {
+  try {
+    const { date, limit = 5, skip = 0 } = req.query;
+    const query = {};
+
+    if (date) {
+      query.date = date;
+    }
+
+    const attendanceData = await Attendance.find(query)
+      .populate({
+        path: "employeeId",
+        populate: ["department", "userId"],
+      })
+      .sort({ date: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(skip));
+
+    const groupData = await attendanceData.reduce((acc, att) => {
+      if (!acc[att.date]) {
+        acc[att.date] = [];
+      }
+      acc[att.date].push({
+        employeeId: att.employeeId.employeeId,
+        name: att.employeeId.userId.name,
+        department: att.employeeId.department.dep_name,
+        status: att.status || "Not Marked  ",
+      });
+      return acc;
+    }, {});
+    res.status(200).json({
+      success: true,
+      groupData,
+    });
+  } catch (error) {
+    console.log("attendance report error", error);
+  }
+};
