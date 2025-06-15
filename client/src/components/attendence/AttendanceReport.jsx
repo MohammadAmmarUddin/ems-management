@@ -100,6 +100,7 @@ function AttendanceReport() {
 
     URL.revokeObjectURL(url);
   };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -107,85 +108,54 @@ function AttendanceReport() {
       </div>
     );
   }
+
   return (
-    <div
-      style={{ padding: "30px", maxWidth: "1000px", margin: "30px auto" }}
-      className="bg-gray-50 shadow-md rounded-lg"
-    >
-      <h1 style={{ marginBottom: "20px", color: "#334155" }}>
+    <div className="p-8 m-8 bg-gray-50 shadow-md rounded-lg w-full mx-auto">
+      <h1 className="mb-6 text-2xl font-semibold text-gray-800 text-center">
         Attendance Report
       </h1>
 
-      <div style={{ marginBottom: "20px" }}>
-        <label
-          htmlFor="dateFilter"
-          style={{ marginRight: "10px", color: "#334155" }}
-        >
+      <div className="mb-6 flex items-center">
+        <label htmlFor="dateFilter" className="mr-4 text-gray-600">
           Filter by Date:
         </label>
         <input
           id="dateFilter"
           onChange={(e) => setDateFilter(e.target.value)}
           type="date"
-          style={{
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "1px solid #ddd",
-          }}
+          className="p-2 mr-6 border rounded-md border-gray-300 "
         />
         <button
           onClick={handleDownload}
-          style={{
-            marginLeft: "20px",
-            padding: "8px 12px",
-            background: "#1A237E",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
+          className="px-4 py-2 mr-6 font-semibold text-gray-100 bg-blue-900 rounded-md hover:bg-blue-800 transition "
         >
           Download CSV
         </button>
       </div>
 
-      {loading && <div>Loading...</div>}
-      {error && <div>Error loading attendance</div>}
+      {error && (
+        <div className="text-red-500 mb-6">Error loading attendance</div>
+      )}
 
       {combinedData.length > 0 && (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            background: "#ffffff",
-            borderRadius: "6px",
-            overflow: "hidden",
-          }}
-        >
-          <thead style={{ background: "#edf2f7" }}>
+        <table className="w-full bg-gray-100 border-gray-200 rounded-md overflow-hidden">
+          <thead className="bg-gray-200">
             <tr>
-              <th style={{ padding: "12px", color: "#334155" }}>Date</th>
-              <th style={{ padding: "12px", color: "#334155" }}>EmployeeId</th>
-              <th style={{ padding: "12px", color: "#334155" }}>Name</th>
-              <th style={{ padding: "12px", color: "#334155" }}>Department</th>
-              <th style={{ padding: "12px", color: "#334155" }}>Status</th>
+              <th className="p-3 text-gray-700 font-semibold">Date</th>
+              <th className="p-3 text-gray-700 font-semibold">EmployeeId</th>
+              <th className="p-3 text-gray-700 font-semibold">Name</th>
+              <th className="p-3 text-gray-700 font-semibold">Department</th>
+              <th className="p-3 text-gray-700 font-semibold">Status</th>
             </tr>
           </thead>
           <tbody>
             {combinedData.map((item, idx) => (
-              <tr
-                key={idx}
-                style={{ borderBottom: "1px solid #edf2f7" }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#f9fafb")
-                }
-                onMouseOut={(e) => (e.currentTarget.style.background = "white")}
-              >
-                <td style={{ padding: "12px" }}>{item.date}</td>
-                <td style={{ padding: "12px" }}>{item.employeeId}</td>
-                <td style={{ padding: "12px" }}>{item.name}</td>
-                <td style={{ padding: "12px" }}>{item.department}</td>
-                <td style={{ padding: "12px" }}>{item.status}</td>
+              <tr key={idx} className="border-t hover:bg-gray-50 transition">
+                <td className="p-3">{item.date}</td>
+                <td className="p-3">{item.employeeId}</td>
+                <td className="p-3">{item.name}</td>
+                <td className="p-3">{item.department}</td>
+                <td className="p-3">{item.status}</td>
               </tr>
             ))}
           </tbody>
@@ -195,23 +165,15 @@ function AttendanceReport() {
       {hasMore && !loading && (
         <button
           onClick={handleLoadMore}
-          style={{
-            padding: "10px 20px",
-            background: "#1A237E",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            marginTop: "20px",
-          }}
+          className="px-4 py-2 mt-6 font-semibold text-gray-100 bg-blue-900 rounded-md hover:bg-blue-800 transition"
         >
           Loading more...
         </button>
       )}
 
-      <p className="text-primary animate-ping">
-        {loading && <div>Fetching more...</div>}{" "}
-      </p>
+      {loading && (
+        <div className="animate-pulse mt-6 text-gray-500">Fetching more...</div>
+      )}
     </div>
   );
 }

@@ -23,6 +23,10 @@ import Salary from "./components/Salary/Salary";
 import AddSalary from "./components/Salary/AddSalary";
 import Attendance from "./components/attendence/Attendance";
 import AttendanceReport from "./components/attendence/AttendanceReport";
+import Annoucement from "./components/Annoucement";
+import AnnoucementEmployee from "./components/AnnoucementEmployee";
+import SalaryHistory from "./components/EmployeeDashboard/salary/SalaryHistory";
+import EditLeave from "./components/EmployeeDashboard/leave/EditLeave";
 
 function App() {
   return (
@@ -54,6 +58,7 @@ function App() {
           <Route path="leave" element={<LeaveList />} />
           <Route path="addLeave" element={<LeaveAdd />} />
           <Route path="salary" element={<Salary />} />
+          <Route path="annoucement" element={<Annoucement />} />
           <Route path="salary/addSalary/:id" element={<AddSalary />} />
         </Route>
 
@@ -72,6 +77,9 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="leave-history" element={<LeaveHistory />} />
           <Route path="add-leave" element={<AddLeave />} />
+          <Route path="edit-employee-leave/:id" element={<EditLeave />} />
+          <Route path="salary-history" element={<SalaryHistory />} />
+          <Route path="annoucementEmployee" element={<AnnoucementEmployee />} />
         </Route>
 
         <Route path="/signup" element={<Signup />} />

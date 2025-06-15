@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
+const UAParser = require("ua-parser-js");
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -11,6 +12,11 @@ exports.login = async (req, res) => {
         .status(400)
         .send({ success: false, message: "Email and password are required" });
     }
+    const ip = req.headers["x-forwarded-for"] || req.ip;
+    const parser = new UAParser(req.headers["user-agent"]);
+    const device = `${parser.getDevice().model || "Unknown"} - ${
+      parser.getOS().name
+    }`;
     const user = await userModel.findOne({
       $or: [{ name: email }, { email: email }],
     });
@@ -31,6 +37,12 @@ exports.login = async (req, res) => {
         expiresIn: "3d",
       }
     );
+    user.meta = {
+      ...user.meta,
+      lastLoginIp: ip,
+      lastLoginDevice: device,
+    };
+    await user.save();
     res.status(200).send({ token, user, success: true });
   } catch (error) {
     console.log(error);

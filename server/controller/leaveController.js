@@ -46,6 +46,23 @@ exports.getLeaveStatusStats = async (req, res) => {
     });
   }
 };
+exports.updateLeave = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { leaveType, startDate, endDate, reason } = req.body;
+    console.log("req.body", req.body);
+    const updateLeave = await leave.findByIdAndUpdate(
+      id,
+      { leaveType, startDate, endDate, reason },
+      { new: true }
+    );
+
+    res.status(200).json({ success: true, updateLeave });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+};
 
 exports.getLeaveCountSperate = async (req, res) => {
   try {
@@ -75,24 +92,32 @@ exports.getLeave = async (req, res) => {
 
   res.status(200).send({ success: true, leaves });
 };
-
 exports.addLeave = async (req, res) => {
-  const { userId, leaveType, startDate, endDate, reason } = req.body;
-  if (!userId || !leaveType || !startDate || !endDate || !reason) {
-    return res
-      .status(400)
-      .send({ error: "All fields are required", success: false });
+  try {
+    const { userId, leaveType, startDate, endDate, reason } = req.body;
+
+    if (!userId || !leaveType || !startDate || !endDate || !reason) {
+      res.status(400).json({
+        success: false,
+        message: "All fields are  required!",
+      });
+    }
+
+    const result = await leave.create({
+      employeeId: userId,
+      leaveType,
+      startDate,
+      endDate,
+      reason,
+    });
+
+    res.status(200).send({ result, success: true });
+  } catch (error) {
+    console.log("from leave controller addLeave", error);
+    res
+      .status(500)
+      .send({ error: "Server Error. Please try again.", success: false });
   }
-
-  const result = await leave.create({
-    employeeId: userId,
-    leaveType,
-    startDate,
-    endDate,
-    reason,
-  });
-
-  res.status(200).send({ result, success: true });
 };
 
 exports.approveLeave = async (req, res) => {

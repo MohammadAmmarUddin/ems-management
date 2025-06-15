@@ -1,4 +1,3 @@
-// src/hooks/useEmployeeById.js
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -11,7 +10,7 @@ const useEmployeeById = (baseUrl, id) => {
   return useQuery({
     queryKey: ["employee", id],
     queryFn: () => fetchEmployeeById(baseUrl, id),
-    enabled: !!id, // Prevents running unless ID exists
+    enabled: !!id,
   });
 };
 

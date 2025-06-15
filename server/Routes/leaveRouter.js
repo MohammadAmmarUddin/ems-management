@@ -7,6 +7,7 @@ const {
   rejectLeave,
   getLeaveStatusStats,
   getLeaveCountSperate,
+  updateLeave,
 } = require("../controller/leaveController");
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.post("/addLeave", addLeave);
 // PUT (Better for state changes like approve/reject)
 router.put("/approveLeave/:id", approveLeave);
 router.put("/rejectLeave/:id", rejectLeave);
+router.put("/editLeave/:id", updateLeave);
 
 module.exports = router;

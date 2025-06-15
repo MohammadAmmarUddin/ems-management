@@ -2,6 +2,8 @@ import axios from "axios";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { useAuth } from "../../../context/AuthContext";
+import { useNavigate, useParams } from "react-router-dom";
+import useLeaves from "../../../hooks/FetchLeaves";
 
 const AddLeave = () => {
   const { user } = useAuth();
@@ -9,36 +11,34 @@ const AddLeave = () => {
   const [leaveData, setLeaveData] = useState({
     userId: user._id,
   });
+  const navigation = useNavigate();
+  const { refetch } = useLeaves(baseUrl);
 
   const onchangehandler = (e) => {
     const { name, value } = e.target;
     setLeaveData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const { id: leaveId } = useParams();
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(leaveData);
+
     try {
-      const res = await axios.post(`${baseUrl}/api/leave/addLeave`, leaveData);
-      console.log(res.data.success);
+      // leaveId should come from somewhere (like route or state), not from user._id
+      const res = await axios.put(
+        `${baseUrl}/api/leave/editLeave/${leaveId}`,
+        leaveData
+      );
       if (res.data.success) {
-        Swal.fire({
-          position: "middle",
-          icon: "success",
-          title: "Your leave request has been submitted",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      } else {
-        throw new Error("Failed to submit leave");
+        Swal.fire({ icon: "success", title: "Leave updated!", timer: 1500 });
+        refetch();
+        navigation("/employee-dashboard/leave-history");
       }
     } catch (error) {
       Swal.fire({
-        position: "middle",
         icon: "error",
-        title: "Error submitting leave request",
-        text: error.message,
-        showConfirmButton: true,
+        title: "Error updating leave!",
+        text: error?.message,
       });
     }
   };
@@ -47,7 +47,7 @@ const AddLeave = () => {
     <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto max-w-md shrink-0 shadow-2xl">
         <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
-          Request a Leave
+          Edit Leave
         </h2>
         <form onSubmit={handleSubmit} className="card-body">
           {/* Leave Type */}
@@ -117,9 +117,9 @@ const AddLeave = () => {
           <div className="form-control mt-6">
             <button
               type="submit"
-              className="btn bg-primary hover:bg-secondary font-semibold text-white"
+              className="bg-view text-white p-2 rounded-lg hover:bg-green-600"
             >
-              Submit Leave
+              update Leave
             </button>
           </div>
         </form>

@@ -1,16 +1,11 @@
 import { NavLink } from "react-router-dom";
-import {
-  FaBuilding,
-  FaMoneyBill,
-  FaUsers,
-} from "react-icons/fa";
-import {  AiOutlineHourglass } from "react-icons/ai";
+import { FaBell, FaBuilding, FaMoneyBill, FaUsers } from "react-icons/fa";
+import { AiOutlineHourglass } from "react-icons/ai";
 import { useAuth } from "../../context/AuthContext";
 
 const SideBar = () => {
   const { user, loading } = useAuth();
 
- 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -46,7 +41,7 @@ const SideBar = () => {
             className={({ isActive }) =>
               `${
                 isActive ? "bg-primary" : " "
-              } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+              } flex  items-center space-x-4 py-2.5 px-5 rounded`
             }
           >
             <FaBuilding />
@@ -57,22 +52,33 @@ const SideBar = () => {
             className={({ isActive }) =>
               `${
                 isActive ? "bg-primary" : " "
-              } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+              } flex  items-center space-x-4 py-2.5 px-5 rounded`
             }
           >
             <AiOutlineHourglass />
             <span>Leaves</span>
           </NavLink>
           <NavLink
-            to={"/employee-dashboard/salary"}
+            to={"/employee-dashboard/salary-history"}
             className={({ isActive }) =>
               `${
                 isActive ? "bg-primary" : " "
-              } flex  items-center space-x-4 block py-2.5 px-5 rounded`
+              } flex  items-center space-x-4 py-2.5 px-5 rounded`
             }
           >
             <FaMoneyBill />
             <span>Salary</span>
+          </NavLink>
+          <NavLink
+            to={"/employee-dashboard/annoucementEmployee"}
+            className={({ isActive }) =>
+              `${
+                isActive ? "bg-primary" : " "
+              } flex  items-center space-x-4  py-2.5 px-5 rounded`
+            }
+          >
+            <FaBell />
+            <span>Annoucement</span>
           </NavLink>
         </>
       )}

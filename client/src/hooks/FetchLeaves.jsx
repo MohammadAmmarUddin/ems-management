@@ -8,11 +8,10 @@ const fetchLeaves = async (baseUrl) => {
 };
 
 // Hook to fetch leaves only
-const useLeaves = ({ baseUrl, user, loading }) => {
+const useLeaves = ({ baseUrl }) => {
   return useQuery({
     queryKey: ["leaves"],
     queryFn: () => fetchLeaves(baseUrl),
-    enabled: !!user && !loading,
   });
 };
 

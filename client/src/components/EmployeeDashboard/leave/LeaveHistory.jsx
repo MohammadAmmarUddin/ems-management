@@ -3,17 +3,16 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../../context/AuthContext";
+import { dateSlice } from "../../../utils/DateSlice";
 
 const LeaveHistory = () => {
   const [leaves, setLeaves] = useState([]);
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  // Fetch departments data
+
   const fetchSingleUserLeave = async () => {
     try {
-      const res = await axios.get(
-        `${baseUrl}/api/leave/getLeave/${user._id}`
-      );
+      const res = await axios.get(`${baseUrl}/api/leave/getLeave/${user._id}`);
       setLeaves(res.data.leaves);
     } catch (error) {
       console.log(error);
@@ -26,8 +25,6 @@ const LeaveHistory = () => {
       fetchSingleUserLeave();
     }
   }, []);
-
-  
 
   const buttonStyle = {
     backgroundColor: "#007bff",
@@ -58,8 +55,7 @@ const LeaveHistory = () => {
     },
     {
       name: "TO",
-      selector: (row) => row.endDate
-      ,
+      selector: (row) => row.endDate,
       sortable: true,
     },
     {
@@ -69,7 +65,7 @@ const LeaveHistory = () => {
     },
     {
       name: "APPLIED DATE",
-      selector: (row) => row.appliedAt,
+      selector: (row) => row.createdAt?.slice(0, 10),
       sortable: true,
     },
     {
@@ -82,17 +78,17 @@ const LeaveHistory = () => {
       cell: (row) => (
         <>
           <Link
-            to={`/admin-dashboard/edit-department/${row._id}`}
-            style={buttonStyle}
+            to={`/employee-dashboard/edit-employee-leave/${row._id}`}
+            className="bg-view text-white p-2 rounded-lg hover:bg-green-600"
           >
-            View
+            Edit
           </Link>
         </>
       ),
     },
   ];
 
-  if (!user && loading){
+  if (!user && loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>

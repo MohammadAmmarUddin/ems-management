@@ -49,7 +49,9 @@ exports.getEmployee = async (req, res) => {
     }
 
     // Fetch the employee from the database
-    const emp = await employeeModel.findOne({ _id: id }); // or { id: id } if you're using a custom field name
+    const emp =
+      (await employeeModel.findOne({ _id: id })) ||
+      (await employeeModel.findOne({ userId: id })); // or { id: id } if you're using a custom field name
 
     if (!emp) {
       return res

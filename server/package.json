@@ -23,6 +23,7 @@
     "multer": "^2.0.1",
     "multer-storage-cloudinary": "^4.0.0",
     "node": "^20.18.0",
-    "nodemailer": "^7.0.3"
+    "nodemailer": "^7.0.3",
+    "ua-parser-js": "^2.0.3"
   }
 }
