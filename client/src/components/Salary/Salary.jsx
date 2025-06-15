@@ -12,9 +12,10 @@ const Salary = () => {
 
   const {
     data: salaries = [],
-   
+
     isLoading,
   } = useSalaries({ baseUrl, user, loading });
+  console.log("salaries", salaries);
 
   const handleShowViewModal = (salary) => {
     setSelectedSalary(salary);
@@ -33,7 +34,7 @@ const Salary = () => {
     },
     {
       name: "Employee",
-      selector: (row) =>row.employeeId?.emp_name|| "N/A",
+      selector: (row) => row?.employee.emp_name || "N/A",
       sortable: true,
     },
     {
@@ -73,7 +74,7 @@ const Salary = () => {
     },
   ];
 
- if (loading || isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -103,7 +104,7 @@ const Salary = () => {
         highlightOnHover
         pagination
         columns={columns}
-        data={salaries.result}
+        data={salaries}
         progressPending={isLoading}
       />
 
@@ -121,7 +122,8 @@ const Salary = () => {
             </div>
             <div className="p-4 space-y-2">
               <p>
-                <strong>Name:</strong> {selectedSalary.employeeId?.name || "N/A"}
+                <strong>Name:</strong>{" "}
+                {selectedSalary.employeeId?.name || "N/A"}
               </p>
               <p>
                 <strong>Basic Salary:</strong> ₹{selectedSalary.basicSalary}

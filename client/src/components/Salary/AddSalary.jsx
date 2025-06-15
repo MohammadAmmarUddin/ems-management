@@ -9,8 +9,16 @@ import { useAuth } from "../../context/AuthContext";
 const AddSalary = () => {
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const { user, loading } = useAuth();
-  const { data: employees = [], isLoading } = useEmployees({ baseUrl, user,loading });
-  const {data: salaries = [],refetch,} = useSalaries({ baseUrl,user,loading });
+  const { data: employees = [], isLoading } = useEmployees({
+    baseUrl,
+    user,
+    loading,
+  });
+  const { data: salaries = [], refetch } = useSalaries({
+    baseUrl,
+    user,
+    loading,
+  });
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     employeeId: "",
@@ -44,17 +52,15 @@ const AddSalary = () => {
       console.log("Submitting salary data:", formData);
       const res = await axios.post(`${baseUrl}/api/salary/addSalary`, formData);
       if (res.status === 201 || res.data.success) {
-        
-  
-      Swal.fire({
-  position: "center-center",
-  icon: "success",
-  title: "Salary added successfully",
-  showConfirmButton: false,
-  timer: 1500
-});       
-      navigate("/admin-dashboard/salary");
-         refetch()
+        Swal.fire({
+          position: "center-center",
+          icon: "success",
+          title: "Salary added successfully",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        navigate("/admin-dashboard/salary");
+        refetch();
         setFormData({
           employeeId: "",
           basicSalary: "",
@@ -71,7 +77,7 @@ const AddSalary = () => {
       Swal.fire("Error", "Failed to submit salary data", "error");
     }
   };
-  if (loading || isLoading ) {
+  if (loading || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -92,14 +98,14 @@ const AddSalary = () => {
             <select
               name="employeeId"
               className="input input-bordered"
-              value={formData.employeeId}
+              value={formData.userId}
               onChange={handleChange}
               required
             >
               <option value="">Select Employee</option>
               {employees.map((emp) => (
-                <option key={emp._id} value={emp._id}>
-                  {emp.emp_name} ({emp.emp_id})
+                <option key={emp._id} value={emp.userId}>
+                  {emp.emp_name}
                 </option>
               ))}
             </select>
@@ -158,25 +164,27 @@ const AddSalary = () => {
           </div>
 
           {/* Pay Date */}
-         <input
-  type="date"
-  name="payDate"
-  value={
-    formData.payDate
-      ? new Date(Number(formData.payDate)).toISOString().split("T")[0]
-      : ""
-  }
-  onChange={(e) => {
-    const timestamp = new Date(e.target.value).getTime();
-    setFormData((prev) => ({ ...prev, payDate: timestamp }));
-  }}
-  required
-  className="input input-bordered"
-/>
-
+          <input
+            type="date"
+            name="payDate"
+            value={
+              formData.payDate
+                ? new Date(Number(formData.payDate)).toISOString().split("T")[0]
+                : ""
+            }
+            onChange={(e) => {
+              const timestamp = new Date(e.target.value).getTime();
+              setFormData((prev) => ({ ...prev, payDate: timestamp }));
+            }}
+            required
+            className="input input-bordered"
+          />
 
           <div className="form-control mt-6">
-            <button type="submit" className="btn bg-primary text-white font-semibold">
+            <button
+              type="submit"
+              className="btn bg-primary text-white font-semibold"
+            >
               Submit Salary
             </button>
           </div>

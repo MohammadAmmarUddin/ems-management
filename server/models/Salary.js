@@ -24,8 +24,6 @@ const salarySchema = new mongoose.Schema(
     payDate: {
       type: Date,
     },
-    createdAt: { type: Date, default: Date.now },
-    updateAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

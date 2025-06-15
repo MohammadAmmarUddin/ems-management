@@ -24,7 +24,7 @@ function AttendanceReport() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
-
+      console.log(groupData);
       if (data.success) {
         if (newSkip === 0) {
           setGroupData(data.groupData);
@@ -101,7 +101,7 @@ function AttendanceReport() {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) {
+  if (loading || !groupData) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>

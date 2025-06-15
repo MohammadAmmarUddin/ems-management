@@ -1,31 +1,27 @@
 const depModel = require("../models/depModel");
-
 exports.getDepartmentDistribution = async (req, res) => {
   try {
     const result = await depModel.aggregate([
       {
         $lookup: {
-          from: "employees", // collection name of employees
-          localField: "dep_name", // department field in department model
-          foreignField: "dep_name", // matching field in employee model
+          from: "employees", // collection name for employees
+          localField: "_id", // department's _id
+          foreignField: "department", // field in employees that references department
           as: "employees",
         },
       },
       {
         $project: {
           _id: 0,
-          name: "$dep_name", // department name as 'name'
-          value: { $size: "$employees" }, // count employees as 'value'
+          name: "$dep_name", // department's name
+          value: { $size: "$employees" }, // number of employees in department
         },
       },
     ]);
 
-    res.status(200).json(result); // returns [{ name: "HR", value: 3 }, ...]
+    res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({
-      message: "Server Error",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 

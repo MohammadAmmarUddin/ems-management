@@ -69,6 +69,8 @@ const AdminSummary = () => {
   const { data: monthlySalaryData, isLoading: isMonthlySalaryLoading } =
     useMonthlySalaryData(baseUrl);
 
+  console.log("userDepartment is ", useDepartmentDistribution);
+
   const isLoading =
     isDepLoading ||
     isSalaryLoading ||

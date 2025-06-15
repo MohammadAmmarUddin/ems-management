@@ -88,7 +88,7 @@ exports.totalSalary = async (req, res) => {
 exports.getSalaryById = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await salary.findById(id);
+    const result = await salary.findById({ id });
     if (!result) {
       return res.status(404).json({ message: "Salary not found" });
     }
@@ -98,15 +98,36 @@ exports.getSalaryById = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 exports.getAllSalaries = async (req, res) => {
   try {
-    const salaries = await salary.find().populate("employeeId", "emp_name _id");
+    const salaries = await salary.aggregate([
+      {
+        $lookup: {
+          from: "employees", // collection name in your db
+          localField: "employeeId", // field in salaries
+          foreignField: "userId", // field in employees
+          as: "employee",
+        },
+      },
+      { $unwind: "$employee" },
+      {
+        $project: {
+          _id: 1,
+          basicSalary: 1,
+          allowance: 1,
+          deductions: 1,
+          netSalary: 1,
+          payDate: 1,
+          "employee.emp_name": 1,
+          "employee.userId": 1,
+        },
+      },
+    ]);
 
     res.status(200).json({ success: true, result: salaries });
   } catch (error) {
     console.error("Error fetching salaries:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
@@ -134,9 +155,9 @@ exports.addSalary = async (req, res) => {
         .status(400)
         .json({ success: false, message: "All fields are required." });
     }
-
+    console.log(req.body, "req.body");
     // Optional: Check if employee exists
-    const employeeExists = await employee.findById(employeeId);
+    const employeeExists = await employee.find({ userId: employeeId });
     if (!employeeExists) {
       return res
         .status(404)

@@ -74,7 +74,7 @@ exports.attendanceReport = async (req, res) => {
       }
       acc[att.date].push({
         employeeId: att.employeeId.employeeId,
-        name: att.employeeId.userId.name,
+        name: att.employeeId.userId?.name,
         department: att.employeeId.department.dep_name,
         status: att.status || "Not Marked  ",
       });
