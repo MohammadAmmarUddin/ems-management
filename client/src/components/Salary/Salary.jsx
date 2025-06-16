@@ -15,7 +15,6 @@ const Salary = () => {
 
     isLoading,
   } = useSalaries({ baseUrl, user, loading });
-  console.log("salaries", salaries);
 
   const handleShowViewModal = (salary) => {
     setSelectedSalary(salary);
@@ -34,7 +33,7 @@ const Salary = () => {
     },
     {
       name: "Employee",
-      selector: (row) => row?.employee.emp_name || "N/A",
+      selector: (row) => row.employee.emp_name || "N/A",
       sortable: true,
     },
     {
@@ -123,7 +122,7 @@ const Salary = () => {
             <div className="p-4 space-y-2">
               <p>
                 <strong>Name:</strong>{" "}
-                {selectedSalary.employeeId?.name || "N/A"}
+                {selectedSalary.employee.emp_name || "N/A"}
               </p>
               <p>
                 <strong>Basic Salary:</strong> ₹{selectedSalary.basicSalary}

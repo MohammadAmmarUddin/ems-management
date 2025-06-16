@@ -85,19 +85,48 @@ exports.totalSalary = async (req, res) => {
 
 //  }
 // }
+const mongoose = require("mongoose");
+
 exports.getSalaryById = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await salary.findById({ id });
-    if (!result) {
-      return res.status(404).json({ message: "Salary not found" });
+    const salaries = await salary.aggregate([
+      {
+        $match: { employeeId: new mongoose.Types.ObjectId(id) },
+      },
+      {
+        $lookup: {
+          from: "employees",
+          localField: "employeeId",
+          foreignField: "userId",
+          as: "employeeDetails",
+        },
+      },
+      { $unwind: "$employeeDetails" },
+      {
+        $project: {
+          _id: 1,
+          basicSalary: 1,
+          allowance: 1,
+          deductions: 1,
+          netSalary: 1,
+          payDate: 1,
+          emp_name: "$employeeDetails.emp_name",
+          userId: "$employeeDetails.userId",
+        },
+      },
+    ]);
+
+    if (!salaries.length) {
+      return res.status(404).json({ message: "Salaries not found" });
     }
-    res.status(200).json({ success: true, result });
+    res.status(200).json({ success: true, result: salaries });
   } catch (error) {
-    console.error("Error fetching result:", error);
+    console.error("Error fetching salaries:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 exports.getAllSalaries = async (req, res) => {
   try {
     const salaries = await salary.aggregate([

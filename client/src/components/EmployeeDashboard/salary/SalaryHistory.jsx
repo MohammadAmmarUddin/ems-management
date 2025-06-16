@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../../context/AuthContext";
-import useSalaries from "../../../hooks/FetchSalary";
 import useSalaryById from "../../../hooks/FetchSingSalaryById";
 
 const SalaryHistory = () => {
@@ -11,15 +10,12 @@ const SalaryHistory = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const id = user._id;
-  console.log(id, "id");
   const {
-    data: salaryById,
-
+    data: salaryById = [], // fallback to an empty array
     isLoading,
   } = useSalaryById({ baseUrl, id });
 
-  console.log("SalaryById", salaryById);
-
+  console.log("salaryById", salaryById);
   const handleShowViewModal = (salary) => {
     setSelectedSalary(salary);
     setShowViewModal(true);
@@ -37,7 +33,7 @@ const SalaryHistory = () => {
     },
     {
       name: "Employee",
-      selector: (row) => row.employeeId?.emp_name || "N/A",
+      selector: (row) => row.emp_name || "N/A",
       sortable: true,
     },
     {
@@ -87,7 +83,7 @@ const SalaryHistory = () => {
   return (
     <div>
       <div className="text-center mb-4">
-        <h3 className="text-2xl font-bold">Manage Salaries</h3>
+        <h3 className="text-2xl font-bold">Salaries</h3>
       </div>
       <div className="flex justify-between mb-4 px-5">
         <input
@@ -95,20 +91,13 @@ const SalaryHistory = () => {
           className="px-4 py-1 border rounded"
           placeholder="Search by name"
         />
-        <Link
-          to={`/admin-dashboard/salary/addSalary/${user._id}`}
-          className="px-6 py-1 text-white rounded bg-primary hover:bg-secondary font-semibold"
-        >
-          Add Salary
-        </Link>
       </div>
 
       <DataTable
         highlightOnHover
         pagination
         columns={columns}
-        data={salaryById.result}
-        progressPending={isLoading}
+        data={salaryById || []}
       />
 
       {showViewModal && selectedSalary && (
@@ -125,8 +114,7 @@ const SalaryHistory = () => {
             </div>
             <div className="p-4 space-y-2">
               <p>
-                <strong>Name:</strong>{" "}
-                {selectedSalary.employeeId?.name || "N/A"}
+                <strong>Name:</strong> {selectedSalary.emp_name || "N/A"}
               </p>
               <p>
                 <strong>Basic Salary:</strong> ₹{selectedSalary.basicSalary}
