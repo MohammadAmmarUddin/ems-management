@@ -4,6 +4,27 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const UAParser = require("ua-parser-js");
+
+exports.logoutUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await userModel.findByIdAndUpdate(userId, { isActive: false }); // update isActive field
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Logout failed" });
+  }
+};
+exports.getActiveUsers = async (req, res) => {
+  try {
+    const activeUsers = await userModel
+      .find({ isActive: true })
+      .select("-password");
+    res.status(200).json({ success: true, result: activeUsers });
+  } catch (err) {
+    console.log("err", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -29,6 +50,8 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       res.send({ success: false, message: "password not matched" });
     }
+    user.isActive = true;
+    user.lastLogin = new Date();
 
     const token = jwt.sign(
       { _id: user._id, role: user.role },

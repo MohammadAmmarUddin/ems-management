@@ -6,6 +6,8 @@ const {
   resetPassword,
   deleteUser,
   verify,
+  getActiveUsers,
+  logoutUser,
 } = require("../controller/userController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -15,6 +17,8 @@ router.get("/getAllUsers", getAllUsers);
 //post
 
 router.post("/login", login);
+router.post("/logout/:id", authMiddleware, logoutUser);
+router.get("/active", authMiddleware, getActiveUsers);
 
 router.post("/forgetPassword/:id", forgetPassword);
 router.post("/resetPassword/:id", resetPassword);

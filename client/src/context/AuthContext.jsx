@@ -7,10 +7,11 @@ const AuthContext = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+
+
   useEffect(() => {
     const verifyUser = async () => {
-      const token = localStorage.getItem("token");
-
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
         setUser(null);
         setLoading(false);
@@ -43,9 +44,31 @@ const AuthContext = ({ children }) => {
   const login = (user) => {
     setUser(user);
   };
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("token");
+  const logout = async () => {
+    try {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+
+      if (token) {
+        await axios.post(
+          `${baseUrl}/api/user/logout/${user._id}`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+
+      setUser(null);
+
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (

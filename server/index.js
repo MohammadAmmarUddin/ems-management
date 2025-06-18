@@ -7,6 +7,7 @@ const app = express();
 const leaveRouter = require("./Routes/leaveRouter");
 const depRouter = require("./Routes/depRouter");
 const employeeRouter = require("./Routes/employeeRouter");
+const managerRouter = require("./Routes//managerRouter");
 const salaryRouter = require("./Routes/salaryRoute");
 const userRouter = require("./Routes/userRouter");
 const attendanceRouter = require("./Routes/attendanceRouter");
@@ -20,6 +21,7 @@ app.use(
 );
 app.use("/api/department", depRouter);
 app.use("/api/employee", employeeRouter);
+app.use("/api/manager", managerRouter);
 app.use("/api/leave", leaveRouter);
 app.use("/api/salary", salaryRouter);
 app.use("/api/user", userRouter);
