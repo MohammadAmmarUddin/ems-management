@@ -19,7 +19,24 @@ const storage = multer.diskStorage({
 });
 
 exports.upload = multer({ storage: storage });
+exports.getAllManagers = async (req, res) => {
+  try {
+    const managers = await employeeModel
+      .find({ role: "manager" })
+      .populate("department", "dep_name");
 
+    res.status(200).json({
+      success: true,
+      managers,
+    });
+  } catch (error) {
+    console.error("Error fetching managers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch managers",
+    });
+  }
+};
 exports.totalEmployeesCount = async (req, res) => {
   try {
     const totalEmployees = await employeeModel.estimatedDocumentCount();
@@ -31,7 +48,7 @@ exports.totalEmployeesCount = async (req, res) => {
 };
 
 exports.getEmployees = async (req, res) => {
-  const emp = await employeeModel.find({});
+  const emp = await employeeModel.find({ role: "employee" });
 
   res.status(200).send({ emp, success: true });
 };
@@ -308,7 +325,7 @@ exports.getSingleUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const result = await employeeModel
-      .find({})
+      .find({ role: "employee" })
       .populate("department", "dep_name"); // Populate only dep_name from department
 
     res.status(200).send({ result, success: true });

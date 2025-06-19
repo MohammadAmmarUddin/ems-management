@@ -70,8 +70,6 @@ function App() {
           <Route path="view-employee/:id" element={<ViewEmployee />} />
           <Route path="edit-employee/:id" element={<EditEmployee />} />
           <Route path="managers" element={<Managers />} />
-          <Route path="add-manager" element={<AddManager />} />
-          <Route path="edit-manager/:id" element={<EditManager />} />
           <Route path="projects" element={<Projects />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="attendanceReport" element={<AttendanceReport />} />
@@ -118,12 +116,9 @@ function App() {
           <Route index element={<Summary />} />
           <Route path="summary" element={<Summary />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="leave-history" element={<LeaveHistory />} />
-          <Route path="add-leave" element={<AddLeave />} />
-          <Route path="edit-employee-leave/:id" element={<EditLeave />} />
-          <Route path="salary-history" element={<SalaryHistory />} />
+          <Route path="projects" element={<LeaveHistory />} />
+          <Route path="managers" element={<Managers />} />
           <Route path="annoucementEmployee" element={<AnnoucementEmployee />} />
-          <Route path="tasks" element={<MyTasks />} />
         </Route>
       </Routes>
     </BrowserRouter>

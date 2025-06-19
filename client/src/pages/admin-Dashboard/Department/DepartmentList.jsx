@@ -13,8 +13,7 @@ const DepartmentList = () => {
     data: departments,
     refetch,
     isLoading,
-    isError,
-    error,
+
   } = useDepartments(baseUrl);
 
   const handleDelete = async (rowId) => {
@@ -23,7 +22,7 @@ const DepartmentList = () => {
         `${baseUrl}/api/department/deleteDep/${rowId}`
       );
 
-      if (res.data.success === true) {
+      if (res.data.success === true || res.data.status === 200) {
         Swal.fire({
           position: "center center",
           icon: "success",
@@ -62,8 +61,26 @@ const DepartmentList = () => {
       sortable: true,
     },
     {
-      name: "Department Desc",
-      selector: (row) => row.dep_desc,
+      name: "Manager",
+      selector: (row) => row.manager?.emp_name,
+      sortable: true,
+    },
+    {
+      name: "Image",
+      selector: (row) => (
+        <img
+          src={`http://localhost:5001/uploads/${row.manager?.profileImage}`}
+          width={30}
+          className="rounded-full"
+          alt=""
+        />
+      ),
+      sortable: true,
+      width: "180px",
+    },
+    {
+      name: "Total Employees",
+      selector: (row) => row.employeeCount,
       sortable: true,
     },
     {

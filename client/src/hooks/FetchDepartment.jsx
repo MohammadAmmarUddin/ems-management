@@ -12,6 +12,8 @@ const useDepartments = (baseUrl) => {
   return useQuery({
     queryKey: ["departments"],
     queryFn: () => fetchDepartments(baseUrl),
+    retry: 5,
+
   });
 };
 

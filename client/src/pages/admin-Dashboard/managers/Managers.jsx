@@ -47,10 +47,10 @@ const ManagerList = () => {
     });
 
     if (result.isConfirmed) {
-      const token = localStorage.getItem("token");
+      const token = await localStorage.getItem("token") || await sessionStorage.token('token');
       try {
         const { data } = await axios.delete(
-          `${baseUrl}/api/manager/deleteManager/${id}`,
+          `${baseUrl}/api/employee/deleteEmployee/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -88,26 +88,39 @@ const ManagerList = () => {
       width: "50px",
     },
     {
-      name: "Manager_Id",
-      selector: (row) => row.managerId,
+      name: "Name",
+      selector: (row) => row.emp_name,
       sortable: true,
       width: "150px",
     },
     {
-      name: "Name",
-      selector: (row) => row.mang_name,
+      name: "Department",
+      selector: (row) => row.department?.dep_name,
+      sortable: true,
+      width: "180px",
+    },
+    {
+      name: "Image",
+      selector: (row) => (
+        <img
+          src={`http://localhost:5001/uploads/${row.profileImage}`}
+          width={30}
+          className="rounded-full"
+          alt=""
+        />
+      ),
       sortable: true,
       width: "180px",
     },
     {
       name: "Phone",
-      selector: (row) => row.mang_phone,
+      selector: (row) => row.emp_phone,
       sortable: true,
       width: "150px",
     },
     {
       name: "Email",
-      selector: (row) => row.mang_email,
+      selector: (row) => row.emp_email,
       sortable: true,
       width: "200px",
     },
@@ -122,7 +135,7 @@ const ManagerList = () => {
             View
           </button>
           <Link
-            to={`/admin-dashboard/edit-manager/${row._id}`}
+            to={`/admin-dashboard/edit-employee/${row._id}`}
             className="bg-edit text-white p-2 rounded-lg hover:bg-orange-600"
           >
             Edit
@@ -171,7 +184,7 @@ const ManagerList = () => {
           placeholder="Search by Name, ID, Phone"
         />
         <Link
-          to="/admin-dashboard/add-manager"
+          to="/admin-dashboard/add-employee"
           className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
           Add New Manager
@@ -205,18 +218,22 @@ const ManagerList = () => {
             </div>
             <div className="p-4">
               {selectedManager ? (
-                <div>
+                <div> <img
+                  src={`http://localhost:5001/uploads/${selectedManager?.profileImage}`}
+                  width={70}
+                  alt=""
+                />
                   <p>
-                    <strong>Name:</strong> {selectedManager?.mang_name}
+                    <strong>Name:</strong> {selectedManager?.emp_name}
                   </p>
                   <p>
-                    <strong>Manager ID:</strong> {selectedManager?.managerId}
+                    <strong>Manager ID:</strong> {selectedManager?.userId}
                   </p>
                   <p>
-                    <strong>Phone:</strong> {selectedManager?.mang_phone}
+                    <strong>Phone:</strong> {selectedManager?.emp_phone}
                   </p>
                   <p>
-                    <strong>Email:</strong> {selectedManager?.mang_email}
+                    <strong>Email:</strong> {selectedManager?.emp_email}
                   </p>
                   <p>
                     <strong>Joining Date:</strong> {joiningDate || "N/A"}

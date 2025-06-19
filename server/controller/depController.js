@@ -1,4 +1,5 @@
 const depModel = require("../models/depModel");
+const employee = require("../models/employeeModel");
 exports.getDepartmentDistribution = async (req, res) => {
   try {
     const result = await depModel.aggregate([
@@ -39,13 +40,12 @@ exports.countDep = async (req, res) => {
 };
 exports.addDep = async (req, res) => {
   try {
-    const { dep_name, dep_desc } = req.body;
-
-    console.log(dep_name);
+    const { dep_name, dep_desc, manager } = req.body;
 
     const result = await depModel.create({
       dep_name,
       dep_desc,
+      manager,
     });
     res.status(200).send({ success: true, result });
   } catch (error) {
@@ -55,12 +55,38 @@ exports.addDep = async (req, res) => {
 
 exports.getAllDep = async (req, res) => {
   try {
-    const result = await depModel.find({});
-    res.status(200).send({ success: true, result });
+    // Step 1: Get all departments with manager details
+    const departments = await depModel
+      .find({})
+      .populate("manager", "emp_name emp_email profileImage");
+
+    // Step 2: For each department, count the number of employees
+    const departmentsWithCount = await Promise.all(
+      departments.map(async (dep) => {
+        const count = await employee.countDocuments({
+          department: dep._id,
+        });
+        return {
+          ...dep.toObject(),
+          employeeCount: count,
+        };
+      })
+    );
+
+    // Step 3: Send response
+    res.status(200).json({
+      success: true,
+      result: departmentsWithCount,
+    });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching departments:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch departments",
+    });
   }
 };
+
 exports.getSingleDep = async (req, res) => {
   try {
     const result = await depModel.findById(req.params.id);
@@ -75,7 +101,7 @@ exports.deleteDep = async (req, res) => {
     const { id } = req.params;
     const deleteDepartment = await depModel.findById({ _id: id });
     await deleteDepartment.deleteOne();
-    res.status(200).send({ success: true, result });
+    res.status(200).send({ success: true, result: deleteDepartment });
   } catch (error) {
     console.log(error);
   }

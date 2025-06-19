@@ -106,8 +106,8 @@ const AdminSummary = () => {
             <thead className="bg-gray-100 text-gray-700">
               <tr>
                 <th className="text-left py-2 px-4 border-b">Email</th>
+                <th className="text-left py-2 px-4 border-b">Name</th>
                 <th className="text-left py-2 px-4 border-b">Role</th>
-                <th className="text-left py-2 px-4 border-b">Phone</th>
               </tr>
             </thead>
             <tbody>
@@ -115,8 +115,11 @@ const AdminSummary = () => {
                 activeUsers.map((user) => (
                   <tr key={user._id} className="hover:bg-gray-50">
                     <td className="py-2 px-4 border-b">{user.email}</td>
-                    <td className="py-2 px-4 border-b capitalize">{user.role}</td>
-                    <td className="py-2 px-4 border-b">{user.phone}</td>
+                    <td className="py-2 px-4 border-b capitalize flex items-center gap-2">
+                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                      {user.name}
+                    </td>
+                    <td className="py-2 px-4 border-b">{user.role}</td>
                   </tr>
                 ))
               ) : (

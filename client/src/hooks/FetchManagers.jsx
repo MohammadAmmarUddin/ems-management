@@ -2,14 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 // Fetcher function
 const fetchManagers = async (baseUrl) => {
-  const token = await localStorage.getItem("token");
-  console.log("token", token);
-  const res = await axios.get(`${baseUrl}/api/manager/getManagers`, {
+  const token = await localStorage.getItem("token") || await sessionStorage.getItem('token');
+  const res = await axios.get(`${baseUrl}/api/employee/managers`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  return res.data.result;
+  return res.data.managers;
 };
 
 // Custom hook
@@ -18,6 +17,8 @@ const useManagers = ({ baseUrl }) => {
     queryKey: ["managers"],
     queryFn: () => fetchManagers(baseUrl),
 
+    retry: 5,
+    staleTime: 5 * 60 * 1000,
   });
 };
 

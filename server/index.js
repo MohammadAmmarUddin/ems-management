@@ -6,8 +6,8 @@ require("dotenv").config();
 const app = express();
 const leaveRouter = require("./Routes/leaveRouter");
 const depRouter = require("./Routes/depRouter");
+const projectRouter = require("./Routes/projectRouter");
 const employeeRouter = require("./Routes/employeeRouter");
-const managerRouter = require("./Routes//managerRouter");
 const salaryRouter = require("./Routes/salaryRoute");
 const userRouter = require("./Routes/userRouter");
 const attendanceRouter = require("./Routes/attendanceRouter");
@@ -21,11 +21,12 @@ app.use(
 );
 app.use("/api/department", depRouter);
 app.use("/api/employee", employeeRouter);
-app.use("/api/manager", managerRouter);
 app.use("/api/leave", leaveRouter);
 app.use("/api/salary", salaryRouter);
 app.use("/api/user", userRouter);
 app.use("/api/attendance", attendanceRouter);
+app.use("/api/projects", projectRouter);
+
 //  mongoose.connect(
 //   "mongodb+srv://safara:safara@cluster0.t9lecvs.mongodb.net/EMS?retryWrites=true&w=majority&appName=Cluster0"
 // );

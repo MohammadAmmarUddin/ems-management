@@ -8,6 +8,11 @@ const depSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    manager: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "employees",
+      required: true,
+    },
     dep_desc: {
       type: String,
     },

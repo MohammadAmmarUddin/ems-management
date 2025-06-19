@@ -9,13 +9,14 @@ const {
   deleteEmployee,
   upload,
   getAllUsers,
+  getAllManagers,
 } = require("../controller/employeeController");
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const router = express.Router();
 
 //get
-
+router.get("/managers", authMiddleware, getAllManagers);
 router.get("/searchEmployees", searchEmployee);
 router.get("/getEmployees", getAllUsers);
 router.get("/getEmployeesCount", totalEmployeesCount);

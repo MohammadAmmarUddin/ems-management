@@ -12,7 +12,8 @@ const useEmployees = ({ baseUrl, user }) => {
   return useQuery({
     queryKey: ["employees"],
     queryFn: () => fetchEmployees(baseUrl),
-    enabled: !!user, // Only fetch when user is available
+    retry: 5,
+    staleTime: 5 * 60 * 1000,
   });
 };
 
