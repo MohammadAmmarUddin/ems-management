@@ -30,6 +30,7 @@ import {
   useSalaryAggregation,
 } from "../../../hooks/UseAdminDashboard";
 import useActiveUsers from "../../../hooks/FetchActiveUsers";
+import { useState } from "react";
 
 const COLORS = [
   "#4F46E5", "#F59E0B", "#EF4444", "#10B981", "#3B82F6",
@@ -47,7 +48,8 @@ const AdminSummary = () => {
   const { data: monthlySalaryData, isLoading: isMonthlySalaryLoading } = useMonthlySalaryData(baseUrl);
   const { data: activeUsers = [], isLoading: isActiveUsersLoading } = useActiveUsers(baseUrl);
   const { data: projects, isLoading: isProjectCountLoading } = useProjectCount(baseUrl);
-  console.log("projects", projects);
+  const [showAllUsers, setShowAllUsers] = useState(false);
+
   const isLoading = [
     isDepLoading,
     isSalaryLoading,
@@ -106,7 +108,18 @@ const AdminSummary = () => {
 
         {/* Active Users */}
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-2xl font-semibold text-gray-700 mb-4">Active Users</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-2xl font-semibold text-gray-700">Active Users</h3>
+            {activeUsers.length > 5 && (
+              <button
+                onClick={() => setShowAllUsers(!showAllUsers)}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                {showAllUsers ? "Show Less" : "See All"}
+              </button>
+            )}
+          </div>
+
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto text-sm border border-gray-200">
               <thead className="bg-gray-100 text-gray-700">
@@ -118,7 +131,7 @@ const AdminSummary = () => {
               </thead>
               <tbody>
                 {activeUsers.length > 0 ? (
-                  activeUsers.map((user) => (
+                  (showAllUsers ? activeUsers : activeUsers.slice(0, 5)).map((user) => (
                     <tr key={user._id} className="hover:bg-gray-50">
                       <td className="py-2 px-4 border-b">{user.email}</td>
                       <td className="py-2 px-4 border-b capitalize flex items-center gap-2">
@@ -142,7 +155,17 @@ const AdminSummary = () => {
 
         {/* Running Projects */}
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-2xl font-semibold text-gray-700 mb-4">Running Projects</h3>
+          <h3 className="text-2xl font-semibold text-gray-700 mb-4 flex justify-between items-center">
+            Running Projects
+            {projects?.projects?.length > 5 && (
+              <button
+                onClick={() => (window.location.href = "/admin-dashboard/projects")}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                See All
+              </button>
+            )}
+          </h3>
           <p className="mb-4 text-lg">
             Total Projects:{" "}
             <span className="font-bold text-blue-600">
@@ -152,7 +175,7 @@ const AdminSummary = () => {
 
           <ul className="space-y-2">
             {projects?.projects?.length > 0 ? (
-              projects.projects.map((project) => (
+              projects.projects.slice(0, 5).map((project) => (
                 <li
                   key={project._id}
                   className="p-3 bg-gray-100 rounded flex justify-between items-center"
@@ -164,7 +187,6 @@ const AdminSummary = () => {
             ) : (
               <li className="text-gray-500">No Running Projects</li>
             )}
-
           </ul>
         </div>
       </div>
