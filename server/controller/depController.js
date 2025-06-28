@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const depModel = require("../models/depModel");
 const employee = require("../models/employeeModel");
 exports.getDepartmentDistribution = async (req, res) => {
@@ -39,17 +40,41 @@ exports.countDep = async (req, res) => {
   }
 };
 exports.addDep = async (req, res) => {
+  const session = await mongoose.startSession();
   try {
-    const { dep_name, dep_desc, manager } = req.body;
+    await session.withTransaction(async () => {
+      const { dep_name, dep_desc, manager } = req.body;
 
-    const result = await depModel.create({
-      dep_name,
-      dep_desc, 
-      manager,
+      if (!dep_name || !manager) {
+        return res.status(400).json({
+          success: false,
+          message: "Department name and manager are required.",
+        });
+      }
+
+      const newDepartment = await depModel
+        .create({
+          dep_name,
+          dep_desc,
+          manager,
+        })
+        .session({ session });
+
+      await employee.findByIdAndUpdate(manager, {
+        department: newDepartment._id,
+      });
     });
-    res.status(200).send({ success: true, result });
+
+    res.status(200).json({
+      success: true,
+      message: "Department created and manager updated.",
+      result: newDepartment,
+    });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to create department." });
   }
 };
 
@@ -111,12 +136,38 @@ exports.updateDep = async (req, res) => {
   try {
     const { dep_name, dep_desc, manager } = req.body;
 
-    const result = await depModel.findByIdAndUpdate(
+    if (!dep_name || !manager) {
+      return res.status(400).json({
+        success: false,
+        message: "Department name and manager are required.",
+      });
+    }
+
+    const updatedDepartment = await depModel.findByIdAndUpdate(
       req.params.id,
       { dep_name, dep_desc, manager },
       { new: true }
     );
 
-    res.status(200).send({ success: true, result });
-  } catch (error) {}
+    if (!updatedDepartment) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Department not found." });
+    }
+
+    await employee.findByIdAndUpdate(manager, {
+      department: updatedDepartment._id,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Department updated and manager assigned.",
+      result: updatedDepartment,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to update department." });
+  }
 };

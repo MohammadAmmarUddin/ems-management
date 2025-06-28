@@ -13,12 +13,12 @@ import {
 import {
   FaBuilding,
   FaUsers,
-  FaMoneyBillWave,
   FaCheckCircle,
   FaTimesCircle,
   FaClock,
 } from "react-icons/fa";
 import { MdOutlineAttachMoney } from "react-icons/md";
+import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import SummaryCard from "./SummaryCard";
 import {
   useDepartmentCount,
@@ -26,6 +26,7 @@ import {
   useEmployeesCount,
   useLeaveStats,
   useMonthlySalaryData,
+  useProjectCount,
   useSalaryAggregation,
 } from "../../../hooks/UseAdminDashboard";
 import useActiveUsers from "../../../hooks/FetchActiveUsers";
@@ -45,7 +46,8 @@ const AdminSummary = () => {
   const { data: leaveStats, isLoading: isLeaveStatsLoading } = useLeaveStats(baseUrl);
   const { data: monthlySalaryData, isLoading: isMonthlySalaryLoading } = useMonthlySalaryData(baseUrl);
   const { data: activeUsers = [], isLoading: isActiveUsersLoading } = useActiveUsers(baseUrl);
-
+  const { data: projects, isLoading: isProjectCountLoading } = useProjectCount(baseUrl);
+  console.log("projects", projects);
   const isLoading = [
     isDepLoading,
     isSalaryLoading,
@@ -54,6 +56,7 @@ const AdminSummary = () => {
     isLeaveStatsLoading,
     isMonthlySalaryLoading,
     isActiveUsersLoading,
+    isProjectCountLoading,
   ].some(Boolean);
 
   if (isLoading) {
@@ -74,63 +77,95 @@ const AdminSummary = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <SummaryCard
           icon={<FaUsers className="text-white text-3xl" />}
-          text="Total Users"
-          number={usersCount}
+          text="Employees"
+          number={usersCount?.totalEmployees || 0}
           color="bg-[#4F46E5]"
+        />
+        <SummaryCard
+          icon={<AiOutlineUsergroupAdd className="text-white text-3xl" />}
+          text="Managers"
+          number={usersCount?.totalManagers || 0}
+          color="bg-[#10B981]"
         />
         <SummaryCard
           icon={<FaBuilding className="text-white text-3xl" />}
           text="Total Departments"
-          number={countDep}
+          number={countDep || 0}
           color="bg-[#F59E0B]"
         />
         <SummaryCard
           icon={<MdOutlineAttachMoney className="text-white text-3xl" />}
-          text="Total Salary Amount"
-          number={totalSalary[0]?.totalAmount}
+          text="Total Salary Paid"
+          number={totalSalary?.[0]?.totalAmount || 0}
           color="bg-[#EF4444]"
-        />
-        <SummaryCard
-          icon={<FaMoneyBillWave className="text-white text-3xl" />}
-          text="Total Salary Count"
-          number={totalSalary[0]?.totalCount}
-          color="bg-[#10B981]"
         />
       </div>
 
-      {/* Active Users Table */}
-      <div className="bg-white rounded-xl shadow-md mt-16 p-6">
-        <h3 className="text-2xl font-semibold text-gray-700 mb-4">Active Users</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto text-sm border border-gray-200">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="text-left py-2 px-4 border-b">Email</th>
-                <th className="text-left py-2 px-4 border-b">Name</th>
-                <th className="text-left py-2 px-4 border-b">Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeUsers.length > 0 ? (
-                activeUsers.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">{user.email}</td>
-                    <td className="py-2 px-4 border-b capitalize flex items-center gap-2">
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                      {user.name}
-                    </td>
-                    <td className="py-2 px-4 border-b">{user.role}</td>
-                  </tr>
-                ))
-              ) : (
+      {/* Active Users & Running Projects */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-16">
+
+        {/* Active Users */}
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h3 className="text-2xl font-semibold text-gray-700 mb-4">Active Users</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto text-sm border border-gray-200">
+              <thead className="bg-gray-100 text-gray-700">
                 <tr>
-                  <td colSpan="3" className="text-center py-4 text-gray-500">
-                    No active users found.
-                  </td>
+                  <th className="text-left py-2 px-4 border-b">Email</th>
+                  <th className="text-left py-2 px-4 border-b">Name</th>
+                  <th className="text-left py-2 px-4 border-b">Role</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {activeUsers.length > 0 ? (
+                  activeUsers.map((user) => (
+                    <tr key={user._id} className="hover:bg-gray-50">
+                      <td className="py-2 px-4 border-b">{user.email}</td>
+                      <td className="py-2 px-4 border-b capitalize flex items-center gap-2">
+                        <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                        {user.name}
+                      </td>
+                      <td className="py-2 px-4 border-b">{user.role}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" className="text-center py-4 text-gray-500">
+                      No active users found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Running Projects */}
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h3 className="text-2xl font-semibold text-gray-700 mb-4">Running Projects</h3>
+          <p className="mb-4 text-lg">
+            Total Projects:{" "}
+            <span className="font-bold text-blue-600">
+              {projects?.projectsCount || 0}
+            </span>
+          </p>
+
+          <ul className="space-y-2">
+            {projects?.projects?.length > 0 ? (
+              projects.projects.map((project) => (
+                <li
+                  key={project._id}
+                  className="p-3 bg-gray-100 rounded flex justify-between items-center"
+                >
+                  {project.title}{" "}
+                  <span className="text-green-500 text-sm">Ongoing</span>
+                </li>
+              ))
+            ) : (
+              <li className="text-gray-500">No Running Projects</li>
+            )}
+
+          </ul>
         </div>
       </div>
 
@@ -184,7 +219,7 @@ const AdminSummary = () => {
           <SummaryCard
             icon={<FaUsers className="text-white text-2xl" />}
             text="Leaves Applied"
-            number={leaveStats.totalLeaves || 0}
+            number={leaveStats?.totalLeaves || 0}
             color="bg-blue-500"
           />
           <SummaryCard

@@ -14,7 +14,7 @@ const EditEmployee = () => {
   const [formData, setFormData] = useState({
     employeeId: "",
     emp_name: "",
-    department: "",
+    department: "", // store department ObjectId string
     emp_email: "",
     emp_phone: "",
     marital_status: "",
@@ -23,17 +23,16 @@ const EditEmployee = () => {
     salary: "",
     role: "",
     designation: "",
-    profileImage: null,
+    profileImage: null, // file object for new image
     password: "",
-    imageUrl: "", // For displaying existing image
+    imageUrl: "", // existing image filename or URL for display
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: departments, isLoading: isDeptLoading } =
-    useDepartments(baseUrl);
+  const { data: departments, isLoading: isDeptLoading } = useDepartments(baseUrl);
   const { data: employeeById } = useEmployeeById(baseUrl, id);
 
-  // Validation functions
+  // Validation functions (unchanged)
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidPhone = (phone) => /^\d{10,15}$/.test(phone);
   const isStrongPassword = (password) =>
@@ -45,14 +44,14 @@ const EditEmployee = () => {
     return age >= 18 && age <= 65;
   };
 
-  // Set form data when employee data is fetched
+  // Populate form with existing employee data when loaded
   useEffect(() => {
     if (employeeById) {
       setFormData({
         employeeId: employeeById.employeeId || "",
         emp_name: employeeById.emp_name || "",
         emp_email: employeeById.emp_email || "",
-        department: employeeById.department.dep_name || "",
+        department: employeeById.department?._id || "", // **Use ObjectId string**
         emp_phone: employeeById.emp_phone || "",
         marital_status: employeeById.marital_status || "",
         dob: employeeById.dob
@@ -75,31 +74,24 @@ const EditEmployee = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      profileImage: e.target.files[0],
-      imageUrl: URL.createObjectURL(e.target.files[0]),
-    }));
+    if (e.target.files.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        profileImage: e.target.files[0],
+        imageUrl: URL.createObjectURL(e.target.files[0]),
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation checks
     if (!formData.employeeId || !formData.emp_name) {
-      return Swal.fire(
-        "Error",
-        "Employee ID and Name are required.",
-        "warning"
-      );
+      return Swal.fire("Error", "Employee ID and Name are required.", "warning");
     }
 
     if (!isValidEmail(formData.emp_email)) {
-      return Swal.fire(
-        "Invalid Email",
-        "Enter a valid email address.",
-        "warning"
-      );
+      return Swal.fire("Invalid Email", "Enter a valid email address.", "warning");
     }
 
     if (!isValidPhone(formData.emp_phone)) {
@@ -130,9 +122,9 @@ const EditEmployee = () => {
       setIsSubmitting(true);
       const data = new FormData();
 
-      // Append all form data
       for (const key in formData) {
-        if (key !== "imageUrl") {
+        if (key === "imageUrl") continue; // skip imageUrl as it is just preview URL
+        if (formData[key] !== null && formData[key] !== "") {
           data.append(key, formData[key]);
         }
       }
@@ -157,8 +149,7 @@ const EditEmployee = () => {
       }
     } catch (error) {
       console.error(error);
-      let message =
-        "There was an issue updating the employee. Please try again.";
+      let message = "There was an issue updating the employee. Please try again.";
 
       if (
         error.response?.data?.code === 11000 ||
@@ -194,9 +185,7 @@ const EditEmployee = () => {
   return (
     <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto shrink-0 shadow-2xl">
-        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
-          Edit Employee
-        </h2>
+        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">Edit Employee</h2>
         <form onSubmit={handleSubmit} className="card-body" autoComplete="off">
           {/* row 1 */}
           <div className="flex gap-x-3">
@@ -271,7 +260,7 @@ const EditEmployee = () => {
               <select
                 name="department"
                 className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.department._id}
+                value={formData.department}
                 onChange={handleChange}
                 required
               >
@@ -329,6 +318,7 @@ const EditEmployee = () => {
                 onChange={handleChange}
                 required
               >
+                {/* options unchanged */}
                 <option value="">Select Designation</option>
                 <option value="Software Engineer">Software Engineer</option>
                 <option value="Project Manager">Project Manager</option>
@@ -433,8 +423,11 @@ const EditEmployee = () => {
               />
               {(formData.imageUrl || formData.profileImage) && (
                 <img
-                  src={`${baseUrl}/uploads/${formData.imageUrl || formData.profileImage
-                    }`}
+                  src={
+                    formData.profileImage
+                      ? formData.imageUrl
+                      : `${baseUrl}/uploads/${formData.imageUrl}`
+                  }
                   alt="Preview"
                   className="w-24 h-24 object-cover mt-2 rounded border"
                 />
@@ -463,8 +456,8 @@ const EditEmployee = () => {
               type="submit"
               disabled={isSubmitting}
               className={`btn font-semibold text-white ${isSubmitting
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-primary hover:bg-secondary"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-primary hover:bg-secondary"
                 }`}
             >
               {isSubmitting ? "Updating..." : "Update Employee"}

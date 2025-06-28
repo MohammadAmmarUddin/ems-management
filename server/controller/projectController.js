@@ -28,6 +28,21 @@ exports.createProject = async (req, res) => {
   }
 };
 
+exports.AllProjectInProgress = async (req, res) => {
+  try {
+    const projects = await Project.find({ status: "in progress" });
+    const projectsCount = await Project.countDocuments({
+      status: "in progress",
+    });
+    res.status(200).json({ success: true, projects, projectsCount });
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error Fetching Projects" });
+  }
+};
+
 exports.getAllProjects = async (req, res) => {
   try {
     const projects = await Project.find({}).populate({

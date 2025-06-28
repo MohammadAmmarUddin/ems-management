@@ -3,8 +3,9 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import useDepartments from "../../../hooks/FetchDepartment";
 import { useNavigate } from "react-router-dom";
+import { formatPhoneNumber } from "../../../utils/phoneNumberMod";
+
 const Add = () => {
-  // State to hold form data with empty default values
   const [formData, setFormData] = useState({
     employeeId: "",
     emp_name: "",
@@ -23,13 +24,13 @@ const Add = () => {
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const isValidPhone = (phone) => /^\d{10,15}$/.test(phone); // adjust min/max as per your requirement
+  // const isValidPhone = (phone) => /^\+?[1-9]\d{7,14}$/.test(phone);
 
   const isStrongPassword = (password) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const isValidImage = (file) =>
-    file && file.type.startsWith("image/") && file.size <= 2 * 1024 * 1024; // max 2MB
+    file && file.type.startsWith("image/") && file.size <= 2 * 1024 * 1024;
 
   const isValidDOB = (dob) => {
     const birthDate = new Date(dob);
@@ -38,21 +39,27 @@ const Add = () => {
     return age >= 18 && age <= 65;
   };
 
-  // State to hold all employees data (for dropdowns)
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  // const cloud_name = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  // const cloud_preset_key = import.meta.env.VITE_CLOUDINARY_PRESET_KEY;
 
   const { data: departments, refetch, isLoading } = useDepartments(baseUrl);
 
   const navigate = useNavigate();
-  // Handle input changes
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+
+    if (name === "emp_phone") {
+      const formattedPhone = formatPhoneNumber(value);
+      setFormData((prevState) => ({
+        ...prevState,
+        emp_phone: formattedPhone,
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -69,28 +76,16 @@ const Add = () => {
     } = formData;
 
     if (!employeeId || !emp_name) {
-      return Swal.fire(
-        "Error",
-        "Employee ID and Name are required.",
-        "warning"
-      );
+      return Swal.fire("Error", "Employee ID and Name are required.", "warning");
     }
 
     if (!isValidEmail(emp_email)) {
-      return Swal.fire(
-        "Invalid Email",
-        "Enter a valid email address.",
-        "warning"
-      );
+      return Swal.fire("Invalid Email", "Enter a valid email address.", "warning");
     }
 
-    if (!isValidPhone(emp_phone)) {
-      return Swal.fire(
-        "Invalid Phone",
-        "Enter a valid phone number (10-15 digits).",
-        "warning"
-      );
-    }
+    // if (!isValidPhone(emp_phone)) {
+    //   return Swal.fire("Invalid Phone", "Enter a valid phone number (10-15 digits).", "warning");
+    // }
 
     if (!isStrongPassword(password)) {
       return Swal.fire(
@@ -101,34 +96,27 @@ const Add = () => {
     }
 
     if (!isValidImage(profileImage)) {
-      return Swal.fire(
-        "Invalid Image",
-        "Image must be under 2MB and of type JPG/PNG.",
-        "warning"
-      );
+      return Swal.fire("Invalid Image", "Image must be under 2MB and of type JPG/PNG.", "warning");
     }
 
     if (!isValidDOB(dob)) {
-      return Swal.fire(
-        "Invalid DOB",
-        "Employee must be between 18 and 65 years old.",
-        "warning"
-      );
+      return Swal.fire("Invalid DOB", "Employee must be between 18 and 65 years old.", "warning");
     }
 
     try {
       const data = new FormData();
       for (const key in formData) {
-        data.append(key, formData[key]);
+        if (key === "profileImage") {
+          data.append(key, formData[key]);
+        } else if (key === "department" && !formData.department) {
+          continue;
+        } else {
+          data.append(key, formData[key]);
+        }
       }
-      console.log(formData);
-      console.log("Form Data:", data);
-      const res = await axios.post(
-        `${baseUrl}/api/employee/addEmployee`,
-        data,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-      console.log("Response:", res.data);
+      const res = await axios.post(`${baseUrl}/api/employee/addEmployee`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       if (res.data.success === true || res.status === 201) {
         Swal.fire("Success", "Employee Added Successfully!", "success");
         setFormData({
@@ -164,13 +152,9 @@ const Add = () => {
   return (
     <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto shrink-0 shadow-2xl">
-        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
-          Add Employee
-        </h2>
+        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">Add Employee</h2>
         <form onSubmit={handleSubmit} className="card-body" autoComplete="off">
-          {/* row 1 */}
           <div className="flex gap-x-3">
-            {/* Employee ID Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Id</span>
@@ -185,7 +169,6 @@ const Add = () => {
                 placeholder="Enter Employee ID"
               />
             </div>
-            {/* Employee Name Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Name</span>
@@ -201,9 +184,7 @@ const Add = () => {
               />
             </div>
           </div>
-          {/* row 1 extended */}
           <div className="flex gap-x-3">
-            {/* Employee ID Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Email</span>
@@ -218,7 +199,6 @@ const Add = () => {
                 placeholder="Enter Employee Email"
               />
             </div>
-            {/* Employee Name Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Employee Phone</span>
@@ -234,30 +214,29 @@ const Add = () => {
               />
             </div>
           </div>
-          {/* row 2 */}
           <div className="flex gap-x-3">
-            {/* Department Dropdown */}
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Department Name</span>
-              </label>
-              <select
-                name="department"
-                className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.department}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Department</option>
-                {departments?.length > 0 &&
-                  departments.map((department) => (
-                    <option key={department._id} value={department._id}>
-                      {department.dep_name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            {/* Salary Input */}
+            {formData.role === "employee" && (
+              <div className="form-control w-full">
+                <label className="label">
+                  <span className="label-text">Department Name</span>
+                </label>
+                <select
+                  name="department"
+                  className="input input-bordered focus:outline-none hover:border-green-600"
+                  value={formData.department}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Department</option>
+                  {departments?.length > 0 &&
+                    departments.map((department) => (
+                      <option key={department._id} value={department._id}>
+                        {department.dep_name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Salary</span>
@@ -273,10 +252,7 @@ const Add = () => {
               />
             </div>
           </div>
-          {/* row 3 */}
           <div className="flex gap-x-3">
-            {/* Role Dropdown */}
-
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Role</span>
@@ -294,7 +270,6 @@ const Add = () => {
                 <option value="manager">Manager</option>
               </select>
             </div>
-            {/* Designation Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Designation</span>
@@ -311,29 +286,21 @@ const Add = () => {
                 <option value="Project Manager">Project Manager</option>
                 <option value="HR Manager">HR Manager</option>
                 <option value="Data Analyst">Data Analyst</option>
-                <option value="System Administrator">
-                  System Administrator
-                </option>
+                <option value="System Administrator">System Administrator</option>
                 <option value="Quality Assurance">Quality Assurance</option>
                 <option value="UI/UX Designer">UI/UX Designer</option>
                 <option value="Business Analyst">Business Analyst</option>
                 <option value="Network Engineer">Network Engineer</option>
-                <option value="Database Administrator">
-                  Database Administrator
-                </option>
+                <option value="Database Administrator">Database Administrator</option>
                 <option value="DevOps Engineer">DevOps Engineer</option>
                 <option value="Front-end Developer">Front-end Developer</option>
                 <option value="Back-end Developer">Back-end Developer</option>
-                <option value="Full-stack Developer">
-                  Full-stack Developer
-                </option>
+                <option value="Full-stack Developer">Full-stack Developer</option>
                 <option value="Technical Support">Technical Support</option>
                 <option value="Content Writer">Content Writer</option>
                 <option value="Graphic Designer">Graphic Designer</option>
                 <option value="Sales Executive">Sales Executive</option>
-                <option value="Marketing Specialist">
-                  Marketing Specialist
-                </option>
+                <option value="Marketing Specialist">Marketing Specialist</option>
                 <option value="Customer Service Representative">
                   Customer Service Representative
                 </option>
@@ -341,10 +308,7 @@ const Add = () => {
               </select>
             </div>
           </div>
-          {/* row 6 */}
           <div className="flex gap-x-3">
-            {/* Role Dropdown */}
-
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Gender</span>
@@ -362,7 +326,6 @@ const Add = () => {
                 <option value="other">Other</option>
               </select>
             </div>
-            {/* Designation Dropdown */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Marital Status</span>
@@ -381,7 +344,6 @@ const Add = () => {
                 <option value="widowed">widowed</option>
               </select>
             </div>
-
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Date of Birth</span>
@@ -396,7 +358,6 @@ const Add = () => {
               />
             </div>
           </div>
-          {/* row 4 */}
           <div className="flex gap-x-3">
             <div className="form-control w-full">
               <label className="label">
@@ -423,7 +384,6 @@ const Add = () => {
                 />
               )}
             </div>
-            {/* Password Input */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Password</span>
@@ -441,7 +401,6 @@ const Add = () => {
               />
             </div>
           </div>
-          {/* Submit Button */}
           <div className="form-control mt-6">
             <button
               type="submit"

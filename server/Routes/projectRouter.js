@@ -6,6 +6,8 @@ const {
   updateProject,
   deleteProject,
   assignTask,
+  AllProjectCount,
+  AllProjectInProgress,
 } = require("../controller/projectController.js");
 
 const router = express.Router();
@@ -14,6 +16,7 @@ const authMiddleWare = require("../middleware/authMiddleware");
 router.post("/:id/assign-task", assignTask);
 router.post("/create", createProject);
 router.get("/getAllProjects", authMiddleWare, getAllProjects);
+router.get("/getInProgressProjects", AllProjectInProgress);
 router.put("/:id", updateProject);
 router.delete("/:id", deleteProject);
 

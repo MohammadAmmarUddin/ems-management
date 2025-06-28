@@ -39,8 +39,14 @@ exports.getAllManagers = async (req, res) => {
 };
 exports.totalEmployeesCount = async (req, res) => {
   try {
-    const totalEmployees = await employeeModel.estimatedDocumentCount();
-    res.status(200).json({ success: true, totalEmployees });
+    const totalEmployees = await employeeModel.countDocuments({
+      role: "employee",
+    });
+    const totalManagers = await employeeModel.countDocuments({
+      role: "manager",
+    });
+
+    res.status(200).json({ success: true, totalEmployees, totalManagers });
   } catch (error) {
     console.error("Error fetching total employees count:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -167,89 +173,91 @@ exports.editEmployee = async (req, res) => {
 
 exports.addEmployee = async (req, res) => {
   const session = await mongoose.startSession();
+
   try {
-    await session.startTransaction();
+    await session.withTransaction(async () => {
+      const {
+        employeeId,
+        emp_name,
 
-    const {
-      employeeId,
-      emp_name,
-      department,
-      emp_email,
-      emp_phone,
-      dob,
-      marital_status,
-      gender,
-      salary,
-      role,
-      designation,
-      password,
-    } = req.body;
+        emp_email,
+        emp_phone,
+        dob,
+        marital_status,
+        gender,
+        salary,
+        role,
+        designation,
+        password,
+      } = req.body;
 
-    if (!employeeId || !emp_name || !emp_email || !emp_phone || !password) {
-      throw new Error("Required fields are missing.");
-    }
-
-    const profileImage = req.file ? req.file.filename : "";
-
-    if (req.file) {
-      const imagePath = path.join(__dirname, "../public/uploads", profileImage);
-      if (!fs.existsSync(imagePath)) {
-        throw new Error("Uploaded profile image not found.");
+      if (!employeeId || !emp_name || !emp_email || !emp_phone || !password) {
+        throw new Error("Required fields are missing.");
       }
-    }
 
-    // Check for existing email and phone
-    const [existingEmail, existingPhone] = await Promise.all([
-      userModel.findOne({ email: emp_email }).session(session),
-      userModel.findOne({ phone: emp_phone }).session(session),
-    ]);
+      const profileImage = req.file ? req.file.filename : "";
 
-    if (existingEmail) throw new Error("Email already exists");
-    if (existingPhone) throw new Error("Phone number already exists");
+      if (req.file) {
+        const imagePath = path.join(
+          __dirname,
+          "../public/uploads",
+          profileImage
+        );
+        if (!fs.existsSync(imagePath)) {
+          throw new Error("Uploaded profile image not found.");
+        }
+      }
+      const departmentId = req.body.department || null;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+      // Check for existing email and phone inside transaction
+      const existingEmail = await userModel.findOne({ email: emp_email });
 
-    const newUser = new userModel({
-      name: emp_name,
-      email: emp_email,
-      password: hashedPassword,
-      role,
-      phone: emp_phone,
-      profileImage,
+      const existingPhone = await userModel.findOne({ phone: emp_phone });
+
+      if (existingEmail) throw new Error("Email already exists");
+      if (existingPhone) throw new Error("Phone number already exists");
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = new userModel({
+        name: emp_name,
+        email: emp_email,
+        password: hashedPassword,
+        role,
+        phone: emp_phone,
+        profileImage,
+      });
+
+      const savedUser = await newUser.save({ session });
+
+      if (!savedUser || !savedUser._id) {
+        throw new Error("User creation failed");
+      }
+
+      const newEmployee = new employee({
+        employeeId,
+        emp_name,
+        department: departmentId || undefined,
+        emp_email,
+        emp_phone,
+        dob,
+        marital_status,
+        gender,
+        salary,
+        role,
+        designation,
+        profileImage,
+        userId: savedUser._id,
+      });
+
+      await newEmployee.save({ session });
     });
 
-    const savedUser = await newUser.save({ session });
-
-    if (!savedUser || !savedUser._id) {
-      throw new Error("User creation failed");
-    }
-
-    const newEmployee = new employee({
-      employeeId,
-      emp_name,
-      department,
-      emp_email,
-      emp_phone,
-      dob,
-      marital_status,
-      gender,
-      salary,
-      role,
-      designation,
-      profileImage,
-      userId: savedUser._id,
-    });
-
-    const savedEmployee = await newEmployee.save({ session });
-
-    await session.commitTransaction();
     res.status(201).json({
       success: true,
       message: "User and Employee created successfully",
-      employee: savedEmployee,
     });
   } catch (error) {
-    await session.abortTransaction();
     console.error("Error in addEmployee:", error);
 
     if (req.file) {
@@ -268,7 +276,7 @@ exports.addEmployee = async (req, res) => {
       message: error.message || "Failed to add employee",
     });
   } finally {
-    session.endSession(); // Always end session in finally
+    session.endSession();
   }
 };
 

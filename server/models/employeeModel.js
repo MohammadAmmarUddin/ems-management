@@ -22,7 +22,6 @@ const employeeSchema = new mongoose.Schema(
     department: {
       type: Schema.Types.ObjectId,
       ref: "department",
-      required: true,
     },
     salary: { type: String },
     role: { type: String },

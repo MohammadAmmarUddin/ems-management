@@ -41,7 +41,7 @@ const fetchUsersCount = async (baseUrl) => {
   if (!data.success) {
     throw new Error("Failed to fetch Users Count");
   }
-  return data.totalEmployees;
+  return data;
 };
 
 export const useEmployeesCount = (baseUrl) => {
@@ -50,6 +50,21 @@ export const useEmployeesCount = (baseUrl) => {
     queryFn: () => fetchUsersCount(baseUrl),
   });
 };
+
+export const useProjectCount = (baseUrl) => {
+  return useQuery({
+    queryKey: ["projectsFetchAll"],
+    queryFn: async () => {
+      const res = await fetch(`${baseUrl}/api/projects/getInProgressProjects`);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to fetch project count");
+      }
+      return data;
+    },
+  });
+};
+
 
 const fetchDepartmentDistribution = async (baseUrl) => {
   const res = await axios.get(`${baseUrl}/api/department/distribution`);
