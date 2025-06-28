@@ -2,39 +2,36 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
-import useDepartments from "../../../hooks/FetchDepartment";
 import { useAuth } from "../../../context/AuthContext";
+import useProjects from "../../../hooks/FetchProjects"; // make sure this exists
 
 const Projects = () => {
-  // const [departments, setDepartment] = useState([]);
   const { loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+
   const {
-    data: departments,
+    data: projects,
     refetch,
     isLoading,
-    isError,
-    error,
-  } = useDepartments(baseUrl);
-
-  const handleDelete = async (rowId) => {
+  } = useProjects(baseUrl);
+  console.log("projects", projects);
+  const handleDelete = async (projectId) => {
     try {
-      const res = await axios.delete(
-        `${baseUrl}/api/projects/${rowId}`
-      );
+      const res = await axios.delete(`${baseUrl}/api/projects/${projectId}`);
 
-      if (res.data.success === true) {
+      if (res.data.success) {
         Swal.fire({
-          position: "center center",
+          position: "center",
           icon: "success",
-          title: "Department deleted successfully",
+          title: "Project deleted successfully",
           showConfirmButton: false,
           timer: 1500,
         });
         refetch();
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      Swal.fire("Error!", "Failed to delete project", "error");
     }
   };
 
@@ -42,20 +39,18 @@ const Projects = () => {
     backgroundColor: "#007bff",
     color: "#fff",
     border: "none",
-    padding: "3px 5px",
-    marginRight: "5px",
+    padding: "4px 8px",
+    marginRight: "6px",
     cursor: "pointer",
     borderRadius: "4px",
   };
 
-  // Columns of table
   const columns = [
     {
-      name: "S No",
-      selector: (row, ind) => ind + 1,
-      sortable: true,
+      name: "S/N",
+      selector: (row, i) => i + 1,
+      width: "70px",
     },
-
     {
       name: "Project Name",
       selector: (row) => row.title,
@@ -63,30 +58,56 @@ const Projects = () => {
     },
     {
       name: "Manager",
-      selector: (row) => row.manager,
+      selector: (row) => row.department?.manager?.emp_name,
       sortable: true,
     },
     {
-      name: "status",
-      selector: (row) => row.manager,
+      name: "Department",
+      selector: (row) => row.department?.dep_name,
       sortable: true,
     },
     {
-      name: "StartDate",
-      selector: (row) => row.startDate,
-      sortable: true,
+      name: "Issue Date",
+      selector: (row) => new Date(row.startDate).toLocaleDateString(),
     },
     {
-      name: "EndDate",
-      selector: (row) => row.endDate,
-      sortable: true,
+      name: "Expected Date",
+      selector: (row) => new Date(row.endDate).toLocaleDateString(),
     },
+    {
+      name: "Status",
+      selector: (row) => row.status || "Pending",
+      cell: (row) => (
+        <span
+          className={`px-2 py-1 rounded text-white text-xs font-medium ${row.status === "Completed"
+            ? "bg-green-600"
+            : row.status === "In Progress"
+              ? "bg-yellow-600"
+              : "bg-gray-500"
+            }`}
+        >
+          {row.status || "Pending"}
+        </span>
+      ),
+    },
+    // {
+    //   name: "Tasks",
+    //   selector: (row) => row.tasks?.length || 0,
+    //   cell: (row) => (
+    //     <Link
+    //       to={`/admin-dashboard/project-tasks/${row._id}`}
+    //       className="text-blue-600 underline hover:text-blue-800"
+    //     >
+    //       View Tasks
+    //     </Link>
+    //   ),
+    // },
     {
       name: "Actions",
       cell: (row) => (
         <>
           <Link
-            to={`/admin-dashboard/edit-department/${row._id}`}
+            to={`/admin-dashboard/edit-project/${row._id}`}
             style={buttonStyle}
           >
             Edit
@@ -109,33 +130,33 @@ const Projects = () => {
       </div>
     );
   }
+
   return (
-    <div>
-      <div className="text-center">
-        <h3 className="text-2xl font-bold">Manage Departments</h3>
+    <div className="p-6">
+      <div className="text-center mb-4">
+        <h3 className="text-2xl font-bold text-gray-700">Manage Projects</h3>
       </div>
-      <div className="flex justify-between">
+
+      <div className="flex justify-between items-center mb-4">
         <input
           type="text"
-          className="px-4 ml-5 py-0.5"
-          placeholder="Search By Name"
+          className="px-4 ml-5 py-1 border rounded"
+          placeholder="Search by project name"
         />
         <Link
-          to="/admin-dashboard/add-department"
-          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
+          to="/admin-dashboard/add-project"
+          className="px-6 py-2 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
-          Add New Department
+          Add New Project
         </Link>
       </div>
 
-      <div>
+      <div className="bg-white p-4 rounded shadow">
         <DataTable
-          progressPending={isLoading}
           highlightOnHover
-          selectableRows
           pagination
           columns={columns}
-          data={departments}
+          data={projects || []}
         />
       </div>
     </div>

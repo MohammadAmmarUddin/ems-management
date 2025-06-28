@@ -1,4 +1,3 @@
-import React from "react";
 
 const Annoucement = () => {
   return (
@@ -9,4 +8,4 @@ const Annoucement = () => {
 };
 
 export default Annoucement;
-<h2>Annoucemnet</h2>;
+

@@ -44,7 +44,7 @@ exports.addDep = async (req, res) => {
 
     const result = await depModel.create({
       dep_name,
-      dep_desc,
+      dep_desc, 
       manager,
     });
     res.status(200).send({ success: true, result });
@@ -109,11 +109,11 @@ exports.deleteDep = async (req, res) => {
 
 exports.updateDep = async (req, res) => {
   try {
-    const { dep_name, dep_desc } = req.body;
+    const { dep_name, dep_desc, manager } = req.body;
 
     const result = await depModel.findByIdAndUpdate(
       req.params.id,
-      { dep_name, dep_desc },
+      { dep_name, dep_desc, manager },
       { new: true }
     );
 

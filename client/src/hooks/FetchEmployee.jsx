@@ -8,12 +8,12 @@ const fetchEmployees = async (baseUrl) => {
 };
 
 // Custom hook
-const useEmployees = ({ baseUrl, user }) => {
+const useEmployees = ({ baseUrl }) => {
   return useQuery({
     queryKey: ["employees"],
     queryFn: () => fetchEmployees(baseUrl),
     retry: 5,
-    staleTime: 5 * 60 * 1000,
+
   });
 };
 

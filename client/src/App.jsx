@@ -40,6 +40,7 @@ import EditLeave from "../src/pages/employee-Dashboard/Leave/EditLeave.jsx";
 import SalaryHistory from "../src/pages/employee-Dashboard/Salary/SalaryHistory.jsx";
 import AnnoucementEmployee from "../src/pages/employee-Dashboard/AnnoucementEmployee.jsx";
 import MyTasks from "../src/pages/employee-Dashboard/Tasks/MyTasks.jsx";
+import AddProject from "./pages/admin-Dashboard/projects/AddProject.jsx";
 
 function App() {
   return (
@@ -71,6 +72,7 @@ function App() {
           <Route path="edit-employee/:id" element={<EditEmployee />} />
           <Route path="managers" element={<Managers />} />
           <Route path="projects" element={<Projects />} />
+          <Route path="add-project" element={<AddProject />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="attendanceReport" element={<AttendanceReport />} />
           <Route path="leave" element={<LeaveList />} />

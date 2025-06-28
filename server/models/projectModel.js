@@ -6,13 +6,7 @@ const projectSchema = new mongoose.Schema(
 
     department: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "departments",
-      required: true,
-    },
-
-    manager: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "managers",
+      ref: "department",
       required: true,
     },
 
@@ -24,10 +18,6 @@ const projectSchema = new mongoose.Schema(
 
     startDate: { type: String, required: true },
     endDate: { type: String, required: true },
-
-    assignedEmployees: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "employees" },
-    ],
   },
   { timestamps: true }
 );

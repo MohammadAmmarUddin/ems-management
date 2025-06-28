@@ -315,7 +315,7 @@ const EditEmployee = () => {
                 <option value="">Select Role</option>
                 <option value="admin">Admin</option>
                 <option value="employee">Employee</option>
-                <option value="HR">HR</option>
+                <option value="manager">Manager</option>
               </select>
             </div>
             <div className="form-control w-full">
@@ -433,9 +433,8 @@ const EditEmployee = () => {
               />
               {(formData.imageUrl || formData.profileImage) && (
                 <img
-                  src={`${baseUrl}/uploads/${
-                    formData.imageUrl || formData.profileImage
-                  }`}
+                  src={`${baseUrl}/uploads/${formData.imageUrl || formData.profileImage
+                    }`}
                   alt="Preview"
                   className="w-24 h-24 object-cover mt-2 rounded border"
                 />
@@ -463,11 +462,10 @@ const EditEmployee = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`btn font-semibold text-white ${
-                isSubmitting
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-primary hover:bg-secondary"
-              }`}
+              className={`btn font-semibold text-white ${isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-primary hover:bg-secondary"
+                }`}
             >
               {isSubmitting ? "Updating..." : "Update Employee"}
             </button>

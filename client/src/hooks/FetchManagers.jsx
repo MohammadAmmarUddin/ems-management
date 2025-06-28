@@ -18,7 +18,6 @@ const useManagers = ({ baseUrl }) => {
     queryFn: () => fetchManagers(baseUrl),
 
     retry: 5,
-    staleTime: 5 * 60 * 1000,
   });
 };
 

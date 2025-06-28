@@ -24,7 +24,6 @@ const AddDepartment = () => {
     data: managers = [],
     isLoading: loadingManagers,
   } = useManagers(baseUrl);
-
   // Handle department input changes
   const handleDepInputChange = (e) => {
     const value = e.target.value;

@@ -12,7 +12,6 @@ const useSalaries = ({ baseUrl, user, loading }) => {
     queryKey: ["salaries"],
     queryFn: () => fetchSalaries(baseUrl),
     retry: 5,
-    staleTime: 5 * 60 * 1000,
   });
 };
 
