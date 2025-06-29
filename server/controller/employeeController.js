@@ -8,6 +8,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 require("dotenv").config();
 const path = require("path");
+const User = require("../models/User");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/uploads");
@@ -95,6 +96,8 @@ exports.getEmployee = async (req, res) => {
 exports.editEmployee = async (req, res) => {
   try {
     const { id } = req.params;
+
+    console.log("userid", id);
     const {
       employeeId,
       emp_name,
@@ -123,22 +126,19 @@ exports.editEmployee = async (req, res) => {
       role,
       designation,
     };
-    // Handle optional password update
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      updateFields.password = hashedPassword;
-    }
 
-    const employee = await employeeModel.findById(id);
-    if (!employee) {
+    // Find employee by userId
+    const employee = await employeeModel.findOne({ userId: id });
+    const userFromDb = await userModel.findById(id);
+
+    if (!employee || !userFromDb) {
       return res
         .status(404)
         .json({ success: false, message: "Employee not found" });
     }
 
-    // Handle optional image upload (local)
+    // Optional image handling
     if (req.file) {
-      // Delete old image if it exists
       if (employee.profileImage) {
         const oldImagePath = path.join(
           __dirname,
@@ -150,27 +150,35 @@ exports.editEmployee = async (req, res) => {
           fs.unlinkSync(oldImagePath);
         }
       }
-
-      updateFields.profileImage = req.file.filename; // just save the filename
+      updateFields.profileImage = req.file.filename;
     }
 
-    const updatedEmployee = await employeeModel.findByIdAndUpdate(
-      id,
+    // Optional password update in userModel
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      userFromDb.password = hashedPassword;
+      await userFromDb.save();
+    }
+
+    // Update employee
+    const updatedEmployee = await employeeModel.findOneAndUpdate(
+      { userId: id },
       { $set: updateFields },
       { new: true }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Employee updated successfully",
       updateEmployee: updatedEmployee,
     });
   } catch (error) {
     console.error("Update error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
-
 exports.addEmployee = async (req, res) => {
   const session = await mongoose.startSession();
 
@@ -344,13 +352,12 @@ exports.getAllUsers = async (req, res) => {
       .send({ success: false, message: "Failed to fetch employees" });
   }
 };
-
 exports.deleteEmployee = async (req, res) => {
   const { id } = req.params;
   try {
-    const emp = await employeeModel.findById(id);
-    const deletedEmployee = await employeeModel.findByIdAndDelete(id);
-    if (!deletedEmployee) {
+    const emp = await employeeModel.findOne({ userId: id });
+    await emp.deleteOne();
+    if (!emp) {
       return res
         .status(404)
         .json({ success: false, message: "Employee not found" });
@@ -362,16 +369,27 @@ exports.deleteEmployee = async (req, res) => {
         "../public/uploads",
         emp.profileImage
       );
-
-      // Check if file exists before deleting
       if (fs.existsSync(imagePath)) {
         fs.unlinkSync(imagePath);
       }
     }
-    res
+
+    await employeeModel.findOneAndDelete({ userId: id });
+    const deleteFromUser = await User.findByIdAndDelete(id);
+
+    if (!deleteFromUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    return res
       .status(200)
       .json({ success: true, message: "Employee deleted successfully" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error("Error deleting employee:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };

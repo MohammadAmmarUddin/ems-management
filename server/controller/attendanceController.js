@@ -58,7 +58,6 @@ exports.attendanceReport = async (req, res) => {
     if (date) {
       query.date = date;
     }
-
     const attendanceData = await Attendance.find(query)
       .populate({
         path: "employeeId",

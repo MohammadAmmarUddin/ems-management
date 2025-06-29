@@ -60,9 +60,11 @@ exports.addDep = async (req, res) => {
         })
         .session({ session });
 
-      await employee.findByIdAndUpdate(manager, {
-        department: newDepartment._id,
-      });
+      await employee
+        .findByIdAndUpdate(manager, {
+          department: newDepartment._id,
+        })
+        .session({ session });
     });
 
     res.status(200).json({
@@ -75,6 +77,8 @@ exports.addDep = async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Failed to create department." });
+  } finally {
+    session.endSession();
   }
 };
 

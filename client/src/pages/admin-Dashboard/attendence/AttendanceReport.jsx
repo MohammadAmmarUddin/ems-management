@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 
 function AttendanceReport() {
   const [groupData, setGroupData] = useState({});
@@ -9,7 +9,7 @@ function AttendanceReport() {
   const [hasMore, setHasMore] = useState(true);
   const [dateFilter, setDateFilter] = useState("");
   const baseUrl = import.meta.env.VITE_EMS_Base_URL || "http://localhost:5001";
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token") || sessionStorage.getItem('token');
 
   const fetchData = async (newSkip = 0) => {
     setLoading(true);

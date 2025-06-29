@@ -89,6 +89,7 @@ const mongoose = require("mongoose");
 
 exports.getSalaryById = async (req, res) => {
   const { id } = req.params;
+
   try {
     const salaries = await salary.aggregate([
       {
@@ -117,9 +118,12 @@ exports.getSalaryById = async (req, res) => {
       },
     ]);
 
-    if (!salaries.length) {
-      return res.status(404).json({ message: "Salaries not found" });
+    if (!salaries || salaries.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Salaries not found" });
     }
+
     res.status(200).json({ success: true, result: salaries });
   } catch (error) {
     console.error("Error fetching salaries:", error);
@@ -155,7 +159,6 @@ exports.getAllSalaries = async (req, res) => {
 
     res.status(200).json({ success: true, result: salaries });
   } catch (error) {
-    console.error("Error fetching salaries:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

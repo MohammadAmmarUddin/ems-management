@@ -41,6 +41,7 @@ import SalaryHistory from "../src/pages/employee-Dashboard/Salary/SalaryHistory.
 import AnnoucementEmployee from "../src/pages/employee-Dashboard/AnnoucementEmployee.jsx";
 import MyTasks from "../src/pages/employee-Dashboard/Tasks/MyTasks.jsx";
 import AddProject from "./pages/admin-Dashboard/projects/AddProject.jsx";
+import SinglEmployeeSalary from "./pages/admin-Dashboard/Salary/SingleEmployeeSalary.jsx";
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
           <Route path="leave" element={<LeaveList />} />
           <Route path="addLeave" element={<LeaveAdd />} />
           <Route path="salary" element={<Salary />} />
+          <Route path="employee/salary/:id" element={<SinglEmployeeSalary />} />
           <Route path="salary/addSalary/:id" element={<AddSalary />} />
           <Route path="annoucement" element={<Annoucement />} />
         </Route>

@@ -29,10 +29,14 @@ const Login = () => {
     const password = form.password.value;
 
     try {
+      console.log("frontend called login");
+      console.log("email", email, password);
       const response = await axios.post(`${baseUrl}/api/user/login`, {
         email,
         password,
       });
+      console.log("res", response);
+
 
       if (response.data.success === true) {
         login(response.data.user);

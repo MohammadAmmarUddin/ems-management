@@ -46,7 +46,8 @@ const List = () => {
     });
 
     if (result.isConfirmed) {
-      const token = localStorage.getItem("token");
+      const token = await localStorage.getItem("token") || await sessionStorage.getItem('token')
+
       try {
         const { data } = await axios.delete(
           `${baseUrl}/api/employee/deleteEmployee/${id}`,
@@ -134,19 +135,19 @@ const List = () => {
             View
           </button>
           <Link
-            to={`/admin-dashboard/edit-employee/${row._id}`}
+            to={`/admin-dashboard/edit-employee/${row.userId}`}
             className="bg-edit text-white p-2 rounded-lg hover:bg-orange-600"
           >
             Edit
           </Link>
           <Link
-            to={`/admin-dashboard/edit-employee/salary-history/${row._id}`}
+            to={`/admin-dashboard/employee/salary/${row.userId}`}
             className="bg-accent text-white p-2 rounded-lg hover:bg-yellow-600"
           >
             Salary
           </Link>
           <button
-            onClick={() => handleDeleteEmployee(row._id)}
+            onClick={() => handleDeleteEmployee(row.userId)}
             className="bg-delete text-white p-2 rounded-lg hover:bg-red-600"
           >
             Delete

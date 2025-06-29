@@ -18,7 +18,7 @@ const Attendance = () => {
   } = useAttendance(baseUrl);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token") || sessionStorage.getItem('token');
   const handleStatusChnage = async (employeeId, status) => {
     const res = await axios.put(
       `${baseUrl}/api/attendance/updateAttendance/${employeeId}`,
@@ -29,7 +29,6 @@ const Attendance = () => {
         },
       }
     );
-    console.log("res", res);
     if (res.data.success) {
       Swal.fire({
         position: "center",

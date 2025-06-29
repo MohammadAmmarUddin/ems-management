@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 
 import useDepartments from "../../../hooks/FetchDepartment";
 import useEmployeeById from "../../../hooks/FetchEmployeeById";
+import { formatPhoneNumber } from "../../../utils/phoneNumberMod";
 
 const EditEmployee = () => {
   const { id } = useParams();
@@ -34,7 +35,6 @@ const EditEmployee = () => {
 
   // Validation functions (unchanged)
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPhone = (phone) => /^\d{10,15}$/.test(phone);
   const isStrongPassword = (password) =>
     password === "" || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
   const isValidDOB = (dob) => {
@@ -70,8 +70,18 @@ const EditEmployee = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "emp_phone") {
+      const formattedPhone = formatPhoneNumber(value);
+      setFormData((prev) => ({
+        ...prev,
+        emp_phone: formattedPhone,
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
+
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
@@ -94,13 +104,7 @@ const EditEmployee = () => {
       return Swal.fire("Invalid Email", "Enter a valid email address.", "warning");
     }
 
-    if (!isValidPhone(formData.emp_phone)) {
-      return Swal.fire(
-        "Invalid Phone",
-        "Enter a valid phone number (10-15 digits).",
-        "warning"
-      );
-    }
+
 
     if (formData.password && !isStrongPassword(formData.password)) {
       return Swal.fire(
@@ -456,8 +460,8 @@ const EditEmployee = () => {
               type="submit"
               disabled={isSubmitting}
               className={`btn font-semibold text-white ${isSubmitting
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-primary hover:bg-secondary"
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-primary hover:bg-secondary"
                 }`}
             >
               {isSubmitting ? "Updating..." : "Update Employee"}
