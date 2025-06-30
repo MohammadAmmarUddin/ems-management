@@ -8,7 +8,7 @@ const fetchEmployees = async (baseUrl) => {
 };
 
 // Custom hook
-const useEmployees = ({ baseUrl }) => {
+const useEmployees = (baseUrl) => {
   return useQuery({
     queryKey: ["employees"],
     queryFn: () => fetchEmployees(baseUrl),

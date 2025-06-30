@@ -48,9 +48,8 @@ const LeaveList = () => {
       Swal.fire({
         position: "center",
         icon: "success",
-        title: `Leave ${
-          type === "approve" ? "approved" : "rejected"
-        } successfully`,
+        title: `Leave ${type === "approve" ? "approved" : "rejected"
+          } successfully`,
         showConfirmButton: false,
         timer: 1500,
       });
@@ -161,7 +160,7 @@ const LeaveList = () => {
   }
 
   return (
-    <div className="w-full px-4 lg:px-6 overflow-hidden">
+    <div className="w-full py-4 lg:py-6 overflow-hidden">
       <div className="text-center mb-6">
         <h3 className="text-2xl font-bold">Manage Leaves</h3>
       </div>

@@ -132,7 +132,7 @@ const Projects = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="py-6">
       <div className="text-center mb-4">
         <h3 className="text-2xl font-bold text-gray-700">Manage Projects</h3>
       </div>
@@ -151,7 +151,7 @@ const Projects = () => {
         </Link>
       </div>
 
-      <div className="bg-white p-4 rounded shadow">
+      <div className="bg-white py-4 rounded shadow">
         <DataTable
           highlightOnHover
           pagination

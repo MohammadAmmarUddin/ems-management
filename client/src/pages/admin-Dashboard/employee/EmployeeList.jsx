@@ -19,7 +19,8 @@ const List = () => {
     isError,
     error,
     refetch,
-  } = useEmployees({ baseUrl, user });
+  } = useEmployees(baseUrl);
+
   console.log("selectedEmployee", selectedEmployee);
   const date = new Date(selectedEmployee?.createdAt);
   const joiningDate = date.toLocaleString();
