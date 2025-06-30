@@ -354,15 +354,22 @@ exports.getAllUsers = async (req, res) => {
 };
 exports.deleteEmployee = async (req, res) => {
   const { id } = req.params;
+
   try {
     const emp = await employeeModel.findOne({ userId: id });
-    await emp.deleteOne();
+
     if (!emp) {
       return res
         .status(404)
         .json({ success: false, message: "Employee not found" });
     }
 
+    // Delete related Attendance, Leave, Salary records
+    await Attendance.deleteMany({ employeeId: emp._id });
+    await Leave.deleteMany({ employeeId: emp._id });
+    await Salary.deleteMany({ employeeId: emp._id });
+
+    // Delete profile image if exists
     if (emp.profileImage) {
       const imagePath = path.join(
         __dirname,
@@ -374,7 +381,10 @@ exports.deleteEmployee = async (req, res) => {
       }
     }
 
+    // Delete employee record
     await employeeModel.findOneAndDelete({ userId: id });
+
+    // Delete from User collection
     const deleteFromUser = await User.findByIdAndDelete(id);
 
     if (!deleteFromUser) {
@@ -385,7 +395,10 @@ exports.deleteEmployee = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: true, message: "Employee deleted successfully" });
+      .json({
+        success: true,
+        message: "Employee and related data deleted successfully",
+      });
   } catch (error) {
     console.error("Error deleting employee:", error);
     return res

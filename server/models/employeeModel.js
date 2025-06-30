@@ -1,8 +1,5 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const Attendance = require("./attendance");
-const Salary = require("./salary");
-const Leave = require("./leave");
 
 const employeeSchema = new mongoose.Schema(
   {
@@ -31,24 +28,6 @@ const employeeSchema = new mongoose.Schema(
     profileImage: { type: String },
   },
   { timestamps: true }
-);
-
-/**
- * Cascading Delete for Attendance, Leave, Salary when Employee is Deleted
- */
-employeeSchema.pre(
-  "deleteOne",
-  { document: true, query: false },
-  async function (next) {
-    try {
-      await Attendance.deleteMany({ employeeId: this._id });
-      await Leave.deleteMany({ employeeId: this._id });
-      await Salary.deleteMany({ employeeId: this._id });
-      next();
-    } catch (error) {
-      next(error);
-    }
-  }
 );
 
 const employee = mongoose.model("employees", employeeSchema);

@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function AttendanceReport() {
   const [groupData, setGroupData] = useState({});
@@ -153,7 +153,7 @@ function AttendanceReport() {
               <tr key={idx} className="border-t hover:bg-gray-50 transition">
                 <td className="p-3">{item.date}</td>
                 <td className="p-3">{item.employeeId}</td>
-                <td className="p-3">{item.name}</td>
+                <td className="px-5">{item.name}</td>
                 <td className="p-3">{item.department}</td>
                 <td className="p-3">{item.status}</td>
               </tr>
