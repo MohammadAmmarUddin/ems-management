@@ -15,6 +15,7 @@ import DepartmentList from "../src/pages/admin-Dashboard/Department/DepartmentLi
 import AddDepartment from "../src/pages/admin-Dashboard/Department/AddDepartment.jsx";
 import EditDepartment from "../src/pages/admin-Dashboard/Department/EditDepartment.jsx";
 import EmployeeList from "../src/pages/admin-Dashboard/employee/EmployeeList.jsx";
+import Employeelist from "../src/pages/manager-dashboard/EmployeeList.jsx";
 import AddEmployee from "../src/pages/admin-Dashboard/employee/EmployeeAdd.jsx";
 import ViewEmployee from "../src/pages/admin-Dashboard/employee/ViewEmployee.jsx";
 import EditEmployee from "../src/pages/admin-Dashboard/employee/EditEmployee.jsx";
@@ -31,9 +32,11 @@ import AddSalary from "../src/pages/admin-Dashboard/Salary/AddSalary.jsx";
 import Annoucement from "../src/pages/admin-Dashboard/annoucement/Annoucement.jsx";
 
 // Employee & Manager Shared Layout & Pages
-import EmployeeDashboard from "../src/layouts/EmployeeDashboard.jsx";
+import EmployeeLayout from "../src/layouts/EmployeeDashboard.jsx";
+import ManagerLayout from "../src/layouts/ManagerLayout.jsx";
 import Summary from "../src/pages/employee-Dashboard/Summary.jsx";
 import Profile from "../src/pages/employee-Dashboard/Profile.jsx";
+import ProfileManager from "../src/pages/manager-dashboard/Profile.jsx";
 import LeaveHistory from "../src/pages/employee-Dashboard/Leave/LeaveHistory.jsx";
 import AddLeave from "../src/pages/employee-Dashboard/Leave/AddLeave.jsx";
 import EditLeave from "../src/pages/employee-Dashboard/Leave/EditLeave.jsx";
@@ -42,6 +45,9 @@ import AnnoucementEmployee from "../src/pages/employee-Dashboard/AnnoucementEmpl
 import MyTasks from "../src/pages/employee-Dashboard/Tasks/MyTasks.jsx";
 import AddProject from "./pages/admin-Dashboard/projects/AddProject.jsx";
 import SinglEmployeeSalary from "./pages/admin-Dashboard/Salary/SingleEmployeeSalary.jsx";
+import Dashboard from "./pages/manager-dashboard/Dashboard.jsx";
+import Announcement from "./pages/manager-dashboard/Announcement.jsx";
+import ProjectList from "./pages/manager-dashboard/ProjectList.jsx";
 
 function App() {
   return (
@@ -90,7 +96,7 @@ function App() {
           element={
             <PrivateRoutes>
               <RoleBasedRoute requiredRole={["employee"]}>
-                <EmployeeDashboard />
+                <EmployeeLayout />
               </RoleBasedRoute>
             </PrivateRoutes>
           }
@@ -112,17 +118,17 @@ function App() {
           element={
             <PrivateRoutes>
               <RoleBasedRoute requiredRole={["manager"]}>
-                <EmployeeDashboard />
+                <ManagerLayout />
               </RoleBasedRoute>
             </PrivateRoutes>
           }
         >
-          <Route index element={<Summary />} />
-          <Route path="summary" element={<Summary />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="projects" element={<LeaveHistory />} />
-          <Route path="managers" element={<Managers />} />
-          <Route path="annoucementEmployee" element={<AnnoucementEmployee />} />
+          <Route index element={<Dashboard />} />
+          <Route path="summary" element={<Dashboard />} />
+          <Route path="profile" element={<ProfileManager />} />
+          <Route path="projects" element={<ProjectList />} />
+          <Route path="employees" element={<Employeelist />} />
+          <Route path="annoucementManager" element={<Announcement />} />
         </Route>
       </Routes>
     </BrowserRouter>

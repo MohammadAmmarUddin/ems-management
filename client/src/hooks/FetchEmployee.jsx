@@ -4,6 +4,7 @@ import axios from "axios";
 // Fetcher function
 const fetchEmployees = async (baseUrl) => {
   const res = await axios.get(`${baseUrl}/api/employee/getEmployees`);
+  console.log("res", res);
   return res.data.result;
 };
 

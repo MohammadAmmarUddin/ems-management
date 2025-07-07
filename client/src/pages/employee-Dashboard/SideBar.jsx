@@ -24,8 +24,7 @@ const SideBar = () => {
   const role = user?.role;
 
   const linkClass = ({ isActive }) =>
-    `flex items-center space-x-4 py-2.5 px-5 rounded transition-colors ${
-      isActive ? "bg-primary text-white" : "text-gray-300 hover:bg-gray-700"
+    `flex items-center space-x-4 py-2.5 px-5 rounded transition-colors ${isActive ? "bg-primary text-white" : "text-gray-300 hover:bg-gray-700"
     }`;
 
   const handleLogout = () => {

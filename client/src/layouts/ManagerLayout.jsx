@@ -1,8 +1,11 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
+import { Outlet } from 'react-router-dom';
+import SideBarManager from '../pages/manager-dashboard/SideBarManager';
 
-const ModeratorDashboard = () => {
-    const {user, loading } = useAuth();
+const ManagerLayout = () => {
+  const { user, loading } = useAuth();
 
 
 
@@ -13,7 +16,17 @@ const ModeratorDashboard = () => {
       </div>
     );
   }
-   
+
+  return (
+    <div className="flex">
+      <SideBarManager />
+      <div className="flex-1 ml-64  bg-gray-300 h-screen">
+        <Navbar />
+        <Outlet />
+      </div>
+    </div>
+  );
+
 };
 
-export default ModeratorDashboard;
+export default ManagerLayout;
