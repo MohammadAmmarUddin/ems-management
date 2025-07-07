@@ -4,12 +4,12 @@ const {
   editEmployee,
   searchEmployee,
   getSingleUser,
-
   totalEmployeesCount,
   deleteEmployee,
   upload,
   getAllUsers,
   getAllManagers,
+  getEmployeesByDepartment,
 } = require("../controller/employeeController");
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware.js");
@@ -19,6 +19,11 @@ const router = express.Router();
 router.get("/managers", authMiddleware, getAllManagers);
 router.get("/searchEmployees", searchEmployee);
 router.get("/getEmployees", getAllUsers);
+router.get(
+  "/getEmployeesByDepartment",
+  authMiddleware,
+  getEmployeesByDepartment
+);
 router.get("/getEmployeesCount", totalEmployeesCount);
 router.get("/getEmployee/:id", getEmployee);
 

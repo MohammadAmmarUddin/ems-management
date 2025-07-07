@@ -60,6 +60,38 @@ exports.getEmployees = async (req, res) => {
   res.status(200).send({ emp, success: true });
 };
 
+exports.getEmployeesByDepartment = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    console.log("getByDepartment Called", userId);
+    const employee = await employeeModel
+      .findOne({ userId })
+      .populate("department");
+    console.log("employee", employee);
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Employee not found" });
+    }
+
+    if (!employee.department) {
+      return res.status(400).json({
+        success: false,
+        message: "Department not assigned to this employee",
+      });
+    }
+
+    // Fetch all employees in the same department
+    const employees = await employeeModel
+      .find({ department: employee.department._id })
+      .select("-userId -salary -profileImage"); // Exclude sensitive fields if needed
+    console.log("emplyees by department", employees);
+    res.status(200).json({ success: true, result: employees });
+  } catch (error) {
+    console.error("Error fetching employees by department:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 exports.getEmployee = async (req, res) => {
   try {
     // Use req.params if the ID is in the URL, or req.query if it's passed as a query string
@@ -393,12 +425,10 @@ exports.deleteEmployee = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Employee and related data deleted successfully",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Employee and related data deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting employee:", error);
     return res

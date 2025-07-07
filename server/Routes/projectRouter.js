@@ -2,22 +2,33 @@ const express = require("express");
 const {
   createProject,
   getAllProjects,
-
   updateProject,
   deleteProject,
+  getAllTasks,
+  deleteTask,
   assignTask,
-  AllProjectCount,
+  getTasksByDepartment,
   AllProjectInProgress,
+  getProjectsByDepartment,
+  getAllTasksByDepartment,
 } = require("../controller/projectController.js");
 
-const router = express.Router();
 const authMiddleWare = require("../middleware/authMiddleware");
-// /api/projects
-router.post("/:id/assign-task", assignTask);
-router.post("/create", createProject);
+
+const router = express.Router();
+
+// 🔹 Project Routes
+router.post("/create", authMiddleWare, createProject);
 router.get("/getAllProjects", authMiddleWare, getAllProjects);
-router.get("/getInProgressProjects", AllProjectInProgress);
-router.put("/:id", updateProject);
-router.delete("/:id", deleteProject);
+router.get("/getByDepartment", authMiddleWare, getProjectsByDepartment);
+router.get("/getInProgressProjects", authMiddleWare, AllProjectInProgress);
+router.put("/:id", authMiddleWare, updateProject);
+router.delete("/:id", authMiddleWare, deleteProject);
+
+router.post("/:id/assign-task", authMiddleWare, assignTask);
+
+router.get("/getAllTasksByDepartment", authMiddleWare, getAllTasksByDepartment);
+// router.get("/getTasksByDepartment", authMiddleWare, getTasksByDepartment);
+router.delete("/deleteTask/:id", authMiddleWare, deleteTask);
 
 module.exports = router;
