@@ -1,6 +1,53 @@
 const Project = require("../models/projectModel");
 const employeeModel = require("../models/employeeModel.js");
 const taskModel = require("../models/taskModel");
+exports.getRunningProjectsByManager = async (req, res) => {
+  try {
+    const managerUserId = req.user._id;
+    console.log(
+      "called getRunningProjectsByManager with userId:",
+      managerUserId
+    );
+    // Get the manager's employee record
+    const manager = await employeeModel.findOne({ userId: managerUserId });
+
+    if (!manager) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Manager not found" });
+    }
+
+    // Find departments where this user is the manager
+    const departmentsManaged = await Project.find({
+      status: "in progress",
+    })
+      .populate({
+        path: "department",
+        select: "dep_name manager",
+        populate: {
+          path: "manager",
+          model: "employees",
+          select: "emp_name emp_email",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    // Filter only those projects where the manager matches
+    const runningProjects = departmentsManaged.filter(
+      (project) =>
+        project.department?.manager?._id?.toString() === manager._id.toString()
+    );
+
+    res.status(200).json({
+      success: true,
+      projects: runningProjects,
+      projectsCount: runningProjects.length,
+    });
+  } catch (error) {
+    console.error("Error fetching running projects by manager:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 exports.getAllTasksByDepartment = async (req, res) => {
   try {

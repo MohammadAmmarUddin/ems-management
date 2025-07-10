@@ -10,6 +10,7 @@ const {
   getAllUsers,
   getAllManagers,
   getEmployeesByDepartment,
+  getActiveEmployeesUnderManager,
 } = require("../controller/employeeController");
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware.js");
@@ -26,7 +27,11 @@ router.get(
 );
 router.get("/getEmployeesCount", totalEmployeesCount);
 router.get("/getEmployee/:id", getEmployee);
-
+router.get(
+  "/manager/active-employees",
+  authMiddleware,
+  getActiveEmployeesUnderManager
+);
 // post
 
 router.post("/addEmployee", upload.single("profileImage"), addEmployee);

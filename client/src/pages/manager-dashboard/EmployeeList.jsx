@@ -164,7 +164,8 @@ const EmployeeList = () => {
     return (
         <div>
             <div className="text-center">
-                <h3 className="text-2xl font-bold">Manage Employees</h3>
+                <h3 className="text-2xl font-bold">Manage Employees</h3>r
+                
             </div>
 
             <div className="flex justify-between my-4">

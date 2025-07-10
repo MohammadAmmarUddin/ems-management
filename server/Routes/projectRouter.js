@@ -11,6 +11,7 @@ const {
   AllProjectInProgress,
   getProjectsByDepartment,
   getAllTasksByDepartment,
+  getRunningProjectsByManager,
 } = require("../controller/projectController.js");
 
 const authMiddleWare = require("../middleware/authMiddleware");
@@ -26,7 +27,11 @@ router.put("/:id", authMiddleWare, updateProject);
 router.delete("/:id", authMiddleWare, deleteProject);
 
 router.post("/:id/assign-task", authMiddleWare, assignTask);
-
+router.get(
+  "/runningProjectsByManager",
+  authMiddleWare,
+  getRunningProjectsByManager
+);
 router.get("/getAllTasksByDepartment", authMiddleWare, getAllTasksByDepartment);
 // router.get("/getTasksByDepartment", authMiddleWare, getTasksByDepartment);
 router.delete("/deleteTask/:id", authMiddleWare, deleteTask);

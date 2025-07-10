@@ -20,6 +20,72 @@ const storage = multer.diskStorage({
 });
 
 exports.upload = multer({ storage: storage });
+
+exports.getActiveEmployeesUnderManager = async (req, res) => {
+  try {
+    const managerId = req.user._id;
+    // Step 1: Find manager and populate department
+    const manager = await employeeModel
+      .findOne({ userId: managerId, role: "manager" })
+      .populate("department");
+
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager not found",
+      });
+    }
+
+    if (!manager.department || !manager.department._id) {
+      return res.status(400).json({
+        success: false,
+        message: "Manager has no assigned department",
+      });
+    }
+
+    const departmentId = manager.department._id;
+
+    // Step 2: Find employees in same department and populate active users
+    const employees = await employeeModel
+      .find({
+        department: departmentId,
+        role: "employee",
+      })
+      .populate("department", "dep_name")
+      .populate({
+        path: "userId",
+        match: { isActive: true }, // ✅ only online users
+        select: "-password -profileImage",
+      });
+    // Step 3: Filter only employees whose user is active
+    const onlineEmployees = employees.filter((emp) => emp.userId);
+    // Step 4: Format response
+    const result = onlineEmployees.map((emp) => ({
+      _id: emp._id,
+      emp_name: emp.emp_name,
+      emp_email: emp.emp_email,
+      emp_phone: emp.emp_phone,
+      designation: emp.designation,
+      department: emp.department?.dep_name || "N/A",
+      user: {
+        _id: emp.userId._id,
+        name: emp.userId.name,
+        email: emp.userId.email,
+        role: emp.userId.role,
+        isActive: emp.userId.isActive,
+      },
+    }));
+
+    return res.status(200).json({ success: true, result });
+  } catch (error) {
+    console.error("Error fetching online employees under manager:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 exports.getAllManagers = async (req, res) => {
   try {
     const managers = await employeeModel
