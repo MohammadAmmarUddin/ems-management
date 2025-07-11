@@ -36,8 +36,8 @@ const Dashboard = () => {
 
             if (res.data.success) {
                 setProjects({
-                    running: res.data.projects.running || [],
-                    projectscount: res.data.projects.projectsCount || 0,
+                    running: res.data.projects || [],
+                    projectscount: res.data.projectsCount || 0,
                 });
             }
         } catch (error) {
