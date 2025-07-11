@@ -6,15 +6,14 @@ import { useAuth } from "../../../context/AuthContext";
 import useProjects from "../../../hooks/FetchProjects"; // make sure this exists
 
 const Projects = () => {
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
   const {
     data: projects,
     refetch,
-    isLoading,
+
   } = useProjects(baseUrl);
-  console.log("projects", projects);
   const handleDelete = async (projectId) => {
     try {
       const res = await axios.delete(`${baseUrl}/api/projects/${projectId}`);
@@ -123,7 +122,7 @@ const Projects = () => {
     },
   ];
 
-  if (isLoading || loading) {
+  if (loading && user) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>

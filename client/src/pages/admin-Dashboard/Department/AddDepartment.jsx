@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import useDepartments from "../../../hooks/FetchDepartment";
 import useManagers from "../../../hooks/FetchManagers";
+import { useAuth } from "../../../context/AuthContext";
 
 const AddDepartment = () => {
   const [depInput, setDepInput] = useState("");
@@ -13,16 +14,14 @@ const AddDepartment = () => {
 
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const navigate = useNavigate();
-
+  const { user, loading } = useAuth();
   const {
     data: departments = [],
-    isLoading: loadingDeps,
     refetch,
   } = useDepartments(baseUrl);
 
   const {
     data: managers = [],
-    isLoading: loadingManagers,
   } = useManagers(baseUrl);
   // Handle department input changes
   const handleDepInputChange = (e) => {
@@ -85,10 +84,10 @@ const AddDepartment = () => {
     }
   };
 
-  if (loadingDeps || loadingManagers) {
+  if (loading || user) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
   }

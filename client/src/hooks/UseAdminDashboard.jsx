@@ -1,8 +1,18 @@
-// hooks/useDepartmentCount.js
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+
+// Helper to get token
+const getToken = () =>
+  localStorage.getItem("token") || sessionStorage.getItem("token");
+
+// ===============================
+// Department Count
 const fetchDepartmentCount = async (baseUrl) => {
-  const res = await fetch(`${baseUrl}/api/department/getCountDep`);
+  const res = await fetch(`${baseUrl}/api/department/getCountDep`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
   const data = await res.json();
   if (!res.ok || !data.success) {
     throw new Error(data.message || "Failed to fetch department count");
@@ -17,14 +27,20 @@ export const useDepartmentCount = (baseUrl) => {
   });
 };
 
+// ===============================
+// Salary Aggregation
 const fetchSalaryAggregation = async (baseUrl) => {
-  const response = await fetch(`${baseUrl}/api/salary/getTotalSalary`);
+  const response = await fetch(`${baseUrl}/api/salary/getTotalSalary`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
   const data = await response.json();
   if (!data.success) {
     throw new Error("Failed to fetch salary aggregation");
   }
 
-  return data.totalSalary; // { totalAmount, totalCount }
+  return data.totalSalary;
 };
 
 export const useSalaryAggregation = (baseUrl) => {
@@ -34,8 +50,14 @@ export const useSalaryAggregation = (baseUrl) => {
   });
 };
 
+// ===============================
+// Employee Count
 const fetchUsersCount = async (baseUrl) => {
-  const response = await fetch(`${baseUrl}/api/employee/getEmployeesCount`);
+  const response = await fetch(`${baseUrl}/api/employee/getEmployeesCount`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
 
   const data = await response.json();
   if (!data.success) {
@@ -51,15 +73,20 @@ export const useEmployeesCount = (baseUrl) => {
   });
 };
 
+// ===============================
+// Project Count
 export const useProjectCount = (baseUrl) => {
   return useQuery({
     queryKey: ["runningProjectsFetchAll"],
     queryFn: async () => {
-      const res = await fetch(`${baseUrl}/api/projects/getInProgressProjects`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || sessionStorage.getItem("token")}`,
-        },
-      });
+      const res = await fetch(
+        `${baseUrl}/api/projects/getInProgressProjects`,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to fetch project count");
@@ -69,9 +96,14 @@ export const useProjectCount = (baseUrl) => {
   });
 };
 
-
+// ===============================
+// Department Distribution
 const fetchDepartmentDistribution = async (baseUrl) => {
-  const res = await axios.get(`${baseUrl}/api/department/distribution`);
+  const res = await axios.get(`${baseUrl}/api/department/distribution`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
   return res.data;
 };
 
@@ -82,8 +114,14 @@ export const useDepartmentDistribution = (baseUrl) => {
   });
 };
 
+// ===============================
+// Leave Stats
 const fetchLeaveStats = async (baseUrl) => {
-  const response = await axios.get(`${baseUrl}/api/leave/stats`);
+  const response = await axios.get(`${baseUrl}/api/leave/stats`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
   return response.data;
 };
 
@@ -94,8 +132,14 @@ export const useLeaveStats = (baseUrl) => {
   });
 };
 
+// ===============================
+// Monthly Salary Data
 const fetchMonthlySalaryData = async (baseUrl) => {
-  const res = await axios.get(`${baseUrl}/api/salary/monthly-summary`);
+  const res = await axios.get(`${baseUrl}/api/salary/monthly-summary`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
   return res.data;
 };
 
@@ -106,8 +150,14 @@ export const useMonthlySalaryData = (baseUrl) => {
   });
 };
 
+// ===============================
+// Leave Separated Stats
 const fetchLeaveCountSperate = async (baseUrl) => {
-  const res = await axios.get(`${baseUrl}/api/leave/seperate-stats`);
+  const res = await axios.get(`${baseUrl}/api/leave/seperate-stats`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
 
   return res.data;
 };

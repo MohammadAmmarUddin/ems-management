@@ -7,12 +7,12 @@ import { useAuth } from "../../../context/AuthContext";
 
 const DepartmentList = () => {
   // const [departments, setDepartment] = useState([]);
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const {
     data: departments,
     refetch,
-    isLoading,
+
 
   } = useDepartments(baseUrl);
 
@@ -104,7 +104,7 @@ const DepartmentList = () => {
     },
   ];
 
-  if (isLoading || loading) {
+  if (loading && user) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -132,7 +132,7 @@ const DepartmentList = () => {
 
       <div>
         <DataTable
-          progressPending={isLoading}
+          progressPending={loading}
           highlightOnHover
           selectableRows
           pagination

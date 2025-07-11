@@ -1,8 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+const getToken = () =>
+  localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const fetchEmployeeById = async (baseUrl, id) => {
-  const res = await axios.get(`${baseUrl}/api/employee/getEmployee/${id}`);
+  const res = await axios.get(`${baseUrl}/api/employee/getEmployee/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
   return res.data.employee;
 };
 

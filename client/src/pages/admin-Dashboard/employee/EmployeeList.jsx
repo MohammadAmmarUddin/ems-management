@@ -15,13 +15,9 @@ const List = () => {
 
   const {
     data: employees = [],
-
-    isError,
-    error,
     refetch,
   } = useEmployees(baseUrl);
-
-  console.log("selectedEmployee", selectedEmployee);
+  console.log("Employees data:", employees);
   const date = new Date(selectedEmployee?.createdAt);
   const joiningDate = date.toLocaleString();
 
@@ -164,15 +160,6 @@ const List = () => {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (isError) {
-    return (
-      <div className="text-center text-red-500 mt-10">
-        <p>Error fetching employees: {error.message}</p>
       </div>
     );
   }

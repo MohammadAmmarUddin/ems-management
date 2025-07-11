@@ -16,9 +16,7 @@ const ManagerList = () => {
 
   const {
     data: managers = [],
-    isLoading,
-    isError,
-    error,
+
     refetch,
   } = useManagers({ baseUrl });
 
@@ -153,22 +151,13 @@ const ManagerList = () => {
     },
   ];
 
-  if (loading || isLoading) {
+  if (loading && user) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
   }
-
-  if (isError) {
-    return (
-      <div className="text-center text-red-500 mt-10">
-        <p>Error fetching managers: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div>
       <div className="text-center">

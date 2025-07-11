@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useNavigate, useParams } from "react-router-dom";
 import useManagers from "../../../hooks/FetchManagers";
+import { useAuth } from "../../../context/AuthContext";
 
 const EditDepartment = () => {
   const { id } = useParams();
@@ -13,12 +14,10 @@ const EditDepartment = () => {
   const [depDesc, setDepDesc] = useState("");
   const [selectedManagerId, setSelectedManagerId] = useState("");
   const [loadingDep, setLoadingDep] = useState(true);
-  const [depError, setDepError] = useState("");
-
+  const { user, loading } = useAuth();
   const {
     data: managers = [],
-    isLoading: loadingManagers,
-    isError: managerError,
+
   } = useManagers({ baseUrl });
 
   // Fetch department by ID
@@ -87,11 +86,10 @@ const EditDepartment = () => {
     );
   }
 
-  // Error state
-  if (depError || managerError) {
+  if (loading || user) {
     return (
-      <div className="text-center mt-20 text-red-600 font-semibold">
-        {depError || "Failed to load managers."}
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
   }

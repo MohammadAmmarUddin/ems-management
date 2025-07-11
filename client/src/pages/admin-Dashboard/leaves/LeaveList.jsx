@@ -22,12 +22,12 @@ const LeaveList = () => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
 
-  const { data: employees = [], isLoading: empLoading } = useEmployees({
+  const { data: employees = [] } = useEmployees({
     baseUrl,
     user,
     loading,
   });
-  const { data: leaves = [], isLoading: leavesLoading } = useEmployeesAndLeaves(
+  const { data: leaves = [] } = useEmployeesAndLeaves(
     { baseUrl, user, loading }
   );
 
@@ -151,10 +151,10 @@ const LeaveList = () => {
     },
   ];
 
-  if (loading || empLoading || leavesLoading) {
+  if (loading && user) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin h-16 w-16 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -197,6 +197,7 @@ const LeaveList = () => {
         <DataTable
           highlightOnHover
           pagination
+          progressPending={loading}
           columns={columns}
           data={leaves}
           responsive
