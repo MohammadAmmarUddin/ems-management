@@ -71,7 +71,13 @@ const Announcement = () => {
       );
 
       if (res.data.success) {
-        Swal.fire("Success", "Announcement sent successfully.", "success");
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Announcement sent successfully.",
+          showConfirmButton: false,
+          timer: 1500
+        });
         setMessage("");
         setSelectedEmployee("");
         setType("all");
@@ -103,7 +109,13 @@ const Announcement = () => {
         });
 
         if (res.data.success) {
-          Swal.fire("Deleted!", "Announcement has been deleted.", "success");
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Announcement deleted successfully.",
+            showConfirmButton: false,
+            timer: 1500
+          });
           setAnnouncements((prev) => prev.filter((a) => a._id !== id));
         } else {
           Swal.fire("Error", res.data.message || "Failed to delete.", "error");

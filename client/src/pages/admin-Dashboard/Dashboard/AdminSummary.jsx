@@ -31,6 +31,7 @@ import {
 } from "../../../hooks/UseAdminDashboard";
 import useActiveUsers from "../../../hooks/FetchActiveUsers";
 import { useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
 
 const COLORS = [
   "#4F46E5", "#F59E0B", "#EF4444", "#10B981", "#3B82F6",
@@ -39,29 +40,19 @@ const COLORS = [
 
 const AdminSummary = () => {
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-
-  const { data: countDep, isLoading: isDepLoading } = useDepartmentCount(baseUrl);
-  const { data: totalSalary, isLoading: isSalaryLoading } = useSalaryAggregation(baseUrl);
-  const { data: usersCount, isLoading: isUserCountLoading } = useEmployeesCount(baseUrl);
-  const { data: departmentData = [], isLoading: isDeptChartLoading } = useDepartmentDistribution(baseUrl);
-  const { data: leaveStats, isLoading: isLeaveStatsLoading } = useLeaveStats(baseUrl);
-  const { data: monthlySalaryData, isLoading: isMonthlySalaryLoading } = useMonthlySalaryData(baseUrl);
-  const { data: activeUsers = [], isLoading: isActiveUsersLoading } = useActiveUsers(baseUrl);
-  const { data: projects, isLoading: isProjectCountLoading } = useProjectCount(baseUrl);
+  const { user, loading } = useAuth();
+  const { data: countDep } = useDepartmentCount(baseUrl);
+  const { data: totalSalary } = useSalaryAggregation(baseUrl);
+  const { data: usersCount } = useEmployeesCount(baseUrl);
+  const { data: departmentData = [] } = useDepartmentDistribution(baseUrl);
+  const { data: leaveStats, } = useLeaveStats(baseUrl);
+  const { data: monthlySalaryData } = useMonthlySalaryData(baseUrl);
+  const { data: activeUsers = [] } = useActiveUsers(baseUrl);
+  const { data: projects, } = useProjectCount(baseUrl);
   const [showAllUsers, setShowAllUsers] = useState(false);
 
-  const isLoading = [
-    isDepLoading,
-    isSalaryLoading,
-    isUserCountLoading,
-    isDeptChartLoading,
-    isLeaveStatsLoading,
-    isMonthlySalaryLoading,
-    isActiveUsersLoading,
-    isProjectCountLoading,
-  ].some(Boolean);
 
-  if (isLoading) {
+  if (loading && user) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>

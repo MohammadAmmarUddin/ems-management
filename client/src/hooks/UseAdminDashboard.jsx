@@ -53,9 +53,13 @@ export const useEmployeesCount = (baseUrl) => {
 
 export const useProjectCount = (baseUrl) => {
   return useQuery({
-    queryKey: ["projectsFetchAll"],
+    queryKey: ["runningProjectsFetchAll"],
     queryFn: async () => {
-      const res = await fetch(`${baseUrl}/api/projects/getInProgressProjects`);
+      const res = await fetch(`${baseUrl}/api/projects/getInProgressProjects`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || sessionStorage.getItem("token")}`,
+        },
+      });
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to fetch project count");
