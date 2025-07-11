@@ -3,6 +3,15 @@ const employeeModel = require("../models/employeeModel.js");
 const Department = require("../models/depModel");
 const taskModel = require("../models/taskModel");
 
+exports.totalPendingTasks = async (req, res) => {
+  try {
+    const tasks = await taskModel.find({ status: "pending" }).countDocuments();
+    res.status(200).json({ success: true, totalPendingTasks: tasks });
+  } catch (error) {
+    console.error("Error fetching total pending tasks:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 exports.getAllTasksByDepartment = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -155,6 +164,7 @@ exports.AllProjectInProgressUnderManager = async (req, res) => {
   try {
     const managerId = req.user._id;
     const manager = await employeeModel.findOne({ userId: managerId });
+
     if (!manager) {
       return res
         .status(404)
@@ -171,13 +181,19 @@ exports.AllProjectInProgressUnderManager = async (req, res) => {
     }
     const projects = await Project.find({
       status: "in progress",
-      department: department._id,
+      department: department?._id,
     });
     const projectsCount = await Project.countDocuments({
       status: "in progress",
-      department: department._id,
+      department: department?._id,
     });
-    return res.status(200).json({ success: true, projects, projectsCount });
+    if (!projects || projects.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No in-progress projects found for this manager",
+      });
+    }
+    res.status(200).json({ success: true, projects, projectsCount });
   } catch (error) {
     console.error("Error fetching projects:", error);
     res

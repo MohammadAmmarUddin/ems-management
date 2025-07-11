@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import SummaryCard from "../admin-Dashboard/Dashboard/SummaryCard";
+import useEmployeeById from "../../hooks/FetchEmployeeById";
 
 const Dashboard = () => {
     const { user, loading } = useAuth();
@@ -20,10 +21,11 @@ const Dashboard = () => {
     });
 
     const [employees, setEmployees] = useState([]);
-
+    const { data: userData, isLoading: userLoading } = useEmployeeById(baseUrl, user?._id);
     useEffect(() => {
+        fetchRunningProjects();
         if (!loading && user) {
-            fetchRunningProjects();
+
             fetchActiveEmployees();
         }
     }, [loading, user]);
@@ -60,7 +62,7 @@ const Dashboard = () => {
         }
     };
 
-    if (loading) {
+    if (loading || userLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full"></div>
@@ -88,16 +90,11 @@ const Dashboard = () => {
                     number={employees.length}
                     color="bg-green-500"
                 />
-                <SummaryCard
-                    icon={<FaTasks className="text-white text-3xl" />}
-                    text="Total Tasks"
-                    number={projects.running.reduce((acc, p) => acc + (p.tasks?.length || 0), 0)}
-                    color="bg-indigo-500"
-                />
+
                 <SummaryCard
                     icon={<FaCheckCircle className="text-white text-3xl" />}
                     text="Department"
-                    number={user?.department?.dep_name || "N/A"}
+                    number={userData?.department?.dep_name || "N/A"}
                     color="bg-yellow-500"
                 />
             </div>

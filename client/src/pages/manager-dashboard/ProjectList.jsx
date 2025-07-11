@@ -69,7 +69,13 @@ const ProjectList = () => {
             );
 
             if (res.data.success) {
-                Swal.fire("Success!", "Task created successfully", "success");
+                Swal.fire({
+                    position: "center",
+                    icon: "success",
+                    title: "Task created successfully",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
                 setShowAddTaskModal(false);
                 setTaskForm({ employee: "", taskTitle: "", taskDescription: "", deadline: "" });
                 fetchTasks(selectedProject);
@@ -103,7 +109,13 @@ const ProjectList = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (res.data.success) {
-                Swal.fire("Success!", "Project status updated", "success");
+                Swal.fire({
+                    position: "center",
+                    icon: "success",
+                    title: "Your status has been changed",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
                 refetch();
             }
         } catch (error) {
@@ -136,9 +148,9 @@ const ProjectList = () => {
                     onChange={(e) => handleStatusChange(row._id, e.target.value)}
                     className="px-2 py-1 rounded border text-xs"
                 >
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="in progress">In Progress</option>
+                    <option value="completed">Completed</option>
                 </select>
             ),
         },

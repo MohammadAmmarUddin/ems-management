@@ -160,20 +160,22 @@ exports.getEmployeesByDepartment = async (req, res) => {
 };
 exports.getEmployee = async (req, res) => {
   try {
-    // Use req.params if the ID is in the URL, or req.query if it's passed as a query string
-    const { id } = req.params; // or req.query.id if passed as query parameter
+    const { id } = req.params;
 
-    // Ensure id is provided
     if (!id) {
       return res
         .status(400)
         .json({ success: false, message: "Employee ID is required" });
     }
 
-    // Fetch the employee from the database
+    // Fetch employee by _id or userId and populate department name
     const emp =
-      (await employeeModel.findOne({ _id: id })) ||
-      (await employeeModel.findOne({ userId: id })); // or { id: id } if you're using a custom field name
+      (await employeeModel
+        .findOne({ _id: id })
+        .populate("department", "dep_name")) ||
+      (await employeeModel
+        .findOne({ userId: id })
+        .populate("department", "dep_name"));
 
     if (!emp) {
       return res
@@ -181,11 +183,10 @@ exports.getEmployee = async (req, res) => {
         .json({ success: false, message: "Employee not found" });
     }
 
-    // Send the employee data as a response
-    res.status(200).json({ success: true, employee: emp });
+    return res.status(200).json({ success: true, employee: emp });
   } catch (error) {
     console.error("Error fetching employee:", error);
-    res
+    return res
       .status(500)
       .json({ success: false, message: "Error fetching employee data" });
   }

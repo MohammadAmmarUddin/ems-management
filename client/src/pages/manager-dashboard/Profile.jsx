@@ -1,55 +1,70 @@
-import React from 'react';
+import useEmployeeById from '../../hooks/FetchEmployeeById';
+import { useAuth } from '../../context/AuthContext';
+import { Link, useLocation } from 'react-router-dom';
 
 const Profile = () => {
-    // Simulated manager data (You can replace this with props or API data)
-    const manager = {
-        name: "Mohammad Ammar",
-        email: "ammar@example.com",
-        phone: "+880 123-456-7890",
-        department: "Engineering",
-        joined: "2024-02-01",
-        image:
-            "https://ui-avatars.com/api/?name=Mohammad+Ammar&background=random&size=256", // Placeholder avatar
-    };
+    const { user, loading } = useAuth();
+    const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+    const location = useLocation();
+    const rolePrefix = location.pathname.split("/")[1]; // admin-dashboard, manager-dashboard etc.
+    const role = rolePrefix?.split("-")[0]; // admin, manager, employee
+
+    const { data: userData, isLoading: userLoading } = useEmployeeById(baseUrl, user?._id);
+
+    if (loading || userLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+            </div>
+        );
+    }
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
-            <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
-                <div className="flex flex-col items-center">
+        <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white px-6 py-12">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex flex-col md:flex-row md:items-center gap-6 mb-12">
                     <img
-                        src={manager.image}
-                        alt="Manager Avatar"
-                        className="w-32 h-32 rounded-full mb-4 object-cover shadow-lg"
+                        src={`${baseUrl}/uploads/${userData.profileImage}`}
+                        alt="Profile"
+                        className="w-40 h-40 rounded-full border-4 border-blue-600 shadow-lg object-cover"
                     />
-                    <h2 className="text-xl font-semibold text-gray-800">{manager.name}</h2>
-                    <p className="text-sm text-gray-500">{manager.department} Department</p>
-                </div>
-
-                <div className="mt-6 space-y-3 text-sm text-gray-700">
-                    <div className="flex justify-between">
-                        <span>Email:</span>
-                        <span className="font-medium">{manager.email}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Phone:</span>
-                        <span className="font-medium">{manager.phone}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Joined On:</span>
-                        <span className="font-medium">
-                            {new Date(manager.joined).toLocaleDateString()}
-                        </span>
+                    <div>
+                        <h1 className="text-4xl font-bold text-gray-800">{userData.emp_name}</h1>
+                        <p className="text-lg text-blue-600 font-medium mt-1">{userData.department?.dep_name} Department</p>
+                        <p className="text-sm text-gray-600 mt-2">Role: <span className="font-semibold capitalize">{userData.role}</span></p>
+                        <p className="text-sm text-gray-600">Designation: <span className="font-semibold">{userData.designation}</span></p>
                     </div>
                 </div>
 
-                <div className="mt-6 text-center">
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <ProfileField label="Employee ID" value={userData.employeeId} />
+                    <ProfileField label="Email" value={userData.emp_email} />
+                    <ProfileField label="Phone" value={userData.emp_phone} />
+                    <ProfileField label="Date of Birth" value={new Date(userData.dob).toLocaleDateString()} />
+                    <ProfileField label="Joined On" value={new Date(userData.createdAt).toLocaleDateString()} />
+                    <ProfileField label="Gender" value={userData.gender} />
+                    <ProfileField label="Marital Status" value={userData.marital_status} />
+                    <ProfileField label="Salary" value={`৳ ${userData.salary}`} />
+                </div>
+
+                <div className="mt-10 text-center">
+                    <Link
+                        to={`/${role}-dashboard/edit-profile/${userData.userId}`}
+                        className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-semibold transition"
+                    >
                         Edit Profile
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>
     );
 };
+
+const ProfileField = ({ label, value }) => (
+    <div className="bg-white shadow-sm rounded-md p-5 border">
+        <p className="text-sm text-gray-500 mb-1">{label}</p>
+        <p className="text-base font-semibold text-gray-800">{value || "N/A"}</p>
+    </div>
+);
 
 export default Profile;

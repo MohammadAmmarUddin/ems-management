@@ -126,6 +126,8 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="summary" element={<Dashboard />} />
           <Route path="profile" element={<ProfileManager />} />
+          <Route path="edit-profile/:id" element={<EditEmployee />} />
+
           <Route path="projects" element={<ProjectList />} />
           <Route path="employees" element={<Employeelist />} />
           <Route path="annoucementManager" element={<Announcement />} />
