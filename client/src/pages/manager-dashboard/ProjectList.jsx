@@ -7,10 +7,10 @@ import { useAuth } from "../../context/AuthContext";
 import useProjectsByDepartment from "../../hooks/FetchProjectsByDepartment";
 
 const ProjectList = () => {
-    const { loading } = useAuth();
+    const { user, loading } = useAuth();
     const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
-    const { data: projects, refetch, isLoading } = useProjectsByDepartment(baseUrl);
+    const { data: projects, refetch } = useProjectsByDepartment(baseUrl);
 
     const [selectedProject, setSelectedProject] = useState(null);
     const [showTaskModal, setShowTaskModal] = useState(false);
@@ -183,7 +183,7 @@ const ProjectList = () => {
         },
     ];
 
-    if (isLoading || loading) {
+    if (user && loading) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -198,7 +198,7 @@ const ProjectList = () => {
             </div>
 
             <div className="bg-white py-4 rounded shadow">
-                <DataTable highlightOnHover pagination columns={columns} data={projects || []} />
+                <DataTable highlightOnHover pagination progressPending={loading} columns={columns} data={projects || []} />
             </div>
 
             {/* View Tasks Modal */}

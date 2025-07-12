@@ -1,5 +1,7 @@
 const Announcement = require("../models/annoucement");
+const employeeModel = require("../models/employeeModel");
 
+// Admin creates announcement
 exports.createAnnouncement = async (req, res) => {
   try {
     const { message, type, selectedEmployee } = req.body;
@@ -10,78 +12,95 @@ exports.createAnnouncement = async (req, res) => {
         .json({ success: false, message: "Message and type are required." });
     }
 
-    if (type === "selected" && !selectedEmployee) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Selected employee is required." });
-    }
-
-    const announcement = new Announcement({
+    const announcement = await Announcement.create({
       message,
       type,
       selectedEmployee: type === "selected" ? selectedEmployee : null,
+      senderType: "admin",
+      sender: null,
     });
 
-    await announcement.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Announcement created successfully.",
-      announcement,
-    });
+    res.status(201).json({ success: true, announcement });
   } catch (error) {
-    console.error("Error creating announcement:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error." });
+    console.error("Error creating admin announcement:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
-exports.getAnnouncements = async (req, res) => {
+// Manager creates announcement to employees
+exports.createManagerAnnouncement = async (req, res) => {
   try {
-    const skip = parseInt(req.query.skip) || 0;
-    const limit = parseInt(req.query.limit) || 5;
+    const { message, selectedEmployee } = req.body;
+    const managerId = req.user._id;
 
-    const announcements = await Announcement.find()
+    if (!message) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Message is required." });
+    }
+
+    const announcement = await Announcement.create({
+      message,
+      type: selectedEmployee ? "selected" : "employees",
+      selectedEmployee: selectedEmployee || null,
+      senderType: "manager",
+      sender: managerId,
+    });
+
+    res.status(201).json({ success: true, announcement });
+  } catch (error) {
+    console.error("Error creating manager announcement:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+// Admin fetches all announcements created by admin
+exports.getAdminAnnouncements = async (req, res) => {
+  try {
+    const announcements = await Announcement.find({ senderType: "admin" })
       .populate("selectedEmployee", "emp_name emp_email")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, announcements });
   } catch (error) {
-    console.error("Error fetching announcements:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error." });
+    console.error("Error fetching admin announcements:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
-exports.deleteAnnouncement = async (req, res) => {
+
+// Manager fetches own + admin announcements relevant to them
+exports.getManagerAnnouncements = async (req, res) => {
   try {
-    const { id } = req.params;
+    const managerId = req.user._id;
 
-    const announcement = await Announcement.findByIdAndDelete(id);
+    const announcements = await Announcement.find({
+      $or: [
+        { senderType: "manager", sender: managerId },
+        { senderType: "admin", type: { $in: ["all", "employees"] } },
+        { senderType: "admin", type: "selected", selectedEmployee: managerId },
+      ],
+    })
+      .populate("selectedEmployee", "emp_name emp_email")
+      .populate("sender", "emp_name emp_email")
+      .sort({ createdAt: -1 });
 
-    if (!announcement) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Announcement not found." });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Announcement deleted successfully.",
-    });
+    res.status(200).json({ success: true, announcements });
   } catch (error) {
-    console.error("Error deleting announcement:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error." });
+    console.error("Error fetching manager announcements:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
+// Employee fetches relevant announcements
 exports.getAnnouncementsForEmployee = async (req, res) => {
   try {
-    const { id } = req.params; // Employee ID
+    const employeeId = req.params.id;
 
     const announcements = await Announcement.find({
       $or: [
         { type: "all" },
         { type: "employees" },
-        { type: "selected", selectedEmployee: id },
+        { type: "selected", selectedEmployee: employeeId },
       ],
     })
       .populate("selectedEmployee", "emp_name emp_email")
@@ -89,14 +108,15 @@ exports.getAnnouncementsForEmployee = async (req, res) => {
 
     res.status(200).json({ success: true, announcements });
   } catch (error) {
-    console.error("Error fetching employee announcements:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error." });
+    console.error("Error fetching announcements for employee:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
+// Delete Announcement
 exports.deleteAnnouncement = async (req, res) => {
   try {
-    const { id } = req.params;
-
+    const id = req.params.id;
     const announcement = await Announcement.findByIdAndDelete(id);
 
     if (!announcement) {
@@ -105,12 +125,9 @@ exports.deleteAnnouncement = async (req, res) => {
         .json({ success: false, message: "Announcement not found." });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Announcement deleted successfully.",
-    });
+    res.status(200).json({ success: true, message: "Announcement deleted." });
   } catch (error) {
     console.error("Error deleting announcement:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error." });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

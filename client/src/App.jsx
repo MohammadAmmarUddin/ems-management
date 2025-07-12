@@ -46,8 +46,8 @@ import MyTasks from "../src/pages/employee-Dashboard/Tasks/MyTasks.jsx";
 import AddProject from "./pages/admin-Dashboard/projects/AddProject.jsx";
 import SinglEmployeeSalary from "./pages/admin-Dashboard/Salary/SingleEmployeeSalary.jsx";
 import Dashboard from "./pages/manager-dashboard/Dashboard.jsx";
-import Announcement from "./pages/manager-dashboard/Announcement.jsx";
 import ProjectList from "./pages/manager-dashboard/ProjectList.jsx";
+import ManagerAnnouncement from "./pages/manager-dashboard/ManagerAnnouncement.jsx";
 
 function App() {
   return (
@@ -130,7 +130,7 @@ function App() {
 
           <Route path="projects" element={<ProjectList />} />
           <Route path="employees" element={<Employeelist />} />
-          <Route path="annoucementManager" element={<Announcement />} />
+          <Route path="annoucementManager" element={<ManagerAnnouncement />} />
         </Route>
       </Routes>
     </BrowserRouter>

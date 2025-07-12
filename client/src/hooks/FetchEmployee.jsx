@@ -10,7 +10,6 @@ const fetchEmployees = async (baseUrl) => {
     },
   });
 
-  console.log("Fetching employees from:", res.data.result);
   return res.data.result;
 };
 

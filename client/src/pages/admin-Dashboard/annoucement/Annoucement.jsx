@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import useEmployees from "../../../hooks/FetchEmployee";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { format } from "date-fns";
+import useEmployees from "../../../hooks/FetchEmployee";
 
 const Announcement = () => {
   const [type, setType] = useState("all");
@@ -20,21 +20,16 @@ const Announcement = () => {
   const fetchAnnouncements = async (newSkip = 0, append = false) => {
     try {
       const res = await axios.get(
-        `${baseUrl}/api/annoucement?skip=${newSkip}&limit=${limit}`,
+        `${baseUrl}/api/annoucement/admin?skip=${newSkip}&limit=${limit}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       if (res.data.success) {
-        if (append) {
-          setAnnouncements((prev) => [...prev, ...res.data.announcements]);
-        } else {
-          setAnnouncements(res.data.announcements);
-        }
+        const fetched = res.data.announcements;
+        setAnnouncements((prev) => (append ? [...prev, ...fetched] : fetched));
         setSkip(newSkip + limit);
-        if (res.data.announcements.length < limit) {
-          setHasMore(false);
-        }
+        setHasMore(fetched.length === limit);
       }
     } catch (err) {
       console.error("Failed to fetch announcements:", err);
@@ -42,7 +37,6 @@ const Announcement = () => {
   };
 
   useEffect(() => {
-    setAnnouncements([]);
     setSkip(0);
     setHasMore(true);
     fetchAnnouncements(0);
@@ -57,6 +51,7 @@ const Announcement = () => {
       Swal.fire("Error", "Please select an employee.", "error");
       return;
     }
+
     try {
       const res = await axios.post(
         `${baseUrl}/api/annoucement`,
@@ -64,6 +59,7 @@ const Announcement = () => {
           message,
           type,
           selectedEmployee: type === "selected" ? selectedEmployee : null,
+          senderType: "admin", // Indicate this was sent by admin
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -71,19 +67,10 @@ const Announcement = () => {
       );
 
       if (res.data.success) {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Announcement sent successfully.",
-          showConfirmButton: false,
-          timer: 1500
-        });
+        Swal.fire("Success", "Announcement sent!", "success");
         setMessage("");
         setSelectedEmployee("");
         setType("all");
-        setAnnouncements([]);
-        setSkip(0);
-        setHasMore(true);
         fetchAnnouncements(0);
       } else {
         Swal.fire("Error", res.data.message || "Something went wrong.", "error");
@@ -93,6 +80,7 @@ const Announcement = () => {
       Swal.fire("Error", "Failed to send announcement.", "error");
     }
   };
+
   const handleDelete = async (id) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
@@ -109,13 +97,7 @@ const Announcement = () => {
         });
 
         if (res.data.success) {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Announcement deleted successfully.",
-            showConfirmButton: false,
-            timer: 1500
-          });
+          Swal.fire("Deleted", "Announcement deleted successfully.", "success");
           setAnnouncements((prev) => prev.filter((a) => a._id !== id));
         } else {
           Swal.fire("Error", res.data.message || "Failed to delete.", "error");
@@ -127,16 +109,14 @@ const Announcement = () => {
     }
   };
 
-
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6">
-
       {/* Left Section - Post Announcement */}
       <div className="flex-1 bg-gray-100 rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-semibold mb-4">Create Announcement</h2>
 
         <div className="mb-4">
-          <label className="block mb-2 font-medium">Select Announcement Type:</label>
+          <label className="block mb-2 font-medium">Announcement Type:</label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
@@ -157,7 +137,7 @@ const Announcement = () => {
               onChange={(e) => setSelectedEmployee(e.target.value)}
               className="border rounded p-2 w-full"
             >
-              <option value="">Select an employee</option>
+              <option value="">-- Select Employee --</option>
               {employees.map((emp) => (
                 <option key={emp._id} value={emp._id}>
                   {emp.emp_name} ({emp.emp_email})
@@ -168,12 +148,12 @@ const Announcement = () => {
         )}
 
         <div className="mb-4">
-          <label className="block mb-2 font-medium">Announcement Message:</label>
+          <label className="block mb-2 font-medium">Message:</label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className="border rounded p-2 w-full h-24"
-            placeholder="Type your announcement here..."
+            placeholder="Type your announcement..."
           ></textarea>
         </div>
 
@@ -185,7 +165,7 @@ const Announcement = () => {
         </button>
       </div>
 
-      {/* Right Section - Chat List */}
+      {/* Right Section - Announcements List */}
       <div className="flex-1 bg-gray-100 rounded-lg shadow-md p-6 h-[500px] flex flex-col">
         <h2 className="text-2xl font-semibold mb-4">Announcements List</h2>
 
@@ -197,14 +177,16 @@ const Announcement = () => {
               <div key={item._id} className="bg-white p-4 rounded shadow relative">
                 <div className="text-gray-700 mb-2">{item.message}</div>
                 <div className="text-sm text-gray-500 mb-1">
-                  <span className="font-medium">Type:</span> {item.type}
+                  <strong>Type:</strong> {item.type}
                   {item.type === "selected" && item.selectedEmployee && (
-                    <span>
-                      {" "}
-                      - {item.selectedEmployee.emp_name} (
-                      {item.selectedEmployee.emp_email})
-                    </span>
+                    <>
+                      {" "} - {item.selectedEmployee?.emp_name} (
+                      {item.selectedEmployee?.emp_email})
+                    </>
                   )}
+                </div>
+                <div className="text-sm text-gray-500">
+                  <strong>From:</strong> {item.senderType === "admin" ? "Admin" : item.sender?.emp_name}
                 </div>
                 <div className="text-xs text-gray-400">
                   {format(new Date(item.createdAt), "PPP p")}

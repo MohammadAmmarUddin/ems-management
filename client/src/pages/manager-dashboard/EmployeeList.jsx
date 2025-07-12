@@ -15,9 +15,7 @@ const EmployeeList = () => {
 
     const {
         data: employees = [],
-        isLoading,
-        isError,
-        error,
+
         refetch,
     } = useEmployees(baseUrl);
 
@@ -144,7 +142,7 @@ const EmployeeList = () => {
     ];
 
     // Loader
-    if (loading || isLoading) {
+    if (loading && user) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -152,20 +150,13 @@ const EmployeeList = () => {
         );
     }
 
-    // Error state
-    if (isError) {
-        return (
-            <div className="text-center text-red-500 mt-10">
-                <p>Error fetching employees: {error.message}</p>
-            </div>
-        );
-    }
+
 
     return (
         <div>
             <div className="text-center">
                 <h3 className="text-2xl font-bold">Manage Employees</h3>r
-                
+
             </div>
 
             <div className="flex justify-between my-4">

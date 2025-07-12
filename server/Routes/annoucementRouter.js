@@ -1,21 +1,37 @@
-const {
-  createAnnouncement,
-  getAnnouncements,
-  deleteAnnouncement,
-  getAnnouncementsForEmployee,
-} = require("../controller/annoucementController");
 const express = require("express");
 const router = express.Router();
-const authMiddlware = require("../middleware/authMiddleware");
-// Create Announcement
-router.post("/", authMiddlware, createAnnouncement);
+const {
+  createAnnouncement,
+  createManagerAnnouncement,
+  getAdminAnnouncements,
+  getManagerAnnouncements,
+  getAnnouncementsForEmployee,
+  deleteAnnouncement,
+} = require("../controller/annoucementController");
 
-// Get All Announcements
-router.get("/", getAnnouncements);
+const authMiddleware = require("../middleware/authMiddleware");
 
-// Delete Announcement
-router.delete("/:id", authMiddlware, deleteAnnouncement);
-// Get Announcements for Specific Employee
+// ---------------- Admin Routes ---------------- //
+// Create announcement from admin to all/employee/manager/selected
+router.post("/", authMiddleware, createAnnouncement);
+
+// Get all announcements created by admin (admin dashboard)
+router.get("/admin", authMiddleware, getAdminAnnouncements);
+
+// ---------------- Manager Routes ---------------- //
+// Manager creates announcement (to all employees or selected)
+router.post("/manager", authMiddleware, createManagerAnnouncement);
+
+// Manager gets announcements:
+// - Their own created ones
+// - Admin announcements directed to them
+router.get("/manager", authMiddleware, getManagerAnnouncements);
+
+// ---------------- Employee Specific ---------------- //
+// Fetch announcements meant for a specific employee
 router.get("/employee/:id", getAnnouncementsForEmployee);
+
+// ---------------- Delete ---------------- //
+router.delete("/:id", authMiddleware, deleteAnnouncement);
 
 module.exports = router;

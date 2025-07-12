@@ -9,9 +9,9 @@ const Profile = () => {
     const rolePrefix = location.pathname.split("/")[1]; // admin-dashboard, manager-dashboard etc.
     const role = rolePrefix?.split("-")[0]; // admin, manager, employee
 
-    const { data: userData, isLoading: userLoading } = useEmployeeById(baseUrl, user?._id);
+    const { data: userData } = useEmployeeById(baseUrl, user?._id);
 
-    if (loading || userLoading) {
+    if (loading && user) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full"></div>

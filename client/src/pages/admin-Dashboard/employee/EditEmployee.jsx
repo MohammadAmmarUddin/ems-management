@@ -147,7 +147,18 @@ const EditEmployee = () => {
           showConfirmButton: false,
           timer: 1500,
         });
-        setTimeout(() => navigate("/admin-dashboard/employee"), 1600);
+
+        const storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
+        const role = storedUser?.role;
+        if (role === "admin") {
+          navigate("/admin-dashboard");
+        } else if (role === "manager") {
+          navigate("/manager-dashboard");
+        } else if (role === "employee") {
+          navigate("/employee-dashboard");
+        } else {
+          navigate("/"); // fallback to home
+        }
       } else {
         throw new Error("Failed to update employee");
       }
@@ -480,6 +491,7 @@ const EditEmployee = () => {
           {/* Submit Button */}
           <div className="form-control mt-6">
             <button
+
               type="submit"
               disabled={isSubmitting}
               className={`btn font-semibold text-white ${isSubmitting
