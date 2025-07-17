@@ -28,11 +28,7 @@ router.put("/:id", authMiddleWare, updateProject);
 router.delete("/:id", authMiddleWare, deleteProject);
 
 router.post("/:id/assign-task", authMiddleWare, assignTask);
-// router.get(
-//   "/runningProjectsByManager",
-//   authMiddleWare,
-//   getRunningProjectsByManager
-// );
+
 router.get(
   "/runningProjectsByManager",
   authMiddleWare,

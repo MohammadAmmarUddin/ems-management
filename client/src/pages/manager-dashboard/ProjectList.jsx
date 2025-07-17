@@ -57,6 +57,33 @@ const ProjectList = () => {
             Swal.fire("Error!", "Failed to fetch employees", "error");
         }
     };
+    const handleDeleteTask = async (taskId) => {
+        try {
+            const confirm = await Swal.fire({
+                title: "Are you sure?",
+                text: "This task will be deleted permanently!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!",
+            });
+
+            if (confirm.isConfirmed) {
+                const res = await axios.delete(`${baseUrl}/api/projects/deleteTask/${taskId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (res.data.success) {
+                    Swal.fire("Deleted!", "Task has been deleted.", "success");
+                    fetchTasks(selectedProject); // refresh tasks
+                }
+            }
+        } catch (error) {
+            console.error("Error deleting task:", error);
+            Swal.fire("Error!", "Failed to delete task", "error");
+        }
+    };
 
     const handleAddTask = async (e) => {
         e.preventDefault();
@@ -213,6 +240,14 @@ const ProjectList = () => {
                                     <p className="font-semibold">Title: {task.taskTitle}</p>
                                     <p>Description: {task.taskDescription || "N/A"}</p>
                                     <p>Status: {task.status}</p>
+                                    <div className="mt-2 flex justify-end">
+                                        <button
+                                            onClick={() => handleDeleteTask(task._id)}
+                                            className="px-3 py-1 bg-red-600 text-white rounded text-sm"
+                                        >
+                                            Delete Task
+                                        </button>
+                                    </div>
                                 </div>
                             ))
                         ) : (
