@@ -7,6 +7,7 @@ const {
   getManagerAnnouncements,
   getAnnouncementsForEmployee,
   deleteAnnouncement,
+  deleteManagerAnnouncement,
 } = require("../controller/annoucementController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -21,7 +22,7 @@ router.get("/admin", authMiddleware, getAdminAnnouncements);
 // ---------------- Manager Routes ---------------- //
 // Manager creates announcement (to all employees or selected)
 router.post("/manager", authMiddleware, createManagerAnnouncement);
-
+router.delete("/manager/delete/:id", authMiddleware, deleteManagerAnnouncement);
 // Manager gets announcements:
 // - Their own created ones
 // - Admin announcements directed to them

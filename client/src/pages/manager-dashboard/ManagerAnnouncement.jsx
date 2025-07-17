@@ -42,6 +42,33 @@ const ManagerAnnouncement = () => {
     useEffect(() => {
         fetchAnnouncements(0);
     }, []);
+    const handleDelete = async (id) => {
+        const confirm = await Swal.fire({
+            title: "Are you sure?",
+            text: "This announcement will be deleted.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it!",
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                const res = await axios.delete(`${baseUrl}/api/annoucement/manager/delete/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (res.data.success) {
+                    Swal.fire("Deleted", "Announcement deleted successfully.", "success");
+                    setAnnouncements((prev) => prev.filter((a) => a._id !== id));
+                } else {
+                    Swal.fire("Error", res.data.message || "Failed to delete.", "error");
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+                Swal.fire("Error", "Failed to delete announcement.", "error");
+            }
+        }
+    };
 
     const handleSubmit = async () => {
         if (!message.trim()) {
@@ -155,7 +182,18 @@ const ManagerAnnouncement = () => {
                                 <div className="text-xs text-gray-400">
                                     {format(new Date(item.createdAt), "PPP p")}
                                 </div>
+
+                                {/* Delete button only for manager-created announcements */}
+                                {item.senderType === "manager" && (
+                                    <button
+                                        onClick={() => handleDelete(item._id)}
+                                        className="absolute top-2 right-2 text-red-600 hover:text-red-800 text-sm"
+                                    >
+                                        Delete
+                                    </button>
+                                )}
                             </div>
+
                         ))
                     )}
                 </div>

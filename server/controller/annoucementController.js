@@ -26,6 +26,35 @@ exports.createAnnouncement = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+// Manager deletes own announcement
+exports.deleteManagerAnnouncement = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const managerId = req.user._id;
+
+    const announcement = await Announcement.findOneAndDelete({
+      _id: id,
+      senderType: "manager",
+      sender: managerId,
+    });
+
+    if (!announcement) {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Announcement not found or unauthorized.",
+        });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Announcement deleted by manager." });
+  } catch (error) {
+    console.error("Error deleting manager announcement:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 // Manager creates announcement to employees
 exports.createManagerAnnouncement = async (req, res) => {
