@@ -39,12 +39,10 @@ exports.deleteManagerAnnouncement = async (req, res) => {
     });
 
     if (!announcement) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Announcement not found or unauthorized.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Announcement not found or unauthorized.",
+      });
     }
 
     res

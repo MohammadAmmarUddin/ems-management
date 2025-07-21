@@ -21,8 +21,7 @@ import ViewEmployee from "../src/pages/admin-Dashboard/employee/ViewEmployee.jsx
 import EditEmployee from "../src/pages/admin-Dashboard/employee/EditEmployee.jsx";
 import Managers from "../src/pages/admin-Dashboard/managers/Managers.jsx";
 import Projects from "../src/pages/admin-Dashboard/projects/Projects.jsx";
-import AddManager from "../src/pages/admin-Dashboard/managers/AddManager.jsx";
-import EditManager from "../src/pages/admin-Dashboard/managers/EditManager.jsx";
+
 import Attendance from "../src/pages/admin-Dashboard/attendence/Attendance.jsx";
 import AttendanceReport from "../src/pages/admin-Dashboard/attendence/AttendanceReport.jsx";
 import LeaveList from "../src/pages/admin-Dashboard/leaves/LeaveList.jsx";
@@ -42,12 +41,12 @@ import AddLeave from "../src/pages/employee-Dashboard/Leave/AddLeave.jsx";
 import EditLeave from "../src/pages/employee-Dashboard/Leave/EditLeave.jsx";
 import SalaryHistory from "../src/pages/employee-Dashboard/Salary/SalaryHistory.jsx";
 import AnnoucementEmployee from "../src/pages/employee-Dashboard/AnnoucementEmployee.jsx";
-import MyTasks from "../src/pages/employee-Dashboard/Tasks/MyTasks.jsx";
 import AddProject from "./pages/admin-Dashboard/projects/AddProject.jsx";
 import SinglEmployeeSalary from "./pages/admin-Dashboard/Salary/SingleEmployeeSalary.jsx";
 import Dashboard from "./pages/manager-dashboard/Dashboard.jsx";
 import ProjectList from "./pages/manager-dashboard/ProjectList.jsx";
 import ManagerAnnouncement from "./pages/manager-dashboard/ManagerAnnouncement.jsx";
+import MyTasks from "./pages/employee-Dashboard/tasks/MyTasks.jsx";
 
 function App() {
   return (
@@ -104,6 +103,8 @@ function App() {
           <Route index element={<Summary />} />
           <Route path="summary" element={<Summary />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="edit-profile/:id" element={<EditEmployee />} />
+
           <Route path="leave-history" element={<LeaveHistory />} />
           <Route path="add-leave" element={<AddLeave />} />
           <Route path="edit-employee-leave/:id" element={<EditLeave />} />

@@ -31,7 +31,7 @@ const Profile = () => {
                     <div>
                         <h1 className="text-4xl font-bold text-gray-800">{userData.emp_name}</h1>
                         <p className="text-lg text-blue-600 font-medium mt-1">{userData.department?.dep_name} Department</p>
-                        <p className="text-sm text-gray-600 mt-2">Role: <span className="font-semibold capitalize">{userData.role}</span></p>
+                        <p classNamcliente="text-sm text-gray-600 mt-2">Role: <span className="font-semibold capitalize">{userData.role}</span></p>
                         <p className="text-sm text-gray-600">Designation: <span className="font-semibold">{userData.designation}</span></p>
                     </div>
                 </div>

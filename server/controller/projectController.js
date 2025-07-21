@@ -75,6 +75,63 @@ exports.deleteTask = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+// GET /api/projects/getEmployeeTasks
+
+exports.getTaskCountByEmployee = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const employee = await employeeModel.findOne({ userId });
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Employee not found" });
+    }
+    const count = await taskModel.countDocuments({ employee: employee._id });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error("Error getting task count:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+exports.getTasksForEmployee = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const employee = await employeeModel.findOne({ userId });
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Employee not found" });
+    }
+    const tasks = await taskModel
+      .find({ employee: employee._id })
+      .populate("project", "title")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, result: tasks });
+  } catch (error) {
+    console.error("Error fetching employee tasks:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+exports.updateTaskStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updatedTask = await taskModel.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Task status updated successfully",
+      result: updatedTask,
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
 exports.assignTask = async (req, res) => {
   try {

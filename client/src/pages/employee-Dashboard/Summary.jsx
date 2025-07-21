@@ -6,50 +6,30 @@ import axios from "axios";
 const Summary = () => {
   const { user } = useAuth();
   const [taskCount, setTaskCount] = useState(0);
-  const [attendanceCount, setAttendanceCount] = useState(0);
-  const [managerName, setManagerName] = useState("");
+  const [managerName, setManagerName] = useState("Loading...");
 
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   useEffect(() => {
     if (user?._id) {
-      fetchTaskCount();
-      fetchAttendanceCount();
-      fetchManagerName();
+      fetchSummaryData();
     }
   }, [user]);
 
-  const fetchTaskCount = async () => {
+  const fetchSummaryData = async () => {
     try {
-      const res = await axios.get(`${baseUrl}/api/tasks/employee/${user._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTaskCount(res.data.count || 0);
-    } catch (err) {
-      console.error("Failed to fetch tasks:", err);
-    }
-  };
+      const [taskRes] = await Promise.all([
+        axios.get(`${baseUrl}/api/projects/getTaskCountByEmployee`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
 
-  const fetchAttendanceCount = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}/api/attendance/employee/${user._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setAttendanceCount(res.data.count || 0);
-    } catch (err) {
-      console.error("Failed to fetch attendance:", err);
-    }
-  };
-
-  const fetchManagerName = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}/api/employee/${user._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setManagerName(res.data.employee.manager?.mang_name || "N/A");
-    } catch (err) {
-      console.error("Failed to fetch manager:", err);
+      ]);
+      console.log(taskRes);
+      setTaskCount(taskRes.data?.count || 0);
+    } catch (error) {
+      console.error("Summary Fetch Error:", error);
+      setManagerName("N/A");
     }
   };
 
@@ -62,7 +42,7 @@ const Summary = () => {
         </div>
         <div className="pl-4 py-2">
           <p className="font-bold text-xl">Welcome Back</p>
-          <p>{user?.name}</p>
+          <p>{user?.name || "User"}</p>
         </div>
       </div>
 
@@ -77,16 +57,7 @@ const Summary = () => {
         </div>
       </div>
 
-      {/* Attendance Card */}
-      <div className="flex items-center rounded bg-white shadow">
-        <div className="flex items-center text-3xl bg-green-600 text-white justify-center px-4 h-full">
-          <FaCalendarCheck />
-        </div>
-        <div className="pl-4 py-2">
-          <p className="font-bold text-xl">{attendanceCount}</p>
-          <p>Attendances</p>
-        </div>
-      </div>
+
 
       {/* Manager Card */}
       <div className="flex items-center rounded bg-white shadow">

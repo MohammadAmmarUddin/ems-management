@@ -199,31 +199,32 @@ const EditEmployee = () => {
 
   return (
 
-    <div className="mt-10">
-      <div className="max-w-6xl mx-auto px-4 mt-4">
-        <button
-          onClick={() => {
-            const storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
-            const role = storedUser?.role;
+    <div className="">
 
-            if (role === "admin") {
-              navigate("/admin-dashboard");
-            } else if (role === "manager") {
-              navigate("/manager-dashboard");
-            } else if (role === "employee") {
-              navigate("/employee-dashboard");
-            } else {
-              navigate("/"); // fallback to home
-            }
-          }}
-          className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition"
-        >
-          ← Back to Dashboard
-        </button>
-      </div>
 
-      <div className="card bg-base-100 w-full mx-auto shrink-0 shadow-2xl">
+      <div className="card bg-white w-full mx-auto shrink-0 shadow-2xl">
         <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">Edit Employee</h2>
+        <div className="max-w-6xl px-4 mt-4">
+          <button
+            onClick={() => {
+              const storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
+              const role = storedUser?.role;
+
+              if (role === "admin") {
+                navigate("/admin-dashboard");
+              } else if (role === "manager") {
+                navigate("/manager-dashboard");
+              } else if (role === "employee") {
+                navigate("/employee-dashboard");
+              } else {
+                navigate("/");
+              }
+            }}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="card-body" autoComplete="off">
           {/* row 1 */}
           <div className="flex gap-x-3">

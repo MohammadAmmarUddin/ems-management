@@ -5,26 +5,25 @@ import { format } from "date-fns";
 import useEmployees from "../../../hooks/FetchEmployee";
 
 const Announcement = () => {
+  const [message, setMessage] = useState("");
   const [type, setType] = useState("all");
   const [selectedEmployee, setSelectedEmployee] = useState("");
-  const [message, setMessage] = useState("");
   const [announcements, setAnnouncements] = useState([]);
   const [skip, setSkip] = useState(0);
   const [limit] = useState(5);
   const [hasMore, setHasMore] = useState(true);
-  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
-  const { data: employees = [] } = useEmployees(baseUrl);
+  const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const { data: employees = [] } = useEmployees(baseUrl);
 
   const fetchAnnouncements = async (newSkip = 0, append = false) => {
     try {
-      const res = await axios.get(
-        `${baseUrl}/api/annoucement/admin?skip=${newSkip}&limit=${limit}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.get(`${baseUrl}/api/annoucement/admin`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { skip: newSkip, limit },
+      });
+
       if (res.data.success) {
         const fetched = res.data.announcements;
         setAnnouncements((prev) => (append ? [...prev, ...fetched] : fetched));
@@ -32,24 +31,21 @@ const Announcement = () => {
         setHasMore(fetched.length === limit);
       }
     } catch (err) {
-      console.error("Failed to fetch announcements:", err);
+      console.error("Error fetching announcements:", err);
     }
   };
 
   useEffect(() => {
-    setSkip(0);
-    setHasMore(true);
     fetchAnnouncements(0);
   }, []);
 
   const handleSubmit = async () => {
     if (!message.trim()) {
-      Swal.fire("Error", "Announcement message is required.", "error");
-      return;
+      return Swal.fire("Error", "Message is required.", "error");
     }
+
     if (type === "selected" && !selectedEmployee) {
-      Swal.fire("Error", "Please select an employee.", "error");
-      return;
+      return Swal.fire("Error", "Please select an employee.", "error");
     }
 
     try {
@@ -59,7 +55,7 @@ const Announcement = () => {
           message,
           type,
           selectedEmployee: type === "selected" ? selectedEmployee : null,
-          senderType: "admin", // Indicate this was sent by admin
+          senderType: "admin",
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -111,7 +107,7 @@ const Announcement = () => {
 
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6">
-      {/* Left Section - Post Announcement */}
+      {/* Left Section - Create Announcement */}
       <div className="flex-1 bg-gray-100 rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-semibold mb-4">Create Announcement</h2>
 
@@ -165,7 +161,7 @@ const Announcement = () => {
         </button>
       </div>
 
-      {/* Right Section - Announcements List */}
+      {/* Right Section - Announcement List */}
       <div className="flex-1 bg-gray-100 rounded-lg shadow-md p-6 h-[500px] flex flex-col">
         <h2 className="text-2xl font-semibold mb-4">Announcements List</h2>
 
@@ -176,27 +172,29 @@ const Announcement = () => {
             announcements.map((item) => (
               <div key={item._id} className="bg-white p-4 rounded shadow relative">
                 <div className="text-gray-700 mb-2">{item.message}</div>
-                <div className="text-sm text-gray-500 mb-1">
-                  <strong>Type:</strong> {item.type}
-                  {item.type === "selected" && item.selectedEmployee && (
-                    <>
-                      {" "} - {item.selectedEmployee?.emp_name} (
-                      {item.selectedEmployee?.emp_email})
-                    </>
-                  )}
+                <div className="text-sm text-gray-500">
+                  <span className="font-medium">To:</span>{" "}
+                  {item.type === "selected"
+                    ? `${item.selectedEmployee?.emp_name} (${item.selectedEmployee?.emp_email})`
+                    : item.type.charAt(0).toUpperCase() + item.type.slice(1)}
                 </div>
                 <div className="text-sm text-gray-500">
-                  <strong>From:</strong> {item.senderType === "admin" ? "Admin" : item.sender?.emp_name}
+                  <span className="font-medium">From:</span>{" "}
+                  {item.senderType === "admin" ? "Admin" : item.sender?.emp_name || "Unknown"}
                 </div>
                 <div className="text-xs text-gray-400">
                   {format(new Date(item.createdAt), "PPP p")}
                 </div>
-                <button
-                  onClick={() => handleDelete(item._id)}
-                  className="absolute top-2 right-2 text-red-600 hover:text-red-800 text-sm"
-                >
-                  Delete
-                </button>
+
+                {/* Allow delete only if sent by admin */}
+                {item.senderType === "admin" && (
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="absolute top-2 right-2 text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             ))
           )}
