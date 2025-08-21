@@ -388,21 +388,46 @@ exports.addEmployee = async (req, res) => {
 };
 
 exports.searchEmployee = async (req, res) => {
-  const searchQuery = req.query.query || ""; // Get the search query from the request
-
   try {
-    const employees = await employee.find({
-      $or: [
-        { emp_name: { $regex: searchQuery, $options: "i" } }, // Case-insensitive search for emp_name
-        { emp_id: { $regex: searchQuery, $options: "i" } },
-        { role: { $regex: searchQuery, $options: "i" } },
-        { dep_name: { $regex: searchQuery, $options: "i" } },
-      ],
-    });
+    const { q = "", page = 1, limit = 5, all = "false" } = req.query;
 
-    res.json({ emp: employees });
+    const query = q
+      ? {
+          $or: [
+            { emp_name: { $regex: q, $options: "i" } }, // case-insensitive
+            { employeeId: { $regex: q, $options: "i" } },
+            { role: { $regex: q, $options: "i" } },
+            { "department.dep_name": { $regex: q, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // count total matches
+    const total = await employeeModel.countDocuments(query);
+
+    let employees;
+    if (all === "true") {
+      // fetch all matching employees
+      employees = await employeeModel.find(query).sort({ createdAt: -1 });
+    } else {
+      // fetch paginated (default 5)
+      employees = await employeeModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(Number(limit));
+    }
+
+    res.json({
+      success: true,
+      total,
+      page: Number(page),
+      limit: all === "true" ? total : Number(limit),
+      employees,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching employees", error });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 

@@ -1,40 +1,60 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import useEmployees from "../../../hooks/FetchEmployee";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
+
 const List = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
-  const [searchQuery, setSearchQuery] = useState(""); // for future search
+  const [employees, setEmployees] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState([]);
+  const [fetching, setFetching] = useState(false);
 
-  const {
-    data: employees = [],
-    refetch,
-  } = useEmployees(baseUrl);
-  console.log("Employees data:", employees);
-  const date = new Date(selectedEmployee?.createdAt);
-  const joiningDate = date.toLocaleString();
+  // Fetch employees (with search & pagination)
+  const fetchEmployees = async () => {
+    try {
+      setFetching(true);
+      const { data } = await axios.get(
+        `${baseUrl}/api/employee/searchEmployees`,
+        {
+          params: {
+            q: searchQuery,
+            page,
+            limit: 5,
+            all: showAll ? "true" : "false",
+          },
+        }
+      );
 
-  // View modal handlers
-  const handleShowViewModal = (employee) => {
-    setSelectedEmployee(employee);
-    setShowViewModal(true);
+      if (data.success) {
+        setEmployees(data.employees);
+        setTotal(data.total);
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error!", "Failed to fetch employees.", "error");
+    } finally {
+      setFetching(false);
+    }
   };
 
-  const handleCloseViewModal = () => {
-    setShowViewModal(false);
-    setSelectedEmployee(null);
-  };
+  useEffect(() => {
+    fetchEmployees();
+  }, [searchQuery, page, showAll]);
+
+  // Delete employee
   const handleDeleteEmployee = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      text: "This action cannot be undone.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -43,27 +63,20 @@ const List = () => {
     });
 
     if (result.isConfirmed) {
-      const token = await localStorage.getItem("token") || await sessionStorage.getItem('token')
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
 
       try {
         const { data } = await axios.delete(
           `${baseUrl}/api/employee/deleteEmployee/${id}`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`, // Include only if needed
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         if (data.success) {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Employee deleted successfully",
-            showConfirmButton: false,
-            timer: 1500,
-          });
-          refetch(); // Refresh the list
+          Swal.fire("Deleted!", "Employee removed successfully.", "success");
+          fetchEmployees(); // refresh list
         } else {
           Swal.fire("Failed!", "Something went wrong.", "error");
         }
@@ -77,82 +90,76 @@ const List = () => {
     }
   };
 
-  // Columns for the DataTable
+  // Columns
   const columns = [
     {
       name: "S No",
       selector: (row, ind) => ind + 1,
-      sortable: true,
-      width: "50px",
+      width: "70px",
     },
     {
       name: "Emp_Id",
       selector: (row) => row.employeeId,
       sortable: true,
-      width: "150px",
     },
     {
       name: "Name",
       selector: (row) => row.emp_name,
       sortable: true,
-      width: "180px",
     },
     {
       name: "Image",
       selector: (row) => (
         <img
-          src={`http://localhost:5001/uploads/${row.profileImage}`}
-          width={30}
+          src={`${baseUrl}/uploads/${row.profileImage}`}
+          width={35}
           className="rounded-full"
           alt=""
         />
       ),
-      sortable: true,
-      width: "180px",
     },
     {
-      name: "Email",
+      name: "Role",
       selector: (row) => row.role,
       sortable: true,
-      width: "150px",
     },
     {
       name: "Department",
-      selector: (row) => row.department?.dep_name,
-      sortable: true,
+      selector: (row) => row.department?.dep_name || "N/A",
     },
     {
       name: "Actions",
       cell: (row) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => handleShowViewModal(row)}
-            className="bg-view text-white p-2 rounded-lg hover:bg-green-600"
+            onClick={() => {
+              setSelectedEmployee(row);
+              setShowViewModal(true);
+            }}
+            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
           >
             View
           </button>
           <Link
             to={`/admin-dashboard/edit-employee/${row.userId}`}
-            className="bg-edit text-white p-2 rounded-lg hover:bg-orange-600"
+            className="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600"
           >
             Edit
           </Link>
           <Link
             to={`/admin-dashboard/employee/salary/${row.userId}`}
-            className="bg-accent text-white p-2 rounded-lg hover:bg-yellow-600"
+            className="bg-yellow-500 text-white p-2 rounded-lg hover:bg-yellow-600"
           >
             Salary
           </Link>
           <button
             onClick={() => handleDeleteEmployee(row.userId)}
-            className="bg-delete text-white p-2 rounded-lg hover:bg-red-600"
+            className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600"
           >
             Delete
           </button>
         </div>
       ),
-      width: "280px",
-      center: true,
     },
   ];
 
@@ -174,7 +181,10 @@ const List = () => {
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} // You can implement search later
+          onChange={(e) => {
+            setPage(1); // reset to page 1 when searching
+            setSearchQuery(e.target.value);
+          }}
           className="px-4 py-1 border rounded ml-5"
           placeholder="Search By Name, ID, Role, or Department"
         />
@@ -186,11 +196,16 @@ const List = () => {
         </Link>
       </div>
 
+      {/* Employee Table */}
       <div className="overflow-hidden">
         <DataTable
           highlightOnHover
-          selectableRows
-          pagination
+          pagination={!showAll}
+          paginationServer
+          paginationTotalRows={total}
+          paginationPerPage={5}
+          onChangePage={(p) => setPage(p)}
+          progressPending={fetching}
           columns={columns}
           data={employees}
           fixedHeader
@@ -199,51 +214,58 @@ const List = () => {
         />
       </div>
 
-      {/* Modal */}
-      {showViewModal && (
+      {/* See All / Show Paginated */}
+      <div className="flex justify-center my-4">
+        {total > 5 && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {showAll ? "Show Paginated" : "See All"}
+          </button>
+        )}
+      </div>
+
+      {/* View Modal */}
+      {showViewModal && selectedEmployee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
           <div className="bg-white w-11/12 max-w-md rounded-lg shadow-lg">
             <div className="flex justify-between items-center p-4 border-b">
               <h2 className="text-lg font-semibold">Employee Details</h2>
               <button
-                onClick={handleCloseViewModal}
+                onClick={() => setShowViewModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 ×
               </button>
             </div>
             <div className="p-4">
-              {selectedEmployee ? (
-                <div>
-                  <img
-                    src={`http://localhost:5001/uploads/${selectedEmployee?.profileImage}`}
-                    width={70}
-                    alt=""
-                  />
-                  <p>
-                    <strong>Name:</strong> {selectedEmployee?.emp_name}
-                  </p>
-                  <p>
-                    <strong>Employee_Id:</strong> {selectedEmployee?.employeeId}
-                  </p>
-                  <p>
-                    <strong>Department:</strong>{" "}
-                    {selectedEmployee?.department?.dep_name || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Joining Date:</strong> {joiningDate || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Role:</strong> {selectedEmployee?.role || "N/A"}
-                  </p>
-                </div>
-              ) : (
-                <p>No employee selected.</p>
-              )}
+              <img
+                src={`${baseUrl}/uploads/${selectedEmployee.profileImage}`}
+                width={70}
+                alt=""
+              />
+              <p>
+                <strong>Name:</strong> {selectedEmployee.emp_name}
+              </p>
+              <p>
+                <strong>Employee_Id:</strong> {selectedEmployee.employeeId}
+              </p>
+              <p>
+                <strong>Department:</strong>{" "}
+                {selectedEmployee.department?.dep_name || "N/A"}
+              </p>
+              <p>
+                <strong>Role:</strong> {selectedEmployee.role || "N/A"}
+              </p>
+              <p>
+                <strong>Joining Date:</strong>{" "}
+                {new Date(selectedEmployee.createdAt).toLocaleDateString()}
+              </p>
             </div>
             <div className="flex justify-end p-4 border-t">
               <button
-                onClick={handleCloseViewModal}
+                onClick={() => setShowViewModal(false)}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Close

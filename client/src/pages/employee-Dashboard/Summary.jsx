@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
-import { FaUser, FaTasks, FaCalendarCheck, FaUserTie } from "react-icons/fa";
+import { FaUser, FaTasks, FaUserTie, FaClock } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
+import { format } from "date-fns";
 
 const Summary = () => {
   const { user } = useAuth();
   const [taskCount, setTaskCount] = useState(0);
   const [managerName, setManagerName] = useState("Loading...");
+  const [loading, setLoading] = useState(true);
 
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
   useEffect(() => {
     if (user?._id) {
@@ -19,58 +22,83 @@ const Summary = () => {
 
   const fetchSummaryData = async () => {
     try {
-      const [taskRes] = await Promise.all([
-        axios.get(`${baseUrl}/api/projects/getTaskCountByEmployee`, {
+      const taskRes = await axios.get(
+        `${baseUrl}/api/projects/getTaskCountByEmployee`,
+        {
           headers: { Authorization: `Bearer ${token}` },
-        }),
-
-      ]);
-      console.log(taskRes);
+        }
+      );
       setTaskCount(taskRes.data?.count || 0);
     } catch (error) {
       console.error("Summary Fetch Error:", error);
-      setManagerName("N/A");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const lastLogin = user?.lastLogin || new Date().toISOString(); // optionally set this from backend
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      {/* Welcome Card */}
-      <div className="flex items-center rounded bg-white shadow">
-        <div className="flex items-center text-3xl bg-teal-600 text-white justify-center px-4 h-full">
-          <FaUser />
-        </div>
-        <div className="pl-4 py-2">
-          <p className="font-bold text-xl">Welcome Back</p>
-          <p>{user?.name || "User"}</p>
-        </div>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 py-6">
+      {/* Welcome */}
+      <Card
+        icon={<FaUser />}
+        title="Welcome Back"
+        content={user?.name || "Employee"}
+        bg="bg-gradient-to-r from-teal-500 to-teal-700"
+        loading={loading}
+      />
 
-      {/* Task Card */}
-      <div className="flex items-center rounded bg-white shadow">
-        <div className="flex items-center text-3xl bg-blue-600 text-white justify-center px-4 h-full">
-          <FaTasks />
-        </div>
-        <div className="pl-4 py-2">
-          <p className="font-bold text-xl">{taskCount}</p>
-          <p>Working Tasks</p>
-        </div>
-      </div>
+      {/* Tasks */}
+      <Card
+        icon={<FaTasks />}
+        title="Working Tasks"
+        content={taskCount}
+        bg="bg-gradient-to-r from-blue-500 to-blue-700"
+        loading={loading}
+      />
 
+      {/* Manager */}
+      <Card
+        icon={<FaUserTie />}
+        title="My Manager"
+        content={managerName || "N/A"}
+        bg="bg-gradient-to-r from-purple-500 to-purple-700"
+        loading={loading}
+        badge="Active" // you can conditionally show availability here
+      />
 
-
-      {/* Manager Card */}
-      <div className="flex items-center rounded bg-white shadow">
-        <div className="flex items-center text-3xl bg-purple-600 text-white justify-center px-4 h-full">
-          <FaUserTie />
-        </div>
-        <div className="pl-4 py-2">
-          <p className="font-bold text-xl">{managerName}</p>
-          <p>My Manager</p>
-        </div>
-      </div>
+      {/* Last Login */}
+      <Card
+        icon={<FaClock />}
+        title="Last Login"
+        content={format(new Date(lastLogin), "PPP p")}
+        bg="bg-gradient-to-r from-gray-600 to-gray-800"
+        loading={loading}
+      />
     </div>
   );
 };
+
+const Card = ({ icon, title, content, bg, loading, badge }) => (
+  <div
+    className={`flex items-center rounded-lg shadow-lg text-white p-4 ${bg}`}
+  >
+    <div className="text-3xl mr-4 animate-pulse">{icon}</div>
+    <div className="flex-1">
+      <p className="text-sm font-medium opacity-80">{title}</p>
+      {loading ? (
+        <div className="h-5 bg-white/30 rounded w-2/3 mt-1 animate-pulse"></div>
+      ) : (
+        <p className="text-xl font-bold">{content}</p>
+      )}
+      {badge && (
+        <span className="text-xs bg-green-300 text-green-900 rounded px-2 py-0.5 mt-1 inline-block">
+          {badge}
+        </span>
+      )}
+    </div>
+  </div>
+);
 
 export default Summary;
