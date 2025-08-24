@@ -12,27 +12,24 @@ const List = () => {
   const [employees, setEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5); // rows per page
   const [total, setTotal] = useState(0);
   const [showAll, setShowAll] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [fetching, setFetching] = useState(false);
 
-  // Fetch employees (with search & pagination)
   const fetchEmployees = async () => {
     try {
       setFetching(true);
-      const { data } = await axios.get(
-        `${baseUrl}/api/employee/searchEmployees`,
-        {
-          params: {
-            q: searchQuery,
-            page,
-            limit: 5,
-            all: showAll ? "true" : "false",
-          },
-        }
-      );
+      const { data } = await axios.get(`${baseUrl}/api/employee/searchEmployees`, {
+        params: {
+          q: searchQuery,
+          page,
+          limit,
+          all: showAll ? "true" : "false",
+        },
+      });
 
       if (data.success) {
         setEmployees(data.employees);
@@ -48,9 +45,8 @@ const List = () => {
 
   useEffect(() => {
     fetchEmployees();
-  }, [searchQuery, page, showAll]);
+  }, [searchQuery, page, limit, showAll]);
 
-  // Delete employee
   const handleDeleteEmployee = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -63,70 +59,36 @@ const List = () => {
     });
 
     if (result.isConfirmed) {
-      const token =
-        localStorage.getItem("token") || sessionStorage.getItem("token");
-
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       try {
-        const { data } = await axios.delete(
-          `${baseUrl}/api/employee/deleteEmployee/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const { data } = await axios.delete(`${baseUrl}/api/employee/deleteEmployee/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (data.success) {
           Swal.fire("Deleted!", "Employee removed successfully.", "success");
-          fetchEmployees(); // refresh list
+          fetchEmployees();
         } else {
           Swal.fire("Failed!", "Something went wrong.", "error");
         }
       } catch (error) {
-        Swal.fire(
-          "Error!",
-          error.response?.data?.message || error.message,
-          "error"
-        );
+        Swal.fire("Error!", error.response?.data?.message || error.message, "error");
       }
     }
   };
 
-  // Columns
   const columns = [
-    {
-      name: "S No",
-      selector: (row, ind) => ind + 1,
-      width: "70px",
-    },
-    {
-      name: "Emp_Id",
-      selector: (row) => row.employeeId,
-      sortable: true,
-    },
-    {
-      name: "Name",
-      selector: (row) => row.emp_name,
-      sortable: true,
-    },
+    { name: "S No", selector: (row, ind) => ind + 1, width: "70px" },
+    { name: "Emp_Id", selector: (row) => row.employeeId, sortable: true },
+    { name: "Name", selector: (row) => row.emp_name, sortable: true },
     {
       name: "Image",
       selector: (row) => (
-        <img
-          src={`${baseUrl}/uploads/${row.profileImage}`}
-          width={35}
-          className="rounded-full"
-          alt=""
-        />
+        <img src={`${baseUrl}/uploads/${row.profileImage}`} width={35} className="rounded-full" alt="" />
       ),
     },
-    {
-      name: "Role",
-      selector: (row) => row.role,
-      sortable: true,
-    },
-    {
-      name: "Department",
-      selector: (row) => row.department?.dep_name || "N/A",
-    },
+    { name: "Role", selector: (row) => row.role, sortable: true },
+    { name: "Department", selector: (row) => row.department?.dep_name || "N/A" },
     {
       name: "Actions",
       cell: (row) => (
@@ -182,7 +144,7 @@ const List = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => {
-            setPage(1); // reset to page 1 when searching
+            setPage(1);
             setSearchQuery(e.target.value);
           }}
           className="px-4 py-1 border rounded ml-5"
@@ -196,15 +158,18 @@ const List = () => {
         </Link>
       </div>
 
-      {/* Employee Table */}
       <div className="overflow-hidden">
         <DataTable
           highlightOnHover
           pagination={!showAll}
           paginationServer
           paginationTotalRows={total}
-          paginationPerPage={5}
+          paginationPerPage={limit}
           onChangePage={(p) => setPage(p)}
+          onChangeRowsPerPage={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1); // reset to first page
+          }}
           progressPending={fetching}
           columns={columns}
           data={employees}
@@ -214,9 +179,8 @@ const List = () => {
         />
       </div>
 
-      {/* See All / Show Paginated */}
       <div className="flex justify-center my-4">
-        {total > 5 && (
+        {total > limit && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -226,7 +190,6 @@ const List = () => {
         )}
       </div>
 
-      {/* View Modal */}
       {showViewModal && selectedEmployee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
           <div className="bg-white w-11/12 max-w-md rounded-lg shadow-lg">
@@ -245,23 +208,11 @@ const List = () => {
                 width={70}
                 alt=""
               />
-              <p>
-                <strong>Name:</strong> {selectedEmployee.emp_name}
-              </p>
-              <p>
-                <strong>Employee_Id:</strong> {selectedEmployee.employeeId}
-              </p>
-              <p>
-                <strong>Department:</strong>{" "}
-                {selectedEmployee.department?.dep_name || "N/A"}
-              </p>
-              <p>
-                <strong>Role:</strong> {selectedEmployee.role || "N/A"}
-              </p>
-              <p>
-                <strong>Joining Date:</strong>{" "}
-                {new Date(selectedEmployee.createdAt).toLocaleDateString()}
-              </p>
+              <p><strong>Name:</strong> {selectedEmployee.emp_name}</p>
+              <p><strong>Employee_Id:</strong> {selectedEmployee.employeeId}</p>
+              <p><strong>Department:</strong> {selectedEmployee.department?.dep_name || "N/A"}</p>
+              <p><strong>Role:</strong> {selectedEmployee.role || "N/A"}</p>
+              <p><strong>Joining Date:</strong> {new Date(selectedEmployee.createdAt).toLocaleDateString()}</p>
             </div>
             <div className="flex justify-end p-4 border-t">
               <button

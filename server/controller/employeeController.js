@@ -386,31 +386,40 @@ exports.addEmployee = async (req, res) => {
     session.endSession();
   }
 };
-
 exports.searchEmployee = async (req, res) => {
   try {
     const { q = "", page = 1, limit = 5, all = "false" } = req.query;
 
-    const query = q
-      ? {
-          $or: [
-            { emp_name: { $regex: q, $options: "i" } }, // case-insensitive
-            { employeeId: { $regex: q, $options: "i" } },
-            { role: { $regex: q, $options: "i" } },
-            { "department.dep_name": { $regex: q, $options: "i" } },
-          ],
-        }
-      : {};
+    // Build the query
+    let query = {};
+    if (q) {
+      const searchRegex = { $regex: q, $options: "i" }; // case-insensitive
 
-    // count total matches
+      query = {
+        $or: [
+          { emp_name: searchRegex },
+          { employeeId: searchRegex },
+          { role: searchRegex },
+          { "department.dep_name": searchRegex },
+        ],
+      };
+
+      // If the query contains digits, also search emp_phone
+      if (/\d/.test(q)) {
+        query.$or.push({
+          emp_phone: { $regex: q.replace(/\D/g, ""), $options: "i" },
+        });
+      }
+    }
+
+    // Count total matches
     const total = await employeeModel.countDocuments(query);
 
+    // Fetch employees
     let employees;
     if (all === "true") {
-      // fetch all matching employees
       employees = await employeeModel.find(query).sort({ createdAt: -1 });
     } else {
-      // fetch paginated (default 5)
       employees = await employeeModel
         .find(query)
         .sort({ createdAt: -1 })

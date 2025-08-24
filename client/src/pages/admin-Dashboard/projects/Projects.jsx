@@ -1,68 +1,56 @@
 import { Link } from "react-router-dom";
-import axios from "axios";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import { useAuth } from "../../../context/AuthContext";
-import useProjects from "../../../hooks/FetchProjects"; // make sure this exists
+import useProjects from "../../../hooks/FetchProjects";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const Projects = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
-  const {
-    data: projects,
-    refetch,
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
 
-  } = useProjects(baseUrl);
-  const handleDelete = async (projectId) => {
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const { data, refetch, isLoading } = useProjects(
+    baseUrl,
+    debouncedSearch,
+    page,
+    limit
+  );
+
+  const handleDelete = async (id) => {
     try {
-      const res = await axios.delete(`${baseUrl}/api/projects/${projectId}`);
-
-      if (res.data.success) {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Project deleted successfully",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-        refetch();
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error!", "Failed to delete project", "error");
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      const res = await axios.delete(`${baseUrl}/api/projects/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.success) refetch();
+    } catch (err) {
+      Swal.fire("Error!", err.message, "error");
     }
   };
 
-  const buttonStyle = {
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    padding: "4px 8px",
-    marginRight: "6px",
-    cursor: "pointer",
-    borderRadius: "4px",
-  };
-
   const columns = [
-    {
-      name: "S/N",
-      selector: (row, i) => i + 1,
-      width: "70px",
-    },
-    {
-      name: "Project Name",
-      selector: (row) => row.title,
-      sortable: true,
-    },
+    { name: "S/N", selector: (_, i) => i + 1, width: "70px" },
+    { name: "Project Name", selector: (row) => row.title, sortable: true },
     {
       name: "Manager",
-      selector: (row) => row.department?.manager?.emp_name,
+      selector: (row) => row.manager?.emp_name || "N/A",
       sortable: true,
     },
     {
       name: "Department",
-      selector: (row) => row.department?.dep_name,
+      selector: (row) => row.department?.dep_name || "N/A",
       sortable: true,
     },
     {
@@ -78,42 +66,31 @@ const Projects = () => {
       selector: (row) => row.status || "Pending",
       cell: (row) => (
         <span
-          className={`px-2 py-1 rounded text-white text-xs font-medium ${row.status === "Completed"
-            ? "bg-green-600"
-            : row.status === "In Progress"
+          className={`px-2 py-1 rounded text-white text-xs font-medium ${
+            row.status === "completed"
+              ? "bg-green-600"
+              : row.status === "in progress"
               ? "bg-yellow-600"
               : "bg-gray-500"
-            }`}
+          }`}
         >
           {row.status || "Pending"}
         </span>
       ),
     },
-    // {
-    //   name: "Tasks",
-    //   selector: (row) => row.tasks?.length || 0,
-    //   cell: (row) => (
-    //     <Link
-    //       to={`/admin-dashboard/project-tasks/${row._id}`}
-    //       className="text-blue-600 underline hover:text-blue-800"
-    //     >
-    //       View Tasks
-    //     </Link>
-    //   ),
-    // },
     {
       name: "Actions",
       cell: (row) => (
         <>
           <Link
             to={`/admin-dashboard/edit-project/${row._id}`}
-            style={buttonStyle}
+            className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
           >
             Edit
           </Link>
           <button
             onClick={() => handleDelete(row._id)}
-            style={{ ...buttonStyle, backgroundColor: "#dc3545" }}
+            className="bg-red-500 text-white px-2 py-1 rounded"
           >
             Delete
           </button>
@@ -122,25 +99,24 @@ const Projects = () => {
     },
   ];
 
-  if (loading && user) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <div>Loading...</div>;
 
   return (
     <div className="py-6">
       <div className="text-center mb-4">
-        <h3 className="text-2xl font-bold text-gray-700">Manage Projects</h3>
+        <h3 className="text-2xl font-bold">Manage Projects</h3>
       </div>
 
       <div className="flex justify-between items-center mb-4">
         <input
           type="text"
           className="px-4 ml-5 py-1 border rounded"
-          placeholder="Search by project name"
+          placeholder="Search by project, manager, department, status..."
+          value={search}
+          onChange={(e) => {
+            setPage(1);
+            setSearch(e.target.value);
+          }}
         />
         <Link
           to="/admin-dashboard/add-project"
@@ -154,8 +130,16 @@ const Projects = () => {
         <DataTable
           highlightOnHover
           pagination
+          paginationServer
+          paginationTotalRows={data?.total || 0}
+          paginationPerPage={limit}
+          onChangePage={(p) => setPage(p)}
+          onChangeRowsPerPage={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
           columns={columns}
-          data={projects || []}
+          data={data?.projects || []}
         />
       </div>
     </div>

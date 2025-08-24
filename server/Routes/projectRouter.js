@@ -13,6 +13,7 @@ const {
   getTasksForEmployee,
   updateTaskStatus,
   getTaskCountByEmployee,
+  searchProjects,
 } = require("../controller/projectController.js");
 
 const authMiddleWare = require("../middleware/authMiddleware");
@@ -40,5 +41,5 @@ router.get("/getAllTasksByDepartment", authMiddleWare, getAllTasksByDepartment);
 router.get("/getTasksForEmployee", authMiddleWare, getTasksForEmployee);
 // router.get("/getTasksByDepartment", authMiddleWare, getTasksByDepartment);
 router.delete("/deleteTask/:id", authMiddleWare, deleteTask);
-
+router.get("/search", searchProjects);
 module.exports = router;

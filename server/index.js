@@ -15,11 +15,14 @@ const annoucementRouter = require("./Routes/annoucementRouter");
 app.use(express.json());
 app.use(express.static("public"));
 const baseUrl = process.env.Base_URL;
+const compression = require("compression");
+
 app.use(
   cors({
     origin: baseUrl,
   })
 );
+app.use(compression());
 app.use("/api/department", depRouter);
 app.use("/api/employee", employeeRouter);
 app.use("/api/leave", leaveRouter);

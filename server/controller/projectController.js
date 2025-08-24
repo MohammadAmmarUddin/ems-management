@@ -113,6 +113,105 @@ exports.getTasksForEmployee = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+// controllers/projectController.js
+
+exports.searchProjects = async (req, res) => {
+  try {
+    const {
+      q = "",
+      status,
+      department,
+      page = 1,
+      limit = 5,
+      all = "false",
+    } = req.query;
+
+    const pipeline = [];
+
+    // Lookup department
+    pipeline.push({
+      $lookup: {
+        from: "departments",
+        localField: "department",
+        foreignField: "_id",
+        as: "department",
+      },
+    });
+    pipeline.push({
+      $unwind: { path: "$department", preserveNullAndEmptyArrays: true },
+    });
+
+    // Lookup manager (employee)
+    pipeline.push({
+      $lookup: {
+        from: "employees",
+        localField: "department.manager",
+        foreignField: "_id",
+        as: "manager",
+      },
+    });
+    pipeline.push({
+      $unwind: { path: "$manager", preserveNullAndEmptyArrays: true },
+    });
+
+    // Build match query
+    const match = {};
+
+    if (q) {
+      match.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { status: { $regex: q, $options: "i" } },
+        { "department.dep_name": { $regex: q, $options: "i" } },
+        { "manager.emp_name": { $regex: q, $options: "i" } },
+      ];
+    }
+
+    if (status) match.status = status;
+    if (department)
+      match["department._id"] = mongoose.Types.ObjectId(department);
+
+    pipeline.push({ $match: match });
+
+    // Count total documents
+    const totalAgg = [...pipeline, { $count: "total" }];
+    const totalResult = await Project.aggregate(totalAgg);
+    const total = totalResult[0]?.total || 0;
+
+    // Pagination
+    if (all !== "true") {
+      pipeline.push({ $skip: (page - 1) * limit });
+      pipeline.push({ $limit: Number(limit) });
+    }
+
+    // Project only required fields
+    pipeline.push({
+      $project: {
+        _id: 1,
+        title: 1,
+        status: 1,
+        startDate: 1,
+        endDate: 1,
+        department: { _id: 1, dep_name: 1 },
+        manager: { _id: 1, emp_name: 1 },
+        createdAt: 1,
+      },
+    });
+
+    const projects = await Project.aggregate(pipeline);
+
+    res.json({
+      success: true,
+      total,
+      page: Number(page),
+      limit: all === "true" ? total : Number(limit),
+      projects,
+    });
+  } catch (error) {
+    console.error("❌ Project search failed:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 exports.updateTaskStatus = async (req, res) => {
   try {
     const { status } = req.body;

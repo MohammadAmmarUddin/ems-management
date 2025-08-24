@@ -1,27 +1,52 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../../context/AuthContext";
 import Swal from "sweetalert2";
 import axios from "axios";
-import useManagers from "../../../hooks/FetchManagers";
 
 const ManagerList = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
+  const [managers, setManagers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [total, setTotal] = useState(0);
+  const [showAll, setShowAll] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedManager, setSelectedManager] = useState(null);
+  const [fetching, setFetching] = useState(false);
 
-  const {
-    data: managers = [],
+  const date = new Date(selectedManager?.createdAt || null);
+  const joiningDate = selectedManager ? date.toLocaleDateString() : "N/A";
 
-    refetch,
-  } = useManagers({ baseUrl });
+  // Fetch managers from API
+  const fetchManagers = async () => {
+    try {
+      setFetching(true);
+      const res = await axios.get(`${baseUrl}/api/employee/searchEmployees`, {
+        params: {
+          q: searchQuery,
+          page,
+          limit,
+          all: showAll ? "true" : "false",
+        },
+      });
 
-  const date = new Date(selectedManager?.createdAt);
-  const joiningDate = date.toLocaleString();
+      setManagers(res.data.employees || []);
+      setTotal(res.data.total || 0);
+    } catch (err) {
+      console.error("Failed to fetch managers:", err);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchManagers();
+  }, [searchQuery, page, limit, showAll]);
 
   const handleShowViewModal = (manager) => {
     setSelectedManager(manager);
@@ -45,33 +70,26 @@ const ManagerList = () => {
     });
 
     if (result.isConfirmed) {
-      const token = await localStorage.getItem("token") || await sessionStorage.token('token');
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       try {
         const { data } = await axios.delete(
           `${baseUrl}/api/employee/deleteEmployee/${id}`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         if (data.success) {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Manager deleted successfully",
-            showConfirmButton: false,
-            timer: 1500,
-          });
-          refetch();
+          Swal.fire("Deleted!", "Manager removed successfully.", "success");
+          fetchManagers();
         } else {
           Swal.fire("Failed!", "Something went wrong.", "error");
         }
-      } catch (error) {
+      } catch (err) {
         Swal.fire(
           "Error!",
-          error.response?.data?.message || error.message,
+          err.response?.data?.message || err.message,
           "error"
         );
       }
@@ -82,8 +100,7 @@ const ManagerList = () => {
     {
       name: "S No",
       selector: (row, ind) => ind + 1,
-      sortable: true,
-      width: "50px",
+      width: "70px",
     },
     {
       name: "Name",
@@ -93,33 +110,29 @@ const ManagerList = () => {
     },
     {
       name: "Department",
-      selector: (row) => row.department?.dep_name,
-      sortable: true,
+      selector: (row) => row.department?.dep_name || "N/A",
       width: "180px",
     },
     {
       name: "Image",
       selector: (row) => (
         <img
-          src={`http://localhost:5001/uploads/${row.profileImage}`}
+          src={`${baseUrl}/uploads/${row.profileImage}`}
           width={30}
           className="rounded-full"
           alt=""
         />
       ),
-      sortable: true,
-      width: "180px",
+      width: "120px",
     },
     {
       name: "Phone",
       selector: (row) => row.emp_phone,
-      sortable: true,
       width: "150px",
     },
     {
       name: "Email",
       selector: (row) => row.emp_email,
-      sortable: true,
       width: "200px",
     },
     {
@@ -128,19 +141,19 @@ const ManagerList = () => {
         <div className="flex space-x-2">
           <button
             onClick={() => handleShowViewModal(row)}
-            className="bg-view text-white p-2 rounded-lg hover:bg-green-600"
+            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
           >
             View
           </button>
           <Link
             to={`/admin-dashboard/edit-employee/${row._id}`}
-            className="bg-edit text-white p-2 rounded-lg hover:bg-orange-600"
+            className="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600"
           >
             Edit
           </Link>
           <button
             onClick={() => handleDeleteManager(row._id)}
-            className="bg-delete text-white p-2 rounded-lg hover:bg-red-600"
+            className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600"
           >
             Delete
           </button>
@@ -158,6 +171,7 @@ const ManagerList = () => {
       </div>
     );
   }
+
   return (
     <div>
       <div className="text-center">
@@ -168,7 +182,10 @@ const ManagerList = () => {
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setPage(1);
+            setSearchQuery(e.target.value);
+          }}
           className="px-4 py-1 border rounded ml-5"
           placeholder="Search by Name, ID, Phone"
         />
@@ -183,16 +200,35 @@ const ManagerList = () => {
       <div className="overflow-hidden">
         <DataTable
           highlightOnHover
-          pagination
+          pagination={!showAll}
+          paginationServer
+          paginationTotalRows={total}
+          paginationPerPage={limit}
+          onChangePage={(p) => setPage(p)}
+          onChangeRowsPerPage={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+          progressPending={fetching}
           columns={columns}
-          data={managers || []}
+          data={managers}
           fixedHeader
           fixedHeaderScrollHeight="500px"
           responsive
         />
       </div>
 
-      {/* Modal */}
+      <div className="flex justify-center my-4">
+        {total > limit && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {showAll ? "Show Paginated" : "See All"}
+          </button>
+        )}
+      </div>
+
       {showViewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
           <div className="bg-white w-11/12 max-w-md rounded-lg shadow-lg">
@@ -207,11 +243,12 @@ const ManagerList = () => {
             </div>
             <div className="p-4">
               {selectedManager ? (
-                <div> <img
-                  src={`http://localhost:5001/uploads/${selectedManager?.profileImage}`}
-                  width={70}
-                  alt=""
-                />
+                <div>
+                  <img
+                    src={`${baseUrl}/uploads/${selectedManager?.profileImage}`}
+                    width={70}
+                    alt=""
+                  />
                   <p>
                     <strong>Name:</strong> {selectedManager?.emp_name}
                   </p>
@@ -225,7 +262,7 @@ const ManagerList = () => {
                     <strong>Email:</strong> {selectedManager?.emp_email}
                   </p>
                   <p>
-                    <strong>Joining Date:</strong> {joiningDate || "N/A"}
+                    <strong>Joining Date:</strong> {joiningDate}
                   </p>
                 </div>
               ) : (
