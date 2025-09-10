@@ -2,19 +2,22 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
-import useDepartments from "../../../hooks/FetchDepartment";
+import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
+import useDepartments from "../../../hooks/FetchDepartment";
 
 const DepartmentList = () => {
-  // const [departments, setDepartment] = useState([]);
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+
+  const [search, setSearch] = useState(""); // search query state
+
+  // ✅ fetch all OR filtered departments
   const {
-    data: departments,
+    data: departments = [],
+    isLoading,
     refetch,
-
-
-  } = useDepartments(baseUrl);
+  } = useDepartments(baseUrl, search);
 
   const handleDelete = async (rowId) => {
     try {
@@ -30,7 +33,7 @@ const DepartmentList = () => {
           showConfirmButton: false,
           timer: 1500,
         });
-        refetch();
+        refetch(); // reload current filtered or all data
       }
     } catch (error) {
       console.log(error);
@@ -54,7 +57,6 @@ const DepartmentList = () => {
       selector: (row, ind) => ind + 1,
       sortable: true,
     },
-
     {
       name: "Department",
       selector: (row) => row.dep_name,
@@ -72,7 +74,7 @@ const DepartmentList = () => {
           src={`http://localhost:5001/uploads/${row.manager?.profileImage}`}
           width={30}
           className="rounded-full"
-          alt=""
+          alt="Manager"
         />
       ),
       sortable: true,
@@ -111,16 +113,20 @@ const DepartmentList = () => {
       </div>
     );
   }
+
   return (
     <div>
       <div className="text-center">
         <h3 className="text-2xl font-bold">Manage Departments</h3>
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between my-3">
+        {/* ✅ search input triggers useDepartments */}
         <input
           type="text"
-          className="px-4 ml-5 py-0.5"
+          className="px-4 ml-5 py-1 border rounded"
           placeholder="Search By Name"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <Link
           to="/admin-dashboard/add-department"
@@ -132,7 +138,7 @@ const DepartmentList = () => {
 
       <div>
         <DataTable
-          progressPending={loading}
+          progressPending={isLoading}
           highlightOnHover
           selectableRows
           pagination

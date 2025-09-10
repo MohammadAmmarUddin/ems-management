@@ -7,17 +7,25 @@ const {
   getSingleDep,
   countDep,
   getDepartmentDistribution,
+  searchDepartment, // ✅ import new controller
 } = require("../controller/depController");
 
 const router = express.Router();
-//post
+
+// post
 router.post("/add", addDep);
-//get
+
+// get
 router.get("/getAllDep", getAllDep);
 router.get("/getCountDep", countDep);
 router.get("/getSingleDep/:id", getSingleDep);
 router.get("/distribution", getDepartmentDistribution);
-//delete
+router.get("/search", searchDepartment); // ✅ new search route
+
+// delete
 router.delete("/deleteDep/:id", deleteDep);
+
+// update
 router.put("/updateDep/:id", updateDep);
+
 module.exports = router;

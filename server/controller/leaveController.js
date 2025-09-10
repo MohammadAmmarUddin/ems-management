@@ -1,163 +1,237 @@
-const leave = require("../models/leave");
+const Leave = require("../models/leave");
+const Employee = require("../models/employeeModel");
 
 exports.getLeaveStatusStats = async (req, res) => {
   try {
-    // Get the grouped leave counts by status
-    const result = await leave.aggregate([
-      {
-        $group: {
-          _id: "$status", // Group by leave status
-          count: { $sum: 1 }, // Count the number of leaves per status
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          name: "$_id", // Rename _id to name (status)
-          value: "$count", // Rename count to value
-        },
-      },
+    const result = await Leave.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+      { $project: { _id: 0, name: "$_id", value: "$count" } },
     ]);
 
-    // All possible statuses we want to ensure exist in the result
     const allStatuses = ["Approved", "Pending", "Rejected"];
-
-    // Ensure each expected status exists in the result (even if 0)
     const filledResult = allStatuses.map((status) => {
       const found = result.find((item) => item.name === status);
-      return {
-        name: status,
-        value: found ? found.value : 0,
-      };
+      return { name: status, value: found ? found.value : 0 };
     });
 
-    // Calculate the total number of leaves
     const totalLeaves = filledResult.reduce((sum, item) => sum + item.value, 0);
 
-    // Send response
-    res.status(200).json({
-      statusBreakdown: filledResult,
-      totalLeaves,
-    });
+    res
+      .status(200)
+      .json({ success: true, statusBreakdown: filledResult, totalLeaves });
   } catch (error) {
-    res.status(500).json({
-      message: "Server Error",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
   }
 };
+
 exports.updateLeave = async (req, res) => {
   try {
     const { id } = req.params;
     const { leaveType, startDate, endDate, reason } = req.body;
-    console.log("req.body", req.body);
-    const updateLeave = await leave.findByIdAndUpdate(
+    const updatedLeave = await Leave.findByIdAndUpdate(
       id,
       { leaveType, startDate, endDate, reason },
       { new: true }
     );
-
-    res.status(200).json({ success: true, updateLeave });
+    res.status(200).json({ success: true, updatedLeave });
   } catch (error) {
-    console.log(error);
-    res.status(400).json({ success: false });
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+exports.getAllLeaves = async (req, res) => {
+  try {
+    const leaves = await Leave.find({})
+      .populate({
+        path: "empId", // ✅ must match schema field
+        select: "employeeId emp_name emp_email department role", // safe fields
+        populate: {
+          path: "department", // ✅ nested populate for department details
+          select: "dep_name dep_desc", // only return department fields you need
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, result: leaves });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch leaves",
+      error: error.message,
+    });
   }
 };
 
-exports.getLeaveCountSperate = async (req, res) => {
+exports.searchLeaves = async (req, res) => {
   try {
-    const result = await leave.aggregate([
+    const { q } = req.query;
+    if (!q) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Search query required" });
+    }
+
+    const regex = new RegExp(q, "i"); // case-insensitive search
+
+    const leaves = await Leave.aggregate([
       {
-        $group: {
-          _id: "$status",
-          value: { $sum: 1 },
+        $lookup: {
+          from: "employees",
+          localField: "empId",
+          foreignField: "_id",
+          as: "employee",
         },
       },
+      { $unwind: "$employee" },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "employee.department",
+          foreignField: "_id",
+          as: "employee.department",
+        },
+      },
+      {
+        $unwind: {
+          path: "$employee.department",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [
+            { leaveType: regex },
+            { reason: regex },
+            { status: regex },
+            { "employee.emp_name": regex },
+            { "employee.emp_email": regex },
+            { "employee.employeeId": regex },
+            { "employee.role": regex },
+            { "employee.department.dep_name": regex },
+          ],
+        },
+      },
+      {
+        $project: {
+          leaveType: 1,
+          startDate: 1,
+          endDate: 1,
+          reason: 1,
+          status: 1,
+          createdAt: 1,
+          empId: "$employee._id",
+          employeeId: "$employee.employeeId",
+          emp_name: "$employee.emp_name",
+          emp_email: "$employee.emp_email",
+          role: "$employee.role",
+          department: "$employee.department.dep_name",
+        },
+      },
+      { $sort: { createdAt: -1 } },
     ]);
-  } catch (error) {}
-};
 
-exports.getAllLeaves = async (req, res) => {
-  const result = await leave.find({});
-  res.status(200).send({ result, success: true });
+    res.status(200).json({ success: true, result: leaves });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to search leaves",
+      error: error.message,
+    });
+  }
 };
 
 exports.getLeave = async (req, res) => {
-  const { id } = req.params;
-  const leaves = await leave.find({ employeeId: id });
-
-  if (!leaves) {
-    return res.status(404).send({ success: false, message: "No leaves found" });
+  try {
+    const { id } = req.params;
+    const leaves = await Leave.find({ empId: id });
+    if (!leaves.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "No leaves found" });
+    res.status(200).json({ success: true, leaves });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
-
-  res.status(200).send({ success: true, leaves });
 };
+
 exports.addLeave = async (req, res) => {
   try {
     const { userId, leaveType, startDate, endDate, reason } = req.body;
 
     if (!userId || !leaveType || !startDate || !endDate || !reason) {
-      res.status(400).json({
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    const employee = await Employee.findOne({ userId });
+
+    if (!employee) {
+      return res.status(404).json({
         success: false,
-        message: "All fields are  required!",
+        message: "Employee not found for this userId",
       });
     }
 
-    const result = await leave.create({
-      employeeId: userId,
+    const result = await Leave.create({
+      empId: employee._id,
       leaveType,
       startDate,
       endDate,
       reason,
     });
 
-    res.status(200).send({ result, success: true });
+    res.status(201).json({ success: true, result });
   } catch (error) {
-    console.log("from leave controller addLeave", error);
     res
       .status(500)
-      .send({ error: "Server Error. Please try again.", success: false });
+      .json({ success: false, error: "Server Error. Please try again." });
   }
 };
 
 exports.approveLeave = async (req, res) => {
   try {
-    console.log(`Approving leave with ID: ${req.params.id}`);
     const { id } = req.params;
-    const result = await leave.findByIdAndUpdate(
+    const result = await Leave.findByIdAndUpdate(
       id,
       { status: "Approved" },
       { new: true }
     );
-    res.status(200).json({ message: "Result approved", result });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to approve result" });
+    res.status(200).json({ success: true, message: "Leave approved", result });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to approve leave" });
   }
 };
 
 exports.rejectLeave = async (req, res) => {
   try {
-    console.log(`Rejecting leave with ID: ${req.params.id}`);
     const { id } = req.params;
-    const result = await leave.findByIdAndUpdate(
+    const result = await Leave.findByIdAndUpdate(
       id,
       { status: "Rejected" },
       { new: true }
     );
-    res.status(200).json({ message: "Leave rejected", result });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to reject leave" });
+    res.status(200).json({ success: true, message: "Leave rejected", result });
+  } catch {
+    res.status(500).json({ success: false, error: "Failed to reject leave" });
   }
 };
 
 exports.getLeavesByStatus = async (req, res) => {
-  const { status } = req.params;
-
-  const validStatuses = ["pending", "approved", "rejected"];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).send({ success: false, message: "Invalid status" });
+  try {
+    const { status } = req.params;
+    const validStatuses = ["Pending", "Approved", "Rejected"];
+    if (!validStatuses.includes(status))
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status" });
+    const leaves = await Leave.find({ status }).populate(
+      "empId",
+      "emp_name emp_email employeeId department role"
+    );
+    res.status(200).json({ success: true, leaves });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
-
-  const leaves = await leave.find({ status });
-  res.status(200).send({ success: true, leaves });
 };

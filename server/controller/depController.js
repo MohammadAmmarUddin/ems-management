@@ -1,26 +1,26 @@
-const { default: mongoose } = require("mongoose");
-const depModel = require("../models/depModel");
-const employee = require("../models/employeeModel");
+const mongoose = require("mongoose");
+const Department = require("../models/depModel");
+const Employee = require("../models/employeeModel");
+
 exports.getDepartmentDistribution = async (req, res) => {
   try {
-    const result = await depModel.aggregate([
+    const result = await Department.aggregate([
       {
         $lookup: {
-          from: "employees", // collection name for employees
-          localField: "_id", // department's _id
-          foreignField: "department", // field in employees that references department
+          from: "employees",
+          localField: "_id",
+          foreignField: "department",
           as: "employees",
         },
       },
       {
         $project: {
           _id: 0,
-          name: "$dep_name", // department's name
-          value: { $size: "$employees" }, // number of employees in department
+          name: "$dep_name",
+          value: { $size: "$employees" },
         },
       },
     ]);
-
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -29,54 +29,50 @@ exports.getDepartmentDistribution = async (req, res) => {
 
 exports.countDep = async (req, res) => {
   try {
-    const count = await depModel.estimatedDocumentCount();
-    res.status(200).send({ success: true, countDep: count });
+    const count = await Department.estimatedDocumentCount();
+    res.status(200).json({ success: true, count });
   } catch (error) {
-    res.status(500).send({
+    res.status(500).json({
       success: false,
       message: "Error counting departments",
       error: error.message,
     });
   }
 };
+
 exports.addDep = async (req, res) => {
   const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    await session.withTransaction(async () => {
-      const { dep_name, dep_desc, manager } = req.body;
-
-      if (!dep_name || !manager) {
-        return res.status(400).json({
-          success: false,
-          message: "Department name and manager are required.",
-        });
-      }
-
-      const newDepartment = await depModel
-        .create({
-          dep_name,
-          dep_desc,
-          manager,
-        })
-        .session({ session });
-
-      await employee
-        .findByIdAndUpdate(manager, {
-          department: newDepartment._id,
-        })
-        .session({ session });
-    });
-
-    res.status(200).json({
+    const { dep_name, dep_desc, manager } = req.body;
+    if (!dep_name || !manager) {
+      return res.status(400).json({
+        success: false,
+        message: "Department name and manager are required.",
+      });
+    }
+    const newDepartment = await Department.create(
+      [{ dep_name, dep_desc, manager }],
+      { session }
+    );
+    await Employee.findByIdAndUpdate(
+      manager,
+      { department: newDepartment[0]._id },
+      { session }
+    );
+    await session.commitTransaction();
+    res.status(201).json({
       success: true,
       message: "Department created and manager updated.",
-      result: newDepartment,
+      result: newDepartment[0],
     });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to create department." });
+    await session.abortTransaction();
+    res.status(500).json({
+      success: false,
+      message: "Failed to create department.",
+      error: error.message,
+    });
   } finally {
     session.endSession();
   }
@@ -84,94 +80,134 @@ exports.addDep = async (req, res) => {
 
 exports.getAllDep = async (req, res) => {
   try {
-    // Step 1: Get all departments with manager details
-    const departments = await depModel
-      .find({})
-      .populate("manager", "emp_name emp_email profileImage");
-
-    // Step 2: For each department, count the number of employees
+    const departments = await Department.find({}).populate(
+      "manager",
+      "emp_name emp_email profileImage"
+    );
     const departmentsWithCount = await Promise.all(
       departments.map(async (dep) => {
-        const count = await employee.countDocuments({
-          department: dep._id,
-        });
-        return {
-          ...dep.toObject(),
-          employeeCount: count,
-        };
+        const count = await Employee.countDocuments({ department: dep._id });
+        return { ...dep.toObject(), employeeCount: count };
       })
     );
-
-    // Step 3: Send response
-    res.status(200).json({
-      success: true,
-      result: departmentsWithCount,
-    });
+    res.status(200).json({ success: true, result: departmentsWithCount });
   } catch (error) {
-    console.error("Error fetching departments:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch departments",
+      error: error.message,
+    });
+  }
+};
+
+exports.searchDepartment = async (req, res) => {
+  try {
+    const { q = "", page = 1, limit = 5, all = "false" } = req.query;
+    let query = {};
+    if (q) {
+      const regex = { $regex: q, $options: "i" };
+      query = { $or: [{ dep_name: regex }, { dep_desc: regex }] };
+      if (mongoose.Types.ObjectId.isValid(q)) {
+        query.$or.push({ manager: q });
+      }
+    }
+    const total = await Department.countDocuments(query);
+    let departmentsQuery = Department.find(query)
+      .populate("manager", "emp_name emp_email profileImage")
+      .sort({ createdAt: -1 });
+    if (all !== "true") {
+      departmentsQuery = departmentsQuery
+        .skip((page - 1) * limit)
+        .limit(Number(limit));
+    }
+    const departments = await departmentsQuery;
+    const departmentsWithCount = await Promise.all(
+      departments.map(async (dep) => {
+        const count = await Employee.countDocuments({ department: dep._id });
+        return { ...dep.toObject(), employeeCount: count };
+      })
+    );
+    res.json({
+      success: true,
+      total,
+      page: Number(page),
+      limit: all === "true" ? total : Number(limit),
+      result: departmentsWithCount,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
     });
   }
 };
 
 exports.getSingleDep = async (req, res) => {
   try {
-    const result = await depModel.findById(req.params.id);
-    res.status(200).send({ success: true, result });
+    const result = await Department.findById(req.params.id).populate(
+      "manager",
+      "emp_name emp_email profileImage"
+    );
+    if (!result) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Department not found" });
+    }
+    res.status(200).json({ success: true, result });
   } catch (error) {
-    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
   }
 };
 
 exports.deleteDep = async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleteDepartment = await depModel.findById({ _id: id });
-    await deleteDepartment.deleteOne();
-    res.status(200).send({ success: true, result: deleteDepartment });
+    const deleted = await Department.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Department not found" });
+    }
+    res.status(200).json({ success: true, result: deleted });
   } catch (error) {
-    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
   }
 };
 
 exports.updateDep = async (req, res) => {
   try {
     const { dep_name, dep_desc, manager } = req.body;
-
     if (!dep_name || !manager) {
       return res.status(400).json({
         success: false,
         message: "Department name and manager are required.",
       });
     }
-
-    const updatedDepartment = await depModel.findByIdAndUpdate(
+    const updated = await Department.findByIdAndUpdate(
       req.params.id,
       { dep_name, dep_desc, manager },
       { new: true }
     );
-
-    if (!updatedDepartment) {
+    if (!updated) {
       return res
         .status(404)
-        .json({ success: false, message: "Department not found." });
+        .json({ success: false, message: "Department not found" });
     }
-
-    await employee.findByIdAndUpdate(manager, {
-      department: updatedDepartment._id,
-    });
-
+    await Employee.findByIdAndUpdate(manager, { department: updated._id });
     res.status(200).json({
       success: true,
       message: "Department updated and manager assigned.",
-      result: updatedDepartment,
+      result: updated,
     });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to update department." });
+    res.status(500).json({
+      success: false,
+      message: "Failed to update department.",
+      error: error.message,
+    });
   }
 };

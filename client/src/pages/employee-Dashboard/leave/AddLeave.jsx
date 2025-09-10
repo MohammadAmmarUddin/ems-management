@@ -19,7 +19,7 @@ const AddLeave = () => {
     e.preventDefault();
     console.log(leaveData);
     try {
-      const res = await axios.post(`${baseUrl}/api/leave/addLeave`, leaveData);
+      const res = await axios.post(`${baseUrl}/api/leave`, leaveData);
       console.log(res.data.success);
       if (res.data.success) {
         Swal.fire({

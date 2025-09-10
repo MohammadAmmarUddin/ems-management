@@ -1,22 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+
 const getToken = () =>
   localStorage.getItem("token") || sessionStorage.getItem("token");
-// Fetch function for leaves
-const fetchLeaves = async (baseUrl) => {
-  const res = await axios.get(`${baseUrl}/api/leave/getAllleaves`, {
+
+const fetchLeaves = async (baseUrl, search) => {
+  const endpoint = search
+    ? `${baseUrl}/api/leave/search?q=${encodeURIComponent(search)}`
+    : `${baseUrl}/api/leave/all`;
+
+  const res = await axios.get(endpoint, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
   });
-  return res.data.result;
+
+  return res.data.result || [];
 };
 
-// Hook to fetch leaves only
-const useLeaves = ({ baseUrl }) => {
+const useLeaves = (baseUrl, search = "") => {
   return useQuery({
-    queryKey: ["leaves"],
-    queryFn: () => fetchLeaves(baseUrl),
+    queryKey: ["leaves", search],
+    queryFn: () => fetchLeaves(baseUrl, search),
+    retry: 3,
+    keepPreviousData: true,
   });
 };
 

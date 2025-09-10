@@ -9,6 +9,9 @@ const multer = require("multer");
 require("dotenv").config();
 const path = require("path");
 const User = require("../models/User");
+const Attendance = require("../models/attendance");
+const leave = require("../models/leave");
+const salary = require("../models/Salary");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/uploads");
@@ -196,7 +199,6 @@ exports.editEmployee = async (req, res) => {
   try {
     const { id } = req.params;
 
-    console.log("userid", id);
     const {
       employeeId,
       emp_name,
@@ -212,7 +214,8 @@ exports.editEmployee = async (req, res) => {
       password,
     } = req.body;
 
-    const updateFields = {
+    // Prepare Employee update fields
+    const updateEmployeeFields = {
       employeeId,
       emp_name,
       department,
@@ -226,19 +229,10 @@ exports.editEmployee = async (req, res) => {
       designation,
     };
 
-    // Find employee by userId
-    const employee = await employeeModel.findOne({ userId: id });
-    const userFromDb = await userModel.findById(id);
-
-    if (!employee || !userFromDb) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Employee not found" });
-    }
-
-    // Optional image handling
+    // Handle profile image
     if (req.file) {
-      if (employee.profileImage) {
+      const employee = await employeeModel.findOne({ userId: id });
+      if (employee && employee.profileImage) {
         const oldImagePath = path.join(
           __dirname,
           "..",
@@ -249,28 +243,66 @@ exports.editEmployee = async (req, res) => {
           fs.unlinkSync(oldImagePath);
         }
       }
-      updateFields.profileImage = req.file.filename;
+      updateEmployeeFields.profileImage = req.file.filename;
     }
 
-    // Optional password update in userModel
+    // Prepare User update fields
+    const updateUserFields = {
+      name: emp_name,
+      email: emp_email,
+      role: role,
+    };
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      userFromDb.password = hashedPassword;
-      await userFromDb.save();
+      updateUserFields.password = hashedPassword;
     }
 
-    // Update employee
-    const updatedEmployee = await employeeModel.findOneAndUpdate(
-      { userId: id },
-      { $set: updateFields },
-      { new: true }
-    );
+    // ✅ Only use transaction if both Employee & User need updating
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    return res.status(200).json({
-      success: true,
-      message: "Employee updated successfully",
-      updateEmployee: updatedEmployee,
-    });
+    try {
+      const employee = await employeeModel
+        .findOne({ userId: id })
+        .session(session);
+      const userFromDb = await userModel.findById(id).session(session);
+
+      if (!employee || !userFromDb) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(404).json({
+          success: false,
+          message: "Employee not found",
+        });
+      }
+
+      // Update Employee
+      const updatedEmployee = await employeeModel.findOneAndUpdate(
+        { userId: id },
+        { $set: updateEmployeeFields },
+        { new: true, session }
+      );
+
+      // Update User
+      await userModel.findByIdAndUpdate(
+        id,
+        { $set: updateUserFields },
+        { new: true, session }
+      );
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return res.status(200).json({
+        success: true,
+        message: "Employee and User updated successfully",
+        updatedEmployee,
+      });
+    } catch (err) {
+      await session.abortTransaction();
+      session.endSession();
+      throw err;
+    }
   } catch (error) {
     console.error("Update error:", error);
     return res
@@ -499,8 +531,8 @@ exports.deleteEmployee = async (req, res) => {
 
     // Delete related Attendance, Leave, Salary records
     await Attendance.deleteMany({ employeeId: emp._id });
-    await Leave.deleteMany({ employeeId: emp._id });
-    await Salary.deleteMany({ employeeId: emp._id });
+    await leave.deleteMany({ employeeId: emp._id });
+    await salary.deleteMany({ employeeId: emp._id });
 
     // Delete profile image if exists
     if (emp.profileImage) {

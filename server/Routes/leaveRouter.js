@@ -6,24 +6,23 @@ const {
   approveLeave,
   rejectLeave,
   getLeaveStatusStats,
-  getLeaveCountSperate,
   updateLeave,
+  searchLeaves,
+  getLeavesByStatus,
 } = require("../controller/leaveController");
 
 const router = express.Router();
 
-// GET
-router.get("/getAllLeaves", getAllLeaves);
-router.get("/getLeave/:id", getLeave);
-router.get("/stats", getLeaveStatusStats);
-router.get("/seperate-stats", getLeaveCountSperate);
+router.get("/all", getAllLeaves);
+router.get("/search", searchLeaves);
+router.get("/:id", getLeave);
+router.get("/stats/summary", getLeaveStatusStats);
+router.get("/stats/:status", getLeavesByStatus);
 
-// POST
-router.post("/addLeave", addLeave);
+router.post("/", addLeave);
 
-// PUT (Better for state changes like approve/reject)
-router.put("/approveLeave/:id", approveLeave);
-router.put("/rejectLeave/:id", rejectLeave);
-router.put("/editLeave/:id", updateLeave);
+router.put("/:id/approve", approveLeave);
+router.put("/:id/reject", rejectLeave);
+router.put("/:id", updateLeave);
 
 module.exports = router;

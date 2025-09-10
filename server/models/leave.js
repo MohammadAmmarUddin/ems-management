@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { Schema } = require("mongoose");
 const leaveSchema = new mongoose.Schema(
   {
-    employeeId: { type: Schema.Types.ObjectId, ref: "employees" },
+    empId: { type: Schema.Types.ObjectId, ref: "employees", required: true },
     leaveType: {
       type: String,
       enum: ["Sick Leave", "Casual Leave", "Annual Leave"],
@@ -20,6 +20,6 @@ const leaveSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const leave = mongoose.model("leave", leaveSchema);
+const leave = mongoose.model("Leave", leaveSchema);
 
 module.exports = leave;

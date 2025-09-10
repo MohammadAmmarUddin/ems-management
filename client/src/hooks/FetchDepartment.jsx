@@ -1,27 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+
 const getToken = () =>
   localStorage.getItem("token") || sessionStorage.getItem("token");
 
 // Define the fetch function
-const fetchDepartments = async (baseUrl) => {
-  const res = await axios.get(`${baseUrl}/api/department/getAllDep`, {
+const fetchDepartments = async (baseUrl, search) => {
+  const endpoint = search
+    ? `${baseUrl}/api/department/search?q=${encodeURIComponent(search)}`
+    : `${baseUrl}/api/department/getAllDep`;
+
+  const res = await axios.get(endpoint, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
   });
+
   return res.data.result;
 };
 
 // Custom hook
-const useDepartments = (baseUrl) => {
+const useDepartments = (baseUrl, search = "") => {
   return useQuery({
-    queryKey: ["departments"],
-    queryFn: () => fetchDepartments(baseUrl),
-    retry: 5,
-
+    queryKey: ["departments", search], // ✅ include search in cache key
+    queryFn: () => fetchDepartments(baseUrl, search),
+    retry: 3,
+    keepPreviousData: true, // ✅ keeps old list while fetching new
   });
 };
 
-// Default base URL, can be overridden
 export default useDepartments;
