@@ -14,8 +14,6 @@ const ManagerList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [showAll, setShowAll] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedManager, setSelectedManager] = useState(null);
 
   const { data, isLoading, refetch } = useManagers({
     baseUrl,
@@ -27,16 +25,6 @@ const ManagerList = () => {
 
   const managers = data?.managers || [];
   const total = data?.total || 0;
-
-  const handleShowViewModal = (manager) => {
-    setSelectedManager(manager);
-    setShowViewModal(true);
-  };
-
-  const handleCloseViewModal = () => {
-    setSelectedManager(null);
-    setShowViewModal(false);
-  };
 
   const handleDeleteManager = async (id) => {
     const result = await Swal.fire({
@@ -55,14 +43,12 @@ const ManagerList = () => {
           localStorage.getItem("token") || sessionStorage.getItem("token");
         const { data } = await axios.delete(
           `${baseUrl}/api/employee/deleteEmployee/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (data.success) {
           Swal.fire("Deleted!", "Manager removed successfully.", "success");
-          refetch(); // ✅ refresh list after delete
+          refetch(); // refresh list
         } else {
           Swal.fire("Failed!", "Something went wrong.", "error");
         }
@@ -107,12 +93,6 @@ const ManagerList = () => {
       name: "Actions",
       cell: (row) => (
         <div className="flex space-x-2">
-          <button
-            onClick={() => handleShowViewModal(row)}
-            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
-          >
-            View
-          </button>
           <Link
             to={`/admin-dashboard/edit-employee/${row._id}`}
             className="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600"
@@ -127,7 +107,7 @@ const ManagerList = () => {
           </button>
         </div>
       ),
-      width: "250px",
+      width: "200px",
       center: true,
     },
   ];
@@ -172,7 +152,7 @@ const ManagerList = () => {
           paginationServer
           paginationTotalRows={total}
           paginationPerPage={limit}
-          onChangePage={(p) => setPage(p)}
+          onChangePage={setPage}
           onChangeRowsPerPage={(newLimit) => {
             setLimit(newLimit);
             setPage(1);
@@ -194,59 +174,6 @@ const ManagerList = () => {
           >
             {showAll ? "Show Paginated" : "See All"}
           </button>
-        </div>
-      )}
-
-      {showViewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
-          <div className="bg-white w-11/12 max-w-md rounded-lg shadow-lg">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold">Manager Details</h2>
-              <button
-                onClick={handleCloseViewModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-4">
-              {selectedManager ? (
-                <>
-                  <img
-                    src={`${baseUrl}/uploads/${selectedManager?.profileImage}`}
-                    width={70}
-                    alt=""
-                  />
-                  <p>
-                    <strong>Name:</strong> {selectedManager?.emp_name}
-                  </p>
-                  <p>
-                    <strong>Manager ID:</strong> {selectedManager?.userId}
-                  </p>
-                  <p>
-                    <strong>Phone:</strong> {selectedManager?.emp_phone}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {selectedManager?.emp_email}
-                  </p>
-                  <p>
-                    <strong>Joining Date:</strong>{" "}
-                    {new Date(selectedManager?.createdAt).toLocaleDateString()}
-                  </p>
-                </>
-              ) : (
-                <p>No manager selected.</p>
-              )}
-            </div>
-            <div className="flex justify-end p-4 border-t">
-              <button
-                onClick={handleCloseViewModal}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Close
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

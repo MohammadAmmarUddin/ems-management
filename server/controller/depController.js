@@ -163,7 +163,7 @@ exports.getSingleDep = async (req, res) => {
   try {
     const result = await Department.findById(req.params.id).populate(
       "manager",
-      "emp_name emp_email profileImage"
+      "name email profileImage"
     );
     if (!result) {
       return res

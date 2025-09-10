@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
+import { formatPhoneNumber } from "../../../utils/phoneNumberMod";
 import useDepartments from "../../../hooks/FetchDepartment";
 import useEmployeeById from "../../../hooks/FetchEmployeeById";
-import { formatPhoneNumber } from "../../../utils/phoneNumberMod";
 
 const EditEmployee = () => {
   const { id } = useParams();
@@ -15,7 +15,7 @@ const EditEmployee = () => {
   const [formData, setFormData] = useState({
     employeeId: "",
     emp_name: "",
-    department: "", // store department ObjectId string
+    department: "",
     emp_email: "",
     emp_phone: "",
     marital_status: "",
@@ -24,16 +24,27 @@ const EditEmployee = () => {
     salary: "",
     role: "",
     designation: "",
-    profileImage: null, // file object for new image
+    profileImage: null,
     password: "",
-    imageUrl: "", // existing image filename or URL for display
+    imageUrl: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: departments, isLoading: isDeptLoading } = useDepartments(baseUrl);
-  const { data: employeeById } = useEmployeeById(baseUrl, id);
 
-  // Validation functions (unchanged)
+  // ✅ fetch departments with pagination defaults
+  const {
+    data: departmentsData,
+    isLoading: isDeptLoading,
+    error: deptError,
+  } = useDepartments(baseUrl, "", 1, 1000); // fetch all departments
+
+  const {
+    data: employeeById,
+    isLoading: isEmployeeLoading,
+    error: employeeError,
+  } = useEmployeeById(baseUrl, id);
+
+  // Validation
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isStrongPassword = (password) =>
     password === "" || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
@@ -44,14 +55,15 @@ const EditEmployee = () => {
     return age >= 18 && age <= 65;
   };
 
-  // Populate form with existing employee data when loaded
+  // ✅ Populate form safely
   useEffect(() => {
     if (employeeById) {
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
         employeeId: employeeById.employeeId || "",
         emp_name: employeeById.emp_name || "",
         emp_email: employeeById.emp_email || "",
-        department: employeeById.department?._id || "", // **Use ObjectId string**
+        department: employeeById.department?._id || "",
         emp_phone: employeeById.emp_phone || "",
         marital_status: employeeById.marital_status || "",
         dob: employeeById.dob
@@ -64,24 +76,20 @@ const EditEmployee = () => {
         profileImage: null,
         password: "",
         imageUrl: employeeById.profileImage || "",
-      });
+      }));
     }
   }, [employeeById]);
 
+  // Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     if (name === "emp_phone") {
-      const formattedPhone = formatPhoneNumber(value);
-      setFormData((prev) => ({
-        ...prev,
-        emp_phone: formattedPhone,
-      }));
+      setFormData((prev) => ({ ...prev, emp_phone: formatPhoneNumber(value) }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
-
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
@@ -96,16 +104,21 @@ const EditEmployee = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validation checks
     if (!formData.employeeId || !formData.emp_name) {
-      return Swal.fire("Error", "Employee ID and Name are required.", "warning");
+      return Swal.fire(
+        "Error",
+        "Employee ID and Name are required.",
+        "warning"
+      );
     }
-
     if (!isValidEmail(formData.emp_email)) {
-      return Swal.fire("Invalid Email", "Enter a valid email address.", "warning");
+      return Swal.fire(
+        "Invalid Email",
+        "Enter a valid email address.",
+        "warning"
+      );
     }
-
-
-
     if (formData.password && !isStrongPassword(formData.password)) {
       return Swal.fire(
         "Weak Password",
@@ -113,7 +126,6 @@ const EditEmployee = () => {
         "warning"
       );
     }
-
     if (formData.dob && !isValidDOB(formData.dob)) {
       return Swal.fire(
         "Invalid DOB",
@@ -127,7 +139,7 @@ const EditEmployee = () => {
       const data = new FormData();
 
       for (const key in formData) {
-        if (key === "imageUrl") continue; // skip imageUrl as it is just preview URL
+        if (key === "imageUrl") continue;
         if (formData[key] !== null && formData[key] !== "") {
           data.append(key, formData[key]);
         }
@@ -148,23 +160,21 @@ const EditEmployee = () => {
           timer: 1500,
         });
 
-        const storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
+        const storedUser = JSON.parse(
+          localStorage.getItem("user") || sessionStorage.getItem("user") || "{}"
+        );
         const role = storedUser?.role;
-        if (role === "admin") {
-          navigate("/admin-dashboard");
-        } else if (role === "manager") {
-          navigate("/manager-dashboard");
-        } else if (role === "employee") {
-          navigate("/employee-dashboard");
-        } else {
-          navigate("/"); // fallback to home
-        }
+        if (role === "admin") navigate("/admin-dashboard");
+        else if (role === "manager") navigate("/manager-dashboard");
+        else if (role === "employee") navigate("/employee-dashboard");
+        else navigate("/");
       } else {
         throw new Error("Failed to update employee");
       }
     } catch (error) {
       console.error(error);
-      let message = "There was an issue updating the employee. Please try again.";
+      let message =
+        "There was an issue updating the employee. Please try again.";
 
       if (
         error.response?.data?.code === 11000 ||
@@ -189,7 +199,8 @@ const EditEmployee = () => {
     }
   };
 
-  if (isDeptLoading || !employeeById) {
+  // ✅ Loading & error states
+  if (isDeptLoading || isEmployeeLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
@@ -197,145 +208,89 @@ const EditEmployee = () => {
     );
   }
 
+  if (deptError || employeeError) {
+    return (
+      <div className="text-center text-red-600 mt-10">
+        Failed to load required data. Please try again later.
+      </div>
+    );
+  }
+
+  // ✅ Extract department list safely
+  const departments = departmentsData?.result || [];
+
   return (
-
     <div className="">
+      <div className="card bg-white w-full mx-auto shadow-2xl">
+        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
+          Edit Employee
+        </h2>
 
-
-      <div className="card bg-white w-full mx-auto shrink-0 shadow-2xl">
-        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">Edit Employee</h2>
-        <div className="max-w-6xl px-4 mt-4">
-          <button
-            onClick={() => {
-              const storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
-              const role = storedUser?.role;
-
-              if (role === "admin") {
-                navigate("/admin-dashboard");
-              } else if (role === "manager") {
-                navigate("/manager-dashboard");
-              } else if (role === "employee") {
-                navigate("/employee-dashboard");
-              } else {
-                navigate("/");
-              }
-            }}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
         <form onSubmit={handleSubmit} className="card-body" autoComplete="off">
-          {/* row 1 */}
+          {/* Row 1 */}
           <div className="flex gap-x-3">
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Employee Id</span>
-              </label>
+              <label className="label">Employee Id</label>
               <input
                 type="text"
                 name="employeeId"
-                className="input input-bordered focus:outline-none hover:border-green-600"
+                className="input input-bordered"
                 value={formData.employeeId}
                 onChange={handleChange}
                 required
-                placeholder="Enter Employee ID"
               />
             </div>
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Employee Name</span>
-              </label>
+              <label className="label">Employee Name</label>
               <input
                 type="text"
                 name="emp_name"
-                className="input input-bordered focus:outline-none hover:border-green-600"
+                className="input input-bordered"
                 value={formData.emp_name}
                 onChange={handleChange}
                 required
-                placeholder="Enter Employee Name"
               />
             </div>
           </div>
 
-          {/* row 1 extended */}
+          {/* Row 2 */}
           <div className="flex gap-x-3">
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Employee Email</span>
-              </label>
-              <input
-                type="email"
-                name="emp_email"
-                className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.emp_email}
-                onChange={handleChange}
-                required
-                placeholder="Enter Employee Email"
-              />
-            </div>
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Employee Phone</span>
-              </label>
-              <input
-                type="text"
-                name="emp_phone"
-                className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.emp_phone}
-                onChange={handleChange}
-                required
-                placeholder="Enter Employee Phone Number"
-              />
-            </div>
-          </div>
-
-          {/* row 2 */}
-          <div className="flex gap-x-3">
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Department Name</span>
-              </label>
+              <label className="label">Department</label>
               <select
                 name="department"
-                className="input input-bordered focus:outline-none hover:border-green-600"
+                className="select select-bordered"
                 value={formData.department}
                 onChange={handleChange}
                 required
               >
                 <option value="">Select Department</option>
-                {departments?.map((department) => (
-                  <option key={department._id} value={department._id}>
-                    {department.dep_name}
+                {departments.map((dep) => (
+                  <option key={dep._id} value={dep._id}>
+                    {dep.dep_name}
                   </option>
                 ))}
               </select>
             </div>
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Salary</span>
-              </label>
+              <label className="label">Salary</label>
               <input
                 type="number"
                 name="salary"
-                className="input input-bordered focus:outline-none hover:border-green-600"
+                className="input input-bordered"
                 value={formData.salary}
                 onChange={handleChange}
-                required
-                placeholder="Enter Salary"
               />
             </div>
           </div>
 
-          {/* row 3 */}
+          {/* Row 3 */}
           <div className="flex gap-x-3">
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Role</span>
-              </label>
+              <label className="label">Role</label>
               <select
                 name="role"
-                className="input input-bordered focus:outline-none hover:border-green-600"
+                className="select select-bordered"
                 value={formData.role}
                 onChange={handleChange}
                 required
@@ -347,112 +302,21 @@ const EditEmployee = () => {
               </select>
             </div>
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Designation</span>
-              </label>
-              <select
+              <label className="label">Designation</label>
+              <input
+                type="text"
                 name="designation"
-                className="input input-bordered focus:outline-none hover:border-green-600"
+                className="input input-bordered"
                 value={formData.designation}
                 onChange={handleChange}
-                required
-              >
-                {/* options unchanged */}
-                <option value="">Select Designation</option>
-                <option value="Software Engineer">Software Engineer</option>
-                <option value="Project Manager">Project Manager</option>
-                <option value="HR Manager">HR Manager</option>
-                <option value="Data Analyst">Data Analyst</option>
-                <option value="System Administrator">
-                  System Administrator
-                </option>
-                <option value="Quality Assurance">Quality Assurance</option>
-                <option value="UI/UX Designer">UI/UX Designer</option>
-                <option value="Business Analyst">Business Analyst</option>
-                <option value="Network Engineer">Network Engineer</option>
-                <option value="Database Administrator">
-                  Database Administrator
-                </option>
-                <option value="DevOps Engineer">DevOps Engineer</option>
-                <option value="Front-end Developer">Front-end Developer</option>
-                <option value="Back-end Developer">Back-end Developer</option>
-                <option value="Full-stack Developer">
-                  Full-stack Developer
-                </option>
-                <option value="Technical Support">Technical Support</option>
-                <option value="Content Writer">Content Writer</option>
-                <option value="Graphic Designer">Graphic Designer</option>
-                <option value="Sales Executive">Sales Executive</option>
-                <option value="Marketing Specialist">
-                  Marketing Specialist
-                </option>
-                <option value="Customer Service Representative">
-                  Customer Service Representative
-                </option>
-                <option value="Research Scientist">Research Scientist</option>
-              </select>
-            </div>
-          </div>
-
-          {/* row 6 */}
-          <div className="flex gap-x-3">
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Gender</span>
-              </label>
-              <select
-                name="gender"
-                className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.gender}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Marital Status</span>
-              </label>
-              <select
-                name="marital_status"
-                className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.marital_status}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Marital Status</option>
-                <option value="single">Single</option>
-                <option value="married">Married</option>
-                <option value="divorced">Divorced</option>
-                <option value="widowed">Widowed</option>
-              </select>
-            </div>
-
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Date of Birth</span>
-              </label>
-              <input
-                type="date"
-                name="dob"
-                className="input input-bordered focus:outline-none hover:border-green-600"
-                value={formData.dob}
-                onChange={handleChange}
-                required
               />
             </div>
           </div>
 
-          {/* row 4 */}
+          {/* Row 4 */}
           <div className="flex gap-x-3">
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Profile Image</span>
-              </label>
+              <label className="label">Profile Image</label>
               <input
                 type="file"
                 name="profileImage"
@@ -473,32 +337,28 @@ const EditEmployee = () => {
               )}
             </div>
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
+              <label className="label">Password</label>
               <input
                 type="password"
                 name="password"
-                title="Min 8 characters, with uppercase, lowercase, and numbers"
-                className="input input-bordered focus:outline-none hover:border-green-600"
+                className="input input-bordered"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter New Password (leave blank if unchanged)"
-                autoComplete="off"
+                placeholder="Enter new password (leave blank if unchanged)"
               />
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <div className="form-control mt-6">
             <button
-
               type="submit"
               disabled={isSubmitting}
-              className={`btn font-semibold text-white ${isSubmitting
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-primary hover:bg-secondary"
-                }`}
+              className={`btn text-white ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-primary hover:bg-secondary"
+              }`}
             >
               {isSubmitting ? "Updating..." : "Update Employee"}
             </button>

@@ -22,14 +22,17 @@ const List = () => {
   const fetchEmployees = async () => {
     try {
       setFetching(true);
-      const { data } = await axios.get(`${baseUrl}/api/employee/searchEmployees`, {
-        params: {
-          q: searchQuery,
-          page,
-          limit,
-          all: showAll ? "true" : "false",
-        },
-      });
+      const { data } = await axios.get(
+        `${baseUrl}/api/employee/searchEmployees`,
+        {
+          params: {
+            q: searchQuery,
+            page,
+            limit,
+            all: showAll ? "true" : "false",
+          },
+        }
+      );
 
       if (data.success) {
         setEmployees(data.employees);
@@ -59,11 +62,15 @@ const List = () => {
     });
 
     if (result.isConfirmed) {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       try {
-        const { data } = await axios.delete(`${baseUrl}/api/employee/deleteEmployee/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const { data } = await axios.delete(
+          `${baseUrl}/api/employee/deleteEmployee/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (data.success) {
           Swal.fire("Deleted!", "Employee removed successfully.", "success");
@@ -72,23 +79,51 @@ const List = () => {
           Swal.fire("Failed!", "Something went wrong.", "error");
         }
       } catch (error) {
-        Swal.fire("Error!", error.response?.data?.message || error.message, "error");
+        Swal.fire(
+          "Error!",
+          error.response?.data?.message || error.message,
+          "error"
+        );
       }
     }
   };
 
   const columns = [
     { name: "S No", selector: (row, ind) => ind + 1, width: "70px" },
-    { name: "Emp_Id", selector: (row) => row.employeeId, sortable: true },
-    { name: "Name", selector: (row) => row.emp_name, sortable: true },
+    {
+      name: "Emp_Id",
+      selector: (row) => row.employeeId,
+      sortable: true,
+      width: "150px",
+    },
+    {
+      name: "Name",
+      selector: (row) => row.emp_name,
+      sortable: true,
+    },
     {
       name: "Image",
       selector: (row) => (
-        <img src={`${baseUrl}/uploads/${row.profileImage}`} width={35} className="rounded-full" alt="" />
+        <img
+          src={`${baseUrl}/uploads/${row.profileImage}`}
+          width={35}
+          className="rounded-full"
+          alt=""
+        />
       ),
+      width: "150px",
     },
-    { name: "Role", selector: (row) => row.role, sortable: true },
-    { name: "Department", selector: (row) => row.department?.dep_name || "N/A" },
+    {
+      name: "Role",
+      selector: (row) => row.role,
+      sortable: true,
+      width: "150px",
+    },
+    {
+      name: "Department",
+      selector: (row) => row.department?.dep_name || "N/A",
+      width: "150px",
+    },
     {
       name: "Actions",
       cell: (row) => (
@@ -208,11 +243,23 @@ const List = () => {
                 width={70}
                 alt=""
               />
-              <p><strong>Name:</strong> {selectedEmployee.emp_name}</p>
-              <p><strong>Employee_Id:</strong> {selectedEmployee.employeeId}</p>
-              <p><strong>Department:</strong> {selectedEmployee.department?.dep_name || "N/A"}</p>
-              <p><strong>Role:</strong> {selectedEmployee.role || "N/A"}</p>
-              <p><strong>Joining Date:</strong> {new Date(selectedEmployee.createdAt).toLocaleDateString()}</p>
+              <p>
+                <strong>Name:</strong> {selectedEmployee.emp_name}
+              </p>
+              <p>
+                <strong>Employee_Id:</strong> {selectedEmployee.employeeId}
+              </p>
+              <p>
+                <strong>Department:</strong>{" "}
+                {selectedEmployee.department?.dep_name || "N/A"}
+              </p>
+              <p>
+                <strong>Role:</strong> {selectedEmployee.role || "N/A"}
+              </p>
+              <p>
+                <strong>Joining Date:</strong>{" "}
+                {new Date(selectedEmployee.createdAt).toLocaleDateString()}
+              </p>
             </div>
             <div className="flex justify-end p-4 border-t">
               <button

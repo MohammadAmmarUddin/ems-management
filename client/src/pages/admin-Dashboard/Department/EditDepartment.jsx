@@ -2,20 +2,30 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useNavigate, useParams } from "react-router-dom";
-import useManagers from "../../../hooks/FetchManagers";
 import { useAuth } from "../../../context/AuthContext";
+import useManagers from "../../../hooks/FetchManagers";
 
 const EditDepartment = () => {
   const { id } = useParams();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   const [depInput, setDepInput] = useState("");
   const [depDesc, setDepDesc] = useState("");
   const [selectedManagerId, setSelectedManagerId] = useState("");
   const [loadingDep, setLoadingDep] = useState(true);
-  const { user, loading } = useAuth();
-  const { data: managers = [] } = useManagers({ baseUrl });
+
+  // Fetch all managers
+  const { data, isLoading: loadingManagers } = useManagers({
+    baseUrl,
+    showAll: true,
+  });
+
+  const managers = data?.managers || [];
+
+  console.log("manager", managers);
+  console.log(selectedManagerId);
 
   // Fetch department by ID
   useEffect(() => {
@@ -25,13 +35,18 @@ const EditDepartment = () => {
           `${baseUrl}/api/department/getSingleDep/${id}`
         );
         const department = res.data.result;
-        setDepInput(department.dep_name);
+
+        setDepInput(department.dep_name || "");
         setDepDesc(department.dep_desc || "");
         setSelectedManagerId(department.manager?._id || "");
-        setLoadingDep(false);
       } catch (err) {
         console.error("Department fetch error:", err);
-        setDepError("Failed to load department data.");
+        Swal.fire({
+          icon: "error",
+          title: "Failed to load department",
+          text: err.response?.data?.message || "Something went wrong!",
+        });
+      } finally {
         setLoadingDep(false);
       }
     };
@@ -76,13 +91,13 @@ const EditDepartment = () => {
     }
   };
 
-  // if (loading || user) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-  //     </div>
-  //   );
-  // }
+  if (loading || loadingDep || loadingManagers) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-10">
@@ -114,12 +129,11 @@ const EditDepartment = () => {
               className="select select-bordered"
               value={selectedManagerId}
               onChange={(e) => setSelectedManagerId(e.target.value)}
-              required
             >
               <option value="">-- Select a Manager --</option>
               {managers.length > 0 ? (
                 managers.map((mgr) => (
-                  <option key={mgr._id} value={mgr._id}>
+                  <option key={mgr.userId} value={mgr.userId}>
                     {mgr.emp_name} ({mgr.emp_email})
                   </option>
                 ))

@@ -93,7 +93,9 @@ exports.getAllManagers = async (req, res) => {
   try {
     const managers = await employeeModel
       .find({ role: "manager" })
-      .populate("department", "dep_name");
+      .select("emp_name emp_email userId profileImage department")
+      .populate("department", "dep_name")
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -104,9 +106,11 @@ exports.getAllManagers = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch managers",
+      error: error.message,
     });
   }
 };
+
 exports.totalEmployeesCount = async (req, res) => {
   try {
     const totalEmployees = await employeeModel.countDocuments({
