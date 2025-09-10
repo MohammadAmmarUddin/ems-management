@@ -15,14 +15,17 @@ const AddDepartment = () => {
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const {
-    data: departments = [],
-    refetch,
-  } = useDepartments(baseUrl);
+  const { data: departments = [], refetch } = useDepartments(baseUrl);
 
   const {
-    data: managers = [],
-  } = useManagers(baseUrl);
+    data,
+    isLoading,
+    refetch: managRefetch,
+  } = useManagers({
+    baseUrl,
+  });
+
+  const managers = data?.managers || [];
   // Handle department input changes
   const handleDepInputChange = (e) => {
     const value = e.target.value;
@@ -84,13 +87,13 @@ const AddDepartment = () => {
     }
   };
 
-  if (loading || user) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-      </div>
-    );
-  }
+  // if (loading || user || isLoading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="mt-10">

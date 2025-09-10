@@ -4,28 +4,25 @@ import axios from "axios";
 const getToken = () =>
   localStorage.getItem("token") || sessionStorage.getItem("token");
 
-// Define the fetch function
-const fetchDepartments = async (baseUrl, search) => {
+const fetchDepartments = async ({ baseUrl, search, page, limit }) => {
   const endpoint = search
-    ? `${baseUrl}/api/department/search?q=${encodeURIComponent(search)}`
-    : `${baseUrl}/api/department/getAllDep`;
+    ? `${baseUrl}/api/department/search?q=${encodeURIComponent(
+        search
+      )}&page=${page}&limit=${limit}`
+    : `${baseUrl}/api/department/getAllDep?page=${page}&limit=${limit}`;
 
   const res = await axios.get(endpoint, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
+    headers: { Authorization: `Bearer ${getToken()}` },
   });
 
-  return res.data.result;
+  return res.data; // ✅ full response { result, total, page, limit }
 };
 
-// Custom hook
-const useDepartments = (baseUrl, search = "") => {
+const useDepartments = (baseUrl, search, page, limit) => {
   return useQuery({
-    queryKey: ["departments", search], // ✅ include search in cache key
-    queryFn: () => fetchDepartments(baseUrl, search),
-    retry: 3,
-    keepPreviousData: true, // ✅ keeps old list while fetching new
+    queryKey: ["departments", search, page, limit],
+    queryFn: () => fetchDepartments({ baseUrl, search, page, limit }),
+    keepPreviousData: true,
   });
 };
 

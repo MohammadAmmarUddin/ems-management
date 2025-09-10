@@ -77,20 +77,37 @@ exports.addDep = async (req, res) => {
     session.endSession();
   }
 };
-
 exports.getAllDep = async (req, res) => {
   try {
-    const departments = await Department.find({}).populate(
-      "manager",
-      "emp_name emp_email profileImage"
-    );
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Department.countDocuments();
+
+    const departments = await Department.find({})
+      .populate({
+        path: "manager",
+        select: "name email profileImage", // ensure these fields exist in User model
+      })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
     const departmentsWithCount = await Promise.all(
       departments.map(async (dep) => {
         const count = await Employee.countDocuments({ department: dep._id });
-        return { ...dep.toObject(), employeeCount: count };
+        return { ...dep, employeeCount: count };
       })
     );
-    res.status(200).json({ success: true, result: departmentsWithCount });
+
+    res.status(200).json({
+      success: true,
+      result: departmentsWithCount,
+      total,
+      page,
+      limit,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -99,7 +116,6 @@ exports.getAllDep = async (req, res) => {
     });
   }
 };
-
 exports.searchDepartment = async (req, res) => {
   try {
     const { q = "", page = 1, limit = 5, all = "false" } = req.query;

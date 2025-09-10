@@ -1,23 +1,43 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-// Fetcher function
-const fetchManagers = async (baseUrl) => {
-  const token = await localStorage.getItem("token") || await sessionStorage.getItem('token');
-  const res = await axios.get(`${baseUrl}/api/employee/managers`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+
+const getToken = () =>
+  localStorage.getItem("token") || sessionStorage.getItem("token");
+
+const fetchManagers = async ({ queryKey }) => {
+  const [, { baseUrl, search = "", page = 1, limit = 5, showAll = false }] =
+    queryKey;
+
+  const params = {
+    q: search,
+    page,
+    limit,
+    all: showAll ? "true" : "false",
+  };
+
+  const res = await axios.get(`${baseUrl}/api/employee/searchEmployees`, {
+    params,
+    headers: { Authorization: `Bearer ${getToken()}` },
   });
-  return res.data.managers;
+
+  return {
+    managers: res.data.employees || [],
+    total: res.data.total || 0,
+  };
 };
 
-// Custom hook
-const useManagers = ({ baseUrl }) => {
+const useManagers = ({
+  baseUrl,
+  search = "",
+  page = 1,
+  limit = 5,
+  showAll = false,
+}) => {
   return useQuery({
-    queryKey: ["managers"],
-    queryFn: () => fetchManagers(baseUrl),
-
-    retry: 5,
+    queryKey: ["managers", { baseUrl, search, page, limit, showAll }],
+    queryFn: fetchManagers,
+    keepPreviousData: true,
+    retry: 3,
   });
 };
 

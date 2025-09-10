@@ -1,52 +1,32 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../../context/AuthContext";
 import Swal from "sweetalert2";
 import axios from "axios";
+import useManagers from "../../../hooks/FetchManagers";
 
 const ManagerList = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
-  const [managers, setManagers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
-  const [total, setTotal] = useState(0);
   const [showAll, setShowAll] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedManager, setSelectedManager] = useState(null);
-  const [fetching, setFetching] = useState(false);
 
-  const date = new Date(selectedManager?.createdAt || null);
-  const joiningDate = selectedManager ? date.toLocaleDateString() : "N/A";
+  const { data, isLoading, refetch } = useManagers({
+    baseUrl,
+    search: searchQuery,
+    page,
+    limit,
+    showAll,
+  });
 
-  // Fetch managers from API
-  const fetchManagers = async () => {
-    try {
-      setFetching(true);
-      const res = await axios.get(`${baseUrl}/api/employee/searchEmployees`, {
-        params: {
-          q: searchQuery,
-          page,
-          limit,
-          all: showAll ? "true" : "false",
-        },
-      });
-
-      setManagers(res.data.employees || []);
-      setTotal(res.data.total || 0);
-    } catch (err) {
-      console.error("Failed to fetch managers:", err);
-    } finally {
-      setFetching(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchManagers();
-  }, [searchQuery, page, limit, showAll]);
+  const managers = data?.managers || [];
+  const total = data?.total || 0;
 
   const handleShowViewModal = (manager) => {
     setSelectedManager(manager);
@@ -54,8 +34,8 @@ const ManagerList = () => {
   };
 
   const handleCloseViewModal = () => {
-    setShowViewModal(false);
     setSelectedManager(null);
+    setShowViewModal(false);
   };
 
   const handleDeleteManager = async (id) => {
@@ -70,9 +50,9 @@ const ManagerList = () => {
     });
 
     if (result.isConfirmed) {
-      const token =
-        localStorage.getItem("token") || sessionStorage.getItem("token");
       try {
+        const token =
+          localStorage.getItem("token") || sessionStorage.getItem("token");
         const { data } = await axios.delete(
           `${baseUrl}/api/employee/deleteEmployee/${id}`,
           {
@@ -82,7 +62,7 @@ const ManagerList = () => {
 
         if (data.success) {
           Swal.fire("Deleted!", "Manager removed successfully.", "success");
-          fetchManagers();
+          refetch(); // ✅ refresh list after delete
         } else {
           Swal.fire("Failed!", "Something went wrong.", "error");
         }
@@ -97,11 +77,7 @@ const ManagerList = () => {
   };
 
   const columns = [
-    {
-      name: "S No",
-      selector: (row, ind) => ind + 1,
-      width: "70px",
-    },
+    { name: "S No", selector: (row, i) => i + 1, width: "70px" },
     {
       name: "Name",
       selector: (row) => row.emp_name,
@@ -125,16 +101,8 @@ const ManagerList = () => {
       ),
       width: "120px",
     },
-    {
-      name: "Phone",
-      selector: (row) => row.emp_phone,
-      width: "150px",
-    },
-    {
-      name: "Email",
-      selector: (row) => row.emp_email,
-      width: "200px",
-    },
+    { name: "Phone", selector: (row) => row.emp_phone, width: "150px" },
+    { name: "Email", selector: (row) => row.emp_email, width: "200px" },
     {
       name: "Actions",
       cell: (row) => (
@@ -209,7 +177,7 @@ const ManagerList = () => {
             setLimit(newLimit);
             setPage(1);
           }}
-          progressPending={fetching}
+          progressPending={isLoading}
           columns={columns}
           data={managers}
           fixedHeader
@@ -218,16 +186,16 @@ const ManagerList = () => {
         />
       </div>
 
-      <div className="flex justify-center my-4">
-        {total > limit && (
+      {total > limit && (
+        <div className="flex justify-center my-4">
           <button
             onClick={() => setShowAll(!showAll)}
             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             {showAll ? "Show Paginated" : "See All"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {showViewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
@@ -243,7 +211,7 @@ const ManagerList = () => {
             </div>
             <div className="p-4">
               {selectedManager ? (
-                <div>
+                <>
                   <img
                     src={`${baseUrl}/uploads/${selectedManager?.profileImage}`}
                     width={70}
@@ -262,9 +230,10 @@ const ManagerList = () => {
                     <strong>Email:</strong> {selectedManager?.emp_email}
                   </p>
                   <p>
-                    <strong>Joining Date:</strong> {joiningDate}
+                    <strong>Joining Date:</strong>{" "}
+                    {new Date(selectedManager?.createdAt).toLocaleDateString()}
                   </p>
-                </div>
+                </>
               ) : (
                 <p>No manager selected.</p>
               )}

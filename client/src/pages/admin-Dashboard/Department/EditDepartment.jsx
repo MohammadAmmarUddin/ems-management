@@ -15,16 +15,15 @@ const EditDepartment = () => {
   const [selectedManagerId, setSelectedManagerId] = useState("");
   const [loadingDep, setLoadingDep] = useState(true);
   const { user, loading } = useAuth();
-  const {
-    data: managers = [],
-
-  } = useManagers({ baseUrl });
+  const { data: managers = [] } = useManagers({ baseUrl });
 
   // Fetch department by ID
   useEffect(() => {
     const fetchDepartment = async () => {
       try {
-        const res = await axios.get(`${baseUrl}/api/department/getSingleDep/${id}`);
+        const res = await axios.get(
+          `${baseUrl}/api/department/getSingleDep/${id}`
+        );
         const department = res.data.result;
         setDepInput(department.dep_name);
         setDepDesc(department.dep_desc || "");
@@ -77,22 +76,13 @@ const EditDepartment = () => {
     }
   };
 
-  // Loading state
-  if (loadingDep || loadingManagers) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (loading || user) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-      </div>
-    );
-  }
+  // if (loading || user) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="mt-10">

@@ -76,11 +76,19 @@ const Add = () => {
     } = formData;
 
     if (!employeeId || !emp_name) {
-      return Swal.fire("Error", "Employee ID and Name are required.", "warning");
+      return Swal.fire(
+        "Error",
+        "Employee ID and Name are required.",
+        "warning"
+      );
     }
 
     if (!isValidEmail(emp_email)) {
-      return Swal.fire("Invalid Email", "Enter a valid email address.", "warning");
+      return Swal.fire(
+        "Invalid Email",
+        "Enter a valid email address.",
+        "warning"
+      );
     }
 
     // if (!isValidPhone(emp_phone)) {
@@ -96,11 +104,19 @@ const Add = () => {
     }
 
     if (!isValidImage(profileImage)) {
-      return Swal.fire("Invalid Image", "Image must be under 2MB and of type JPG/PNG.", "warning");
+      return Swal.fire(
+        "Invalid Image",
+        "Image must be under 2MB and of type JPG/PNG.",
+        "warning"
+      );
     }
 
     if (!isValidDOB(dob)) {
-      return Swal.fire("Invalid DOB", "Employee must be between 18 and 65 years old.", "warning");
+      return Swal.fire(
+        "Invalid DOB",
+        "Employee must be between 18 and 65 years old.",
+        "warning"
+      );
     }
 
     try {
@@ -114,9 +130,13 @@ const Add = () => {
           data.append(key, formData[key]);
         }
       }
-      const res = await axios.post(`${baseUrl}/api/employee/addEmployee`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(
+        `${baseUrl}/api/employee/addEmployee`,
+        data,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       if (res.data.success === true || res.status === 201) {
         Swal.fire("Success", "Employee Added Successfully!", "success");
         setFormData({
@@ -152,7 +172,9 @@ const Add = () => {
   return (
     <div className="mt-10">
       <div className="card bg-base-100 w-full mx-auto shrink-0 shadow-2xl">
-        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">Add Employee</h2>
+        <h2 className="text-center mt-10 font-bold text-3xl lg:text-4xl">
+          Add Employee
+        </h2>
         <form onSubmit={handleSubmit} className="card-body" autoComplete="off">
           <div className="flex gap-x-3">
             <div className="form-control w-full">
@@ -286,21 +308,29 @@ const Add = () => {
                 <option value="Project Manager">Project Manager</option>
                 <option value="HR Manager">HR Manager</option>
                 <option value="Data Analyst">Data Analyst</option>
-                <option value="System Administrator">System Administrator</option>
+                <option value="System Administrator">
+                  System Administrator
+                </option>
                 <option value="Quality Assurance">Quality Assurance</option>
                 <option value="UI/UX Designer">UI/UX Designer</option>
                 <option value="Business Analyst">Business Analyst</option>
                 <option value="Network Engineer">Network Engineer</option>
-                <option value="Database Administrator">Database Administrator</option>
+                <option value="Database Administrator">
+                  Database Administrator
+                </option>
                 <option value="DevOps Engineer">DevOps Engineer</option>
                 <option value="Front-end Developer">Front-end Developer</option>
                 <option value="Back-end Developer">Back-end Developer</option>
-                <option value="Full-stack Developer">Full-stack Developer</option>
+                <option value="Full-stack Developer">
+                  Full-stack Developer
+                </option>
                 <option value="Technical Support">Technical Support</option>
                 <option value="Content Writer">Content Writer</option>
                 <option value="Graphic Designer">Graphic Designer</option>
                 <option value="Sales Executive">Sales Executive</option>
-                <option value="Marketing Specialist">Marketing Specialist</option>
+                <option value="Marketing Specialist">
+                  Marketing Specialist
+                </option>
                 <option value="Customer Service Representative">
                   Customer Service Representative
                 </option>

@@ -10,14 +10,21 @@ const DepartmentList = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
-  const [search, setSearch] = useState(""); // search query state
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
 
-  // ✅ fetch all OR filtered departments
-  const {
-    data: departments = [],
-    isLoading,
-    refetch,
-  } = useDepartments(baseUrl, search);
+  const { data, isLoading, refetch } = useDepartments(
+    baseUrl,
+    search,
+    page,
+    limit
+  );
+
+  const departments = data?.result || [];
+  const total = data?.total || 0;
+
+  console.log(departments);
 
   const handleDelete = async (rowId) => {
     try {
@@ -25,7 +32,7 @@ const DepartmentList = () => {
         `${baseUrl}/api/department/deleteDep/${rowId}`
       );
 
-      if (res.data.success === true || res.data.status === 200) {
+      if (res.data.success) {
         Swal.fire({
           position: "center center",
           icon: "success",
@@ -33,29 +40,19 @@ const DepartmentList = () => {
           showConfirmButton: false,
           timer: 1500,
         });
-        refetch(); // reload current filtered or all data
+        refetch();
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
-  const buttonStyle = {
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    padding: "3px 5px",
-    marginRight: "5px",
-    cursor: "pointer",
-    borderRadius: "4px",
-  };
-
-  // Columns of table
   const columns = [
     {
       name: "S No",
-      selector: (row, ind) => ind + 1,
-      sortable: true,
+      selector: (row, ind) => (page - 1) * limit + ind + 1, // ✅ correct serial number across pages
+      sortable: false,
+      width: "80px",
     },
     {
       name: "Department",
@@ -64,21 +61,23 @@ const DepartmentList = () => {
     },
     {
       name: "Manager",
-      selector: (row) => row.manager?.emp_name,
+      selector: (row) => row.manager?.name || "N/A",
       sortable: true,
     },
     {
       name: "Image",
-      selector: (row) => (
-        <img
-          src={`http://localhost:5001/uploads/${row.manager?.profileImage}`}
-          width={30}
-          className="rounded-full"
-          alt="Manager"
-        />
-      ),
-      sortable: true,
-      width: "180px",
+      selector: (row) =>
+        row.manager?.profileImage ? (
+          <img
+            src={`${baseUrl}/uploads/${row.manager?.profileImage}`}
+            width={30}
+            className="rounded-full"
+            alt="Manager"
+          />
+        ) : (
+          "N/A"
+        ),
+      width: "100px",
     },
     {
       name: "Total Employees",
@@ -91,13 +90,13 @@ const DepartmentList = () => {
         <>
           <Link
             to={`/admin-dashboard/edit-department/${row._id}`}
-            style={buttonStyle}
+            className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
           >
             Edit
           </Link>
           <button
             onClick={() => handleDelete(row._id)}
-            style={{ ...buttonStyle, backgroundColor: "#dc3545" }}
+            className="bg-red-500 text-white px-3 py-1 rounded"
           >
             Delete
           </button>
@@ -119,14 +118,17 @@ const DepartmentList = () => {
       <div className="text-center">
         <h3 className="text-2xl font-bold">Manage Departments</h3>
       </div>
+
       <div className="flex justify-between my-3">
-        {/* ✅ search input triggers useDepartments */}
         <input
           type="text"
           className="px-4 ml-5 py-1 border rounded"
           placeholder="Search By Name"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setPage(1);
+            setSearch(e.target.value);
+          }}
         />
         <Link
           to="/admin-dashboard/add-department"
@@ -136,16 +138,21 @@ const DepartmentList = () => {
         </Link>
       </div>
 
-      <div>
-        <DataTable
-          progressPending={isLoading}
-          highlightOnHover
-          selectableRows
-          pagination
-          columns={columns}
-          data={departments}
-        />
-      </div>
+      <DataTable
+        progressPending={isLoading}
+        highlightOnHover
+        pagination
+        paginationServer
+        paginationTotalRows={total}
+        paginationPerPage={limit}
+        onChangePage={(p) => setPage(p)}
+        onChangeRowsPerPage={(newLimit) => {
+          setLimit(newLimit);
+          setPage(1);
+        }}
+        columns={columns}
+        data={departments}
+      />
     </div>
   );
 };
