@@ -62,7 +62,30 @@ exports.getAllLeaves = async (req, res) => {
     });
   }
 };
+exports.filterByStatus = async (req, res) => {
+  try {
+    const { status } = req.params;
+    const validStatuses = ["Pending", "Approved", "Rejected"];
+    if (!validStatuses.includes(status))
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status" });
 
+    const leaves = await Leave.find({ status })
+      .populate({
+        path: "empId",
+        select: "employeeId emp_name emp_email department role",
+        populate: { path: "department", select: "dep_name dep_desc" },
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, result: leaves });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
+  }
+};
 exports.searchLeaves = async (req, res) => {
   try {
     const { q } = req.query;

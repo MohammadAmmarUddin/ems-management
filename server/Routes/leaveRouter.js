@@ -9,6 +9,7 @@ const {
   updateLeave,
   searchLeaves,
   getLeavesByStatus,
+  filterByStatus,
 } = require("../controller/leaveController");
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.get("/search", searchLeaves);
 router.get("/:id", getLeave);
 router.get("/stats/summary", getLeaveStatusStats);
 router.get("/stats/:status", getLeavesByStatus);
+router.get("/status/:status", filterByStatus);
 
 router.post("/", addLeave);
 

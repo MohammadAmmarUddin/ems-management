@@ -13,11 +13,12 @@ const calculateLeaveDays = (start, end) => {
 const LeaveList = () => {
   const { user, loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState(""); // New state for status filter
 
-  const { data: leaves = [], isLoading } = useLeaves(baseUrl, search);
+  const { data: leaves = [], isLoading } = useLeaves(baseUrl, search, status);
 
-  console.log("leaves", leaves);
   const columns = [
     { name: "S No", selector: (row, i) => i + 1, maxWidth: "80px" },
     {
@@ -62,24 +63,27 @@ const LeaveList = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="flex gap-2 flex-wrap">
-          <Link
-            to="/admin-dashboard/pending-leaves"
-            className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-          >
-            Pending
-          </Link>
-          <Link
-            to="/admin-dashboard/approved-leaves"
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Approved
-          </Link>
-          <Link
-            to="/admin-dashboard/rejected-leaves"
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Rejected
-          </Link>
+          {["Pending", "Approved", "Rejected"].map((s) => (
+            <button
+              key={s}
+              className={`px-4 py-2 rounded text-white ${
+                status === s
+                  ? s === "Pending"
+                    ? "bg-yellow-600"
+                    : s === "Approved"
+                    ? "bg-green-600"
+                    : "bg-red-600"
+                  : s === "Pending"
+                  ? "bg-yellow-500 hover:bg-yellow-600"
+                  : s === "Approved"
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-red-500 hover:bg-red-600"
+              }`}
+              onClick={() => setStatus(status === s ? "" : s)} // toggle filter
+            >
+              {s}
+            </button>
+          ))}
         </div>
       </div>
 
