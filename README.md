@@ -7,6 +7,7 @@
 The **Employee Management System** is a comprehensive **MERN (MongoDB, Express, React, Node.js)** application designed to streamline employee lifecycle management — from onboarding to salary and attendance tracking. This system enables HR/admins to **add, view, edit, and delete employee records**, manage departments and salaries, monitor attendance, and generate reports — all via a secure and responsive web interface.
 
 ---
+Admin login: username: admin@gmail.com pass: admin
 
 ## ⚙️ Core Functionalities
 
@@ -187,5 +188,6 @@ The **Employee Management System** is a comprehensive **MERN (MongoDB, Express, 
 * 📂 Cloud image storage (Cloudinary or S3)
 
 ---
+
 
 
