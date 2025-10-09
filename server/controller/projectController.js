@@ -114,7 +114,6 @@ exports.getTasksForEmployee = async (req, res) => {
   }
 };
 // controllers/projectController.js
-
 exports.searchProjects = async (req, res) => {
   try {
     const {
@@ -126,37 +125,29 @@ exports.searchProjects = async (req, res) => {
       all = "false",
     } = req.query;
 
-    const pipeline = [];
-
-    // Lookup department
-    pipeline.push({
-      $lookup: {
-        from: "departments",
-        localField: "department",
-        foreignField: "_id",
-        as: "department",
+    const pipeline = [
+      {
+        $lookup: {
+          from: "departments",
+          localField: "department",
+          foreignField: "_id",
+          as: "department",
+        },
       },
-    });
-    pipeline.push({
-      $unwind: { path: "$department", preserveNullAndEmptyArrays: true },
-    });
-
-    // Lookup manager (employee)
-    pipeline.push({
-      $lookup: {
-        from: "employees",
-        localField: "department.manager",
-        foreignField: "_id",
-        as: "manager",
+      { $unwind: { path: "$department", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "employees",
+          localField: "department.manager",
+          foreignField: "_id",
+          as: "manager",
+        },
       },
-    });
-    pipeline.push({
-      $unwind: { path: "$manager", preserveNullAndEmptyArrays: true },
-    });
+      { $unwind: { path: "$manager", preserveNullAndEmptyArrays: true } },
+    ];
 
-    // Build match query
+    // 🔹 Match conditions
     const match = {};
-
     if (q) {
       match.$or = [
         { title: { $regex: q, $options: "i" } },
@@ -165,25 +156,22 @@ exports.searchProjects = async (req, res) => {
         { "manager.emp_name": { $regex: q, $options: "i" } },
       ];
     }
-
     if (status) match.status = status;
     if (department)
-      match["department._id"] = mongoose.Types.ObjectId(department);
+      match["department._id"] = new mongoose.Types.ObjectId(department);
 
     pipeline.push({ $match: match });
 
-    // Count total documents
+    // 🔹 Count total before pagination
     const totalAgg = [...pipeline, { $count: "total" }];
     const totalResult = await Project.aggregate(totalAgg);
     const total = totalResult[0]?.total || 0;
 
-    // Pagination
     if (all !== "true") {
       pipeline.push({ $skip: (page - 1) * limit });
       pipeline.push({ $limit: Number(limit) });
     }
 
-    // Project only required fields
     pipeline.push({
       $project: {
         _id: 1,

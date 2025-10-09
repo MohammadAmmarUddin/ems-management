@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import { useAuth } from "../../../context/AuthContext";
-import useProjects from "../../../hooks/FetchProjects";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import useProjects from "../../../hooks/FetchProjects";
 
 const Projects = () => {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
 
   const [search, setSearch] = useState("");
@@ -31,10 +31,15 @@ const Projects = () => {
     try {
       const token =
         localStorage.getItem("token") || sessionStorage.getItem("token");
+
       const res = await axios.delete(`${baseUrl}/api/projects/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.data.success) refetch();
+
+      if (res.data.success) {
+        Swal.fire("Deleted!", "Project has been removed.", "success");
+        refetch();
+      }
     } catch (err) {
       Swal.fire("Error!", err.message, "error");
     }
@@ -43,27 +48,23 @@ const Projects = () => {
   const columns = [
     { name: "S/N", selector: (_, i) => i + 1, width: "70px" },
     { name: "Project Name", selector: (row) => row.title, sortable: true },
-    {
-      name: "Manager",
-      selector: (row) => row.manager?.emp_name || "N/A",
-      sortable: true,
-    },
+    { name: "Manager", selector: (row) => row.manager?.emp_name || "N/A" },
     {
       name: "Department",
       selector: (row) => row.department?.dep_name || "N/A",
-      sortable: true,
     },
     {
       name: "Issue Date",
-      selector: (row) => new Date(row.startDate).toLocaleDateString(),
+      selector: (row) =>
+        row.startDate ? new Date(row.startDate).toLocaleDateString() : "N/A",
     },
     {
       name: "Expected Date",
-      selector: (row) => new Date(row.endDate).toLocaleDateString(),
+      selector: (row) =>
+        row.endDate ? new Date(row.endDate).toLocaleDateString() : "N/A",
     },
     {
       name: "Status",
-      selector: (row) => row.status || "Pending",
       cell: (row) => (
         <span
           className={`px-2 py-1 rounded text-white text-xs font-medium ${
@@ -74,7 +75,7 @@ const Projects = () => {
               : "bg-gray-500"
           }`}
         >
-          {row.status || "Pending"}
+          {row.status}
         </span>
       ),
     },

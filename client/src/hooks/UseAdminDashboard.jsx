@@ -79,14 +79,11 @@ export const useProjectCount = (baseUrl) => {
   return useQuery({
     queryKey: ["runningProjectsFetchAll"],
     queryFn: async () => {
-      const res = await fetch(
-        `${baseUrl}/api/projects/getInProgressProjects`,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-          },
-        }
-      );
+      const res = await fetch(`${baseUrl}/api/projects/getInProgressProjects`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to fetch project count");
@@ -117,7 +114,7 @@ export const useDepartmentDistribution = (baseUrl) => {
 // ===============================
 // Leave Stats
 const fetchLeaveStats = async (baseUrl) => {
-  const response = await axios.get(`${baseUrl}/api/leave/stats`, {
+  const response = await axios.get(`${baseUrl}/api/leave/stats/summary`, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },

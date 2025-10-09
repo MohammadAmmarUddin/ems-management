@@ -20,7 +20,6 @@ const authMiddleWare = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// 🔹 Project Routes
 router.post("/create", authMiddleWare, createProject);
 router.get("/getAllProjects", authMiddleWare, getAllProjects);
 router.get("/getByDepartment", authMiddleWare, getProjectsByDepartment);
@@ -39,7 +38,8 @@ router.get(
 router.get("/getTaskCountByEmployee", authMiddleWare, getTaskCountByEmployee);
 router.get("/getAllTasksByDepartment", authMiddleWare, getAllTasksByDepartment);
 router.get("/getTasksForEmployee", authMiddleWare, getTasksForEmployee);
-// router.get("/getTasksByDepartment", authMiddleWare, getTasksByDepartment);
 router.delete("/deleteTask/:id", authMiddleWare, deleteTask);
-router.get("/search", searchProjects);
+
+router.get("/search", authMiddleWare, searchProjects);
+
 module.exports = router;

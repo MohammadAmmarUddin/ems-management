@@ -49,7 +49,6 @@ exports.updateAttendance = async (req, res) => {
     console.log("update attendance error", error);
   }
 };
-
 exports.attendanceReport = async (req, res) => {
   try {
     const { date, limit = 5, skip = 0 } = req.query;
@@ -58,6 +57,7 @@ exports.attendanceReport = async (req, res) => {
     if (date) {
       query.date = date;
     }
+
     const attendanceData = await Attendance.find(query)
       .populate({
         path: "employeeId",
@@ -67,23 +67,36 @@ exports.attendanceReport = async (req, res) => {
       .limit(parseInt(limit))
       .skip(parseInt(skip));
 
-    const groupData = await attendanceData.reduce((acc, att) => {
-      if (!acc[att.date]) {
-        acc[att.date] = [];
+    const groupData = attendanceData.reduce((acc, att) => {
+      // 🧠 Skip invalid or unpopulated attendance
+      if (!att || !att.employeeId) {
+        console.warn("⚠️ Skipping invalid attendance record:", att?._id);
+        return acc;
       }
-      acc[att.date].push({
-        employeeId: att.employeeId.employeeId,
-        name: att.employeeId.userId?.name,
-        department: att.employeeId.department.dep_name,
-        status: att.status || "Not Marked  ",
+
+      const dateKey =
+        att.date instanceof Date
+          ? att.date.toISOString().split("T")[0]
+          : att.date;
+
+      if (!acc[dateKey]) acc[dateKey] = [];
+
+      acc[dateKey].push({
+        employeeId: att.employeeId.employeeId || "N/A",
+        name: att.employeeId.userId?.name || "Unknown",
+        department: att.employeeId.department?.dep_name || "N/A",
+        status: att.status || "Not Marked",
       });
+
       return acc;
     }, {});
+
     res.status(200).json({
       success: true,
       groupData,
     });
   } catch (error) {
-    console.log("attendance report error", error);
+    console.error("attendance report error", error);
+    res.status(500).json({ success: false, message: "Server error", error });
   }
 };
