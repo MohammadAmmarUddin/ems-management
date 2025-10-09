@@ -1,126 +1,142 @@
+# 🧾 Employee Management System (EMS)
 
+## 📌 Project Objective
 
-## 🧾 Employee Management System (EMS)
+The **Employee Management System** is a full-stack **MERN (MongoDB, Express, React, Node.js)** web application that streamlines employee lifecycle management — from onboarding to salary and attendance tracking.
 
-### 📌 Project Objective
-
-The **Employee Management System** is a comprehensive **MERN (MongoDB, Express, React, Node.js)** application designed to streamline employee lifecycle management — from onboarding to salary and attendance tracking. This system enables HR/admins to **add, view, edit, and delete employee records**, manage departments and salaries, monitor attendance, and generate reports — all via a secure and responsive web interface.
+Admins and HRs can **add, edit, delete, and view employees**, manage departments, assign salaries, mark attendance, and generate reports — all within a secure, responsive interface.
 
 ---
 
-## ⚙️ Core Functionalities
+## 🧑‍💻 Demo Login Credentials
+
+You can explore the system using these demo accounts:
+
+| Role            | Email                      | Password       |
+| --------------- | -------------------------- | -------------- |
+| 👑 **Admin**    | `admin@gmail.com`          | `admin`        |
+| 🧠 **Manager**  | `atia@gmail.com`           | `Manager12@@`  |
+| 👷 **Employee** | `ammaruofficial@gmail.com` | `Employee12@@` |
+
+> ⚠️ **Note:** These credentials are for _demo/testing only_.  
+> Please avoid altering or deleting essential data.
+
+---
+
+<details>
+<summary>⚙️ <b>Core Functionalities</b> (click to expand)</summary>
 
 ### 🧑‍💼 1. Employee Addition (Create)
 
-* Adds complete employee profile with:
+- Adds a full employee profile with:
+  - `employeeId`, `name`, `email`, `phone`, `DOB`, `gender`, `department`, `role`, `designation`, `marital status`, `salary`
+  - Optional: `password`, `profile image`
+- Passwords securely **hashed using bcrypt**
+- Profile images uploaded using **Multer**
+- Validates unique email & phone
 
-  * `employeeId`, `Name`, `Email`, `Phone`, `DOB`, `Gender`, `Department`, `Role`, `Designation`, `Marital Status`, `Salary`
-  * Optionally: `Password` and `Profile Image`
-* Passwords are securely **hashed using bcrypt**
-* **Multer** handles profile image uploads and saves them locally
-* Validates uniqueness of `email` and `phone`
+---
 
 ### 📋 2. Employee Listing (Read)
 
-* Lists all employees with dynamic filters:
+- Displays all employees with filters:
+  - By name, department, role, or status
+- Supports search and pagination
+- Shows: profile image, name, department, email, role
 
-  * By name, department, role, or status
-* Supports pagination and search
-* Each entry displays: profile image, name, department, email, and role
+---
 
 ### ✏️ 3. Edit Employee (Update)
 
-* Allows updates to personal and professional details
-* Optional image re-upload and password change
-* Clean replacement of old profile image
-* Secured by role-based access control (only admins or specific roles can edit others)
+- Updates personal & professional details
+- Optionally re-upload image or change password
+- Replaces old image cleanly
+- Role-based access: only admins/managers can edit others
+
+---
 
 ### ❌ 4. Delete Employee (Delete)
 
-* Removes employee record from the database
-* Automatically deletes associated local image file
-* Confirmation prompts protect against accidental deletions
+- Removes employee record
+- Deletes associated image from server
+- Confirmation prompt prevents accidental deletion
 
 ---
 
-## 🧩 5. Department Management
+### 🧩 5. Department Management
 
-* **Add, View, Update, Delete** departments
-* Each employee is assigned to a department
-* Employee list can be filtered by department
-* Departments can be renamed or removed (with constraints)
-
----
-
-## 💰 6. Salary Management
-
-* Admins can:
-
-  * Set employee-specific salary details
-  * Update salary dynamically
-  * Track salary changes per employee (optional audit log)
-* Each salary entry includes:
-
-  * Base pay, allowances, deductions (optional), and net salary
-* View salaries in the employee profile
+- **Add, view, update, delete** departments
+- Assign departments to employees
+- Filter employees by department
+- Rename/remove departments safely
 
 ---
 
-## 📆 7. Attendance Management
+### 💰 6. Salary Management
 
-* Mark daily attendance:
-
-  * Status: Present, Absent, Leave, Late
-  * Date auto-filled or manually selected
-* Each entry includes:
-
-  * `employeeId`, `date`, `status`, and `remarks` (optional)
-* Prevents duplicate entries for the same day
+- Admins can set or update employee salaries
+- Each record includes:
+  - Base pay, allowances, deductions, and net salary
+- Optional audit log for salary history
+- Salary info visible on employee profile
 
 ---
 
-## 📊 8. Attendance Reports
+### 📆 7. Attendance Management
 
-* Generate **monthly or weekly attendance reports**
-* Report includes:
-
-  * Days present, absent, late, leave
-  * Percentage attendance
-* Can be filtered by employee, department, or date range
-* Export functionality (CSV or PDF) can be added
+- Mark daily attendance:
+  - Status: Present, Absent, Leave, Late
+- Prevents duplicate entries for the same date
+- Stores `employeeId`, `date`, `status`, and remarks
 
 ---
 
-## 🔐 Authentication & Authorization
+### 📊 8. Attendance Reports
 
-### JWT-Based Auth
+- Generate **monthly or weekly** reports
+- Includes:
+  - Days present, absent, leave, late, percentage
+- Filter by employee, department, or date range
+- Export to CSV (PDF coming soon)
 
-* Login with email & password → JWT token issued
-* Token used to protect sensitive routes and components
-* Tokens stored securely in localStorage or HttpOnly cookies
-
-### Role-Based Access
-
-* Admins:
-
-  * Full control (CRUD on employees, salaries, departments, attendance)
-* Employees:
-
-  * View and update own profile
-  * Mark/view their own attendance (optional feature toggle)
+</details>
 
 ---
 
-## 🖼 Image Upload with Multer
+<details>
+<summary>🔐 <b>Authentication & Authorization</b></summary>
 
-* Profile images are stored locally via Multer
-* Files renamed using timestamp for uniqueness
-* Accessed via static `/uploads/` path
-* Automatically replaced during updates and removed during deletions
+### 🪙 JWT-Based Authentication
+
+- Secure login with email & password → JWT token
+- Token used to protect routes and sensitive endpoints
+- Stored securely in localStorage or HttpOnly cookies
+
+### 🧭 Role-Based Access
+
+| Role         | Permissions                                |
+| ------------ | ------------------------------------------ |
+| **Admin**    | Full control (CRUD on all entities)        |
+| **Manager**  | Manage team, attendance, and reports       |
+| **Employee** | View & update own profile, view attendance |
+
+</details>
 
 ---
 
-## 🗂 Backend Structure (MVC)
+<details>
+<summary>🖼️ <b>Image Uploads (Multer)</b></summary>
+
+- Images stored locally via **Multer**
+- Renamed with timestamp for uniqueness
+- Served through `/uploads/` static path
+- Old files automatically deleted when updated
+</details>
+
+---
+
+<details>
+<summary>🗂️ <b>Backend Structure (MVC)</b></summary>
 
 ```bash
 /backend
@@ -147,45 +163,3 @@ The **Employee Management System** is a comprehensive **MERN (MongoDB, Express, 
 ├── uploads/
 ├── server.js
 ```
-
----
-
-## 🧑‍🎨 Frontend Stack
-
-* **React + TailwindCSS / daisyUi/ui**
-* State/data handled with **TanStack Query**
-* Modular and reusable components:
-
-  * EmployeeForm, EmployeeList, AttendanceTable, SalaryManager, DepartmentList
-* Integrated search, filter, modal forms, toasts, and notifications
-* **Form validation** via React Hook Form + Zod/Yup
-
----
-
-
-## 🧪 Test Case Summary
-
-| Function          | Test Case                         | Expected Outcome                             |
-| ----------------- | --------------------------------- | -------------------------------------------- |
-| Add employee      | Valid form + image                | Employee added, profile image stored locally |
-| Update salary     | Change base salary                | Updated salary saved and displayed           |
-| Mark attendance   | Today’s attendance already marked | Show error: "Attendance already marked"      |
-| Department filter | Select "Engineering"              | Only employees from Engineering shown        |
-| Delete employee   | Confirm deletion                  | Employee and image deleted                   |
-| Generate report   | Select April 2025                 | Summary with present/absent counts shown     |
-
----
-
-## 🚀 Future Enhancements
-
-* 📌 CSV/PDF export for employee and attendance data
-* 📈 Admin dashboard with real-time charts
-* 📧 Email notifications (e.g., on late attendance)
-* ⏰ Shift tracking / working hours monitoring
-* 🔔 Notification system for employees (e.g., salary credited)
-* 🌍 Internationalization (i18n)
-* 📂 Cloud image storage (Cloudinary or S3)
-
----
-
-
