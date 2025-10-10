@@ -40,7 +40,7 @@ import LeaveHistory from "../src/pages/employee-Dashboard/Leave/LeaveHistory.jsx
 import AddLeave from "../src/pages/employee-Dashboard/Leave/AddLeave.jsx";
 import EditLeave from "../src/pages/employee-Dashboard/Leave/EditLeave.jsx";
 import SalaryHistory from "../src/pages/employee-Dashboard/Salary/SalaryHistory.jsx";
-import AnnoucementEmployee from "../src/pages/employee-Dashboard/AnnoucementEmployee.jsx";
+import AnnoucementEmployee from "../src/pages/employee-Dashboard/EmployeeAnnouncement.jsx";
 import AddProject from "./pages/admin-Dashboard/projects/AddProject.jsx";
 import SinglEmployeeSalary from "./pages/admin-Dashboard/Salary/SingleEmployeeSalary.jsx";
 import Dashboard from "./pages/manager-dashboard/Dashboard.jsx";

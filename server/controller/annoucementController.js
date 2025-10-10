@@ -1,16 +1,21 @@
 const Announcement = require("../models/annoucement");
 const employeeModel = require("../models/employeeModel");
+const { getIo } = require("../socket");
 
 // Admin creates announcement
+
 exports.createAnnouncement = async (req, res) => {
   try {
     const { message, type, selectedEmployee } = req.body;
-
-    if (!message || !type) {
+    if (!message || !type)
       return res
         .status(400)
-        .json({ success: false, message: "Message and type are required." });
-    }
+        .json({ success: false, message: "Message & type required" });
+
+    if (type === "selected" && !selectedEmployee)
+      return res
+        .status(400)
+        .json({ success: false, message: "selectedEmployee required" });
 
     const announcement = await Announcement.create({
       message,
@@ -20,10 +25,30 @@ exports.createAnnouncement = async (req, res) => {
       sender: null,
     });
 
-    res.status(201).json({ success: true, announcement });
-  } catch (error) {
-    console.error("Error creating admin announcement:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    const io = getIo();
+
+    // Use the same event name we will listen to in frontend:
+    const payload = {
+      _id: announcement._id,
+      message: announcement.message,
+      type: announcement.type,
+      selectedEmployee: announcement.selectedEmployee,
+      senderType: announcement.senderType,
+      createdAt: announcement.createdAt,
+    };
+
+    if (type === "selected" && selectedEmployee) {
+      io.to(String(selectedEmployee)).emit("new_announcement", payload);
+    } else {
+      io.emit("new_announcement", payload);
+    }
+
+    return res.status(201).json({ success: true, announcement: payload });
+  } catch (err) {
+    console.error("createAnnouncement err:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 // Manager deletes own announcement
@@ -115,6 +140,18 @@ exports.getManagerAnnouncements = async (req, res) => {
   } catch (error) {
     console.error("Error fetching manager announcements:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+exports.markAsRead = async (req, res) => {
+  try {
+    const announcement = await Announcement.findById(req.params.id);
+    if (!announcement.readBy.includes(req.body.userId)) {
+      announcement.readBy.push(req.body.userId);
+      await announcement.save();
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 

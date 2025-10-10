@@ -13,11 +13,14 @@ const fetchDepartmentCount = async (baseUrl) => {
       Authorization: `Bearer ${getToken()}`,
     },
   });
+
   const data = await res.json();
+
   if (!res.ok || !data.success) {
     throw new Error(data.message || "Failed to fetch department count");
   }
-  return data.countDep;
+
+  return data.count;
 };
 
 export const useDepartmentCount = (baseUrl) => {

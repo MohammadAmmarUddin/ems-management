@@ -24,9 +24,16 @@ const announcementSchema = new mongoose.Schema(
 
     sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "employees", // For manager
-      default: null, // Admin may not have employee record
+      ref: "employees",
+      default: null,
     },
+
+    readBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "employees",
+      },
+    ],
   },
   { timestamps: true }
 );

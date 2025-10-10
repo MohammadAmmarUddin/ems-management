@@ -34,8 +34,16 @@ import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 
 const COLORS = [
-  "#4F46E5", "#F59E0B", "#EF4444", "#10B981", "#3B82F6",
-  "#A855F7", "#EC4899", "#22D3EE", "#84CC16", "#F97316",
+  "#4F46E5",
+  "#F59E0B",
+  "#EF4444",
+  "#10B981",
+  "#3B82F6",
+  "#A855F7",
+  "#EC4899",
+  "#22D3EE",
+  "#84CC16",
+  "#F97316",
 ];
 
 const AdminSummary = () => {
@@ -45,12 +53,11 @@ const AdminSummary = () => {
   const { data: totalSalary } = useSalaryAggregation(baseUrl);
   const { data: usersCount } = useEmployeesCount(baseUrl);
   const { data: departmentData = [] } = useDepartmentDistribution(baseUrl);
-  const { data: leaveStats, } = useLeaveStats(baseUrl);
+  const { data: leaveStats } = useLeaveStats(baseUrl);
   const { data: monthlySalaryData } = useMonthlySalaryData(baseUrl);
   const { data: activeUsers = [] } = useActiveUsers(baseUrl);
-  const { data: projects, } = useProjectCount(baseUrl);
+  const { data: projects } = useProjectCount(baseUrl);
   const [showAllUsers, setShowAllUsers] = useState(false);
-
 
   if (loading && user) {
     return (
@@ -96,11 +103,12 @@ const AdminSummary = () => {
 
       {/* Active Users & Running Projects */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-16">
-
         {/* Active Users */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-semibold text-gray-700">Active Users</h3>
+            <h3 className="text-2xl font-semibold text-gray-700">
+              Active Users
+            </h3>
             {activeUsers.length > 5 && (
               <button
                 onClick={() => setShowAllUsers(!showAllUsers)}
@@ -122,16 +130,18 @@ const AdminSummary = () => {
               </thead>
               <tbody>
                 {activeUsers.length > 0 ? (
-                  (showAllUsers ? activeUsers : activeUsers.slice(0, 5)).map((user) => (
-                    <tr key={user._id} className="hover:bg-gray-50">
-                      <td className="py-2 px-4 border-b">{user.email}</td>
-                      <td className="py-2 px-4 border-b capitalize flex items-center gap-2">
-                        <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                        {user.name}
-                      </td>
-                      <td className="py-2 px-4 border-b">{user.role}</td>
-                    </tr>
-                  ))
+                  (showAllUsers ? activeUsers : activeUsers.slice(0, 5)).map(
+                    (user) => (
+                      <tr key={user._id} className="hover:bg-gray-50">
+                        <td className="py-2 px-4 border-b">{user.email}</td>
+                        <td className="py-2 px-4 border-b capitalize flex items-center gap-2">
+                          <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                          {user.name}
+                        </td>
+                        <td className="py-2 px-4 border-b">{user.role}</td>
+                      </tr>
+                    )
+                  )
                 ) : (
                   <tr>
                     <td colSpan="3" className="text-center py-4 text-gray-500">
@@ -150,7 +160,9 @@ const AdminSummary = () => {
             Running Projects
             {projects?.projects?.length > 5 && (
               <button
-                onClick={() => (window.location.href = "/admin-dashboard/projects")}
+                onClick={() =>
+                  (window.location.href = "/admin-dashboard/projects")
+                }
                 className="text-blue-600 hover:underline text-sm"
               >
                 See All
@@ -200,7 +212,10 @@ const AdminSummary = () => {
                 label
               >
                 {departmentData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />
@@ -239,7 +254,8 @@ const AdminSummary = () => {
             icon={<FaClock className="text-white text-2xl" />}
             text="Leaves Pending"
             number={
-              leaveStats?.statusBreakdown.find((s) => s.name === "Pending")?.value || 0
+              leaveStats?.statusBreakdown.find((s) => s.name === "Pending")
+                ?.value || 0
             }
             color="bg-yellow-500"
           />
@@ -247,7 +263,8 @@ const AdminSummary = () => {
             icon={<FaTimesCircle className="text-white text-2xl" />}
             text="Leaves Rejected"
             number={
-              leaveStats?.statusBreakdown.find((s) => s.name === "Rejected")?.value || 0
+              leaveStats?.statusBreakdown.find((s) => s.name === "Rejected")
+                ?.value || 0
             }
             color="bg-red-500"
           />
@@ -255,7 +272,8 @@ const AdminSummary = () => {
             icon={<FaCheckCircle className="text-white text-2xl" />}
             text="Leaves Approved"
             number={
-              leaveStats?.statusBreakdown.find((s) => s.name === "Approved")?.value || 0
+              leaveStats?.statusBreakdown.find((s) => s.name === "Approved")
+                ?.value || 0
             }
             color="bg-green-500"
           />
@@ -279,7 +297,10 @@ const AdminSummary = () => {
                 label
               >
                 {leaveStats?.statusBreakdown?.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />

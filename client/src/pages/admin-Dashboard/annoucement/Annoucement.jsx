@@ -3,6 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { format } from "date-fns";
 import useEmployees from "../../../hooks/FetchEmployee";
+import socket from "../../../socketClient";
 
 const Announcement = () => {
   const [message, setMessage] = useState("");
@@ -14,9 +15,11 @@ const Announcement = () => {
   const [hasMore, setHasMore] = useState(true);
 
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
   const { data: employees = [] } = useEmployees(baseUrl);
 
+  // ✅ Fetch announcements
   const fetchAnnouncements = async (newSkip = 0, append = false) => {
     try {
       const res = await axios.get(`${baseUrl}/api/annoucement/admin`, {
@@ -37,16 +40,35 @@ const Announcement = () => {
 
   useEffect(() => {
     fetchAnnouncements(0);
+
+    // ✅ Join socket
+    socket.connect();
+
+    // ✅ Listen for new announcements (any admin)
+    socket.on("new_announcement", (newAnn) => {
+      console.log("📢 New announcement received:", newAnn);
+      setAnnouncements((prev) => [newAnn, ...prev]);
+      Swal.fire({
+        title: "📢 New Announcement!",
+        text: newAnn.message,
+        icon: "info",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    });
+
+    return () => {
+      socket.off("new_announcement");
+      socket.disconnect();
+    };
   }, []);
 
+  // ✅ Submit announcement
   const handleSubmit = async () => {
-    if (!message.trim()) {
+    if (!message.trim())
       return Swal.fire("Error", "Message is required.", "error");
-    }
-
-    if (type === "selected" && !selectedEmployee) {
+    if (type === "selected" && !selectedEmployee)
       return Swal.fire("Error", "Please select an employee.", "error");
-    }
 
     try {
       const res = await axios.post(
@@ -67,9 +89,12 @@ const Announcement = () => {
         setMessage("");
         setSelectedEmployee("");
         setType("all");
-        fetchAnnouncements(0);
       } else {
-        Swal.fire("Error", res.data.message || "Something went wrong.", "error");
+        Swal.fire(
+          "Error",
+          res.data.message || "Something went wrong.",
+          "error"
+        );
       }
     } catch (err) {
       console.error(err);
@@ -77,6 +102,7 @@ const Announcement = () => {
     }
   };
 
+  // ✅ Delete announcement
   const handleDelete = async (id) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
@@ -95,8 +121,6 @@ const Announcement = () => {
         if (res.data.success) {
           Swal.fire("Deleted", "Announcement deleted successfully.", "success");
           setAnnouncements((prev) => prev.filter((a) => a._id !== id));
-        } else {
-          Swal.fire("Error", res.data.message || "Failed to delete.", "error");
         }
       } catch (err) {
         console.error("Delete error:", err);
@@ -107,7 +131,7 @@ const Announcement = () => {
 
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6">
-      {/* Left Section - Create Announcement */}
+      {/* Left Section */}
       <div className="flex-1 bg-gray-100 rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-semibold mb-4">Create Announcement</h2>
 
@@ -161,7 +185,7 @@ const Announcement = () => {
         </button>
       </div>
 
-      {/* Right Section - Announcement List */}
+      {/* Right Section */}
       <div className="flex-1 bg-gray-100 rounded-lg shadow-md p-6 h-[500px] flex flex-col">
         <h2 className="text-2xl font-semibold mb-4">Announcements List</h2>
 
@@ -170,7 +194,10 @@ const Announcement = () => {
             <p className="text-gray-500">No announcements available.</p>
           ) : (
             announcements.map((item) => (
-              <div key={item._id} className="bg-white p-4 rounded shadow relative">
+              <div
+                key={item._id}
+                className="bg-white p-4 rounded shadow relative"
+              >
                 <div className="text-gray-700 mb-2">{item.message}</div>
                 <div className="text-sm text-gray-500">
                   <span className="font-medium">To:</span>{" "}
@@ -180,13 +207,14 @@ const Announcement = () => {
                 </div>
                 <div className="text-sm text-gray-500">
                   <span className="font-medium">From:</span>{" "}
-                  {item.senderType === "admin" ? "Admin" : item.sender?.emp_name || "Unknown"}
+                  {item.senderType === "admin"
+                    ? "Admin"
+                    : item.sender?.emp_name || "Unknown"}
                 </div>
                 <div className="text-xs text-gray-400">
                   {format(new Date(item.createdAt), "PPP p")}
                 </div>
 
-                {/* Allow delete only if sent by admin */}
                 {item.senderType === "admin" && (
                   <button
                     onClick={() => handleDelete(item._id)}
