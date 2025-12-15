@@ -11,4 +11,3 @@ router.post("/", authMiddleware, submitFeedback);
 router.get("/", authMiddleware, listFeedback);
 
 module.exports = router;
-

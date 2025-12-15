@@ -200,7 +200,9 @@ exports.changePassword = async (req, res) => {
 
     const user = await userModel.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);

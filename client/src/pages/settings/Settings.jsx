@@ -8,6 +8,14 @@ import { useAuth } from "../../context/AuthContext";
 const Settings = () => {
   const { user, login } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
+  const homeRoute =
+    user?.role === "admin"
+      ? "/admin-dashboard"
+      : user?.role === "manager"
+      ? "/manager-dashboard"
+      : user?.role === "employee"
+      ? "/employee-dashboard"
+      : "/";
 
   const getToken = () =>
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -151,7 +159,7 @@ const Settings = () => {
     <div className="p-2 sm:p-3 md:p-5 space-y-4">
       <div className="flex items-center gap-2">
         <Link
-          to="/"
+          to={homeRoute}
           className="inline-flex items-center gap-2 text-primary hover:text-secondary font-semibold text-sm sm:text-base"
         >
           <FaArrowLeft />

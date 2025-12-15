@@ -98,7 +98,9 @@ const SalaryHistory = () => {
             <div className="animate-spin h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent"></div>
           </div>
         ) : (salaryById || []).length === 0 ? (
-          <div className="py-6 text-center text-gray-500">No salary records found.</div>
+          <div className="py-6 text-center text-gray-500">
+            No salary records found.
+          </div>
         ) : (
           salaryById.map((salary, index) => (
             <div
@@ -122,7 +124,8 @@ const SalaryHistory = () => {
                 <span className="text-xs text-gray-500 ml-2">#{index + 1}</span>
               </div>
               <p className="text-xs text-gray-600 mb-1">
-                <span className="font-medium">Basic:</span> ₹{salary.basicSalary}
+                <span className="font-medium">Basic:</span> ₹
+                {salary.basicSalary}
               </p>
               <p className="text-xs text-gray-600 mb-1">
                 <span className="font-medium">Allowance:</span> ₹

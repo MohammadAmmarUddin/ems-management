@@ -8,16 +8,20 @@ import { useAuth } from "../../../context/AuthContext";
 const MyTasks = () => {
   const { loading: authLoading } = useAuth();
   const baseUrl = import.meta.env.VITE_EMS_Base_URL;
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true); // local loading state
   console.log(tasks);
   const fetchEmployeeTasks = async () => {
     try {
-      const res = await axios.get(`${baseUrl}/api/projects/getTasksForEmployee`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${baseUrl}/api/projects/getTasksForEmployee`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.data.success) {
         setTasks(res.data.result || []);
       } else {
@@ -62,7 +66,11 @@ const MyTasks = () => {
   const columns = [
     { name: "S/N", selector: (row, i) => i + 1, width: "70px" },
     { name: "Title", selector: (row) => row?.taskTitle, sortable: true },
-    { name: "Project", selector: (row) => row?.project?.title || "N/A", sortable: true },
+    {
+      name: "Project",
+      selector: (row) => row?.project?.title || "N/A",
+      sortable: true,
+    },
     { name: "Description", selector: (row) => row?.taskDescription || "N/A" },
     {
       name: "Deadline",
