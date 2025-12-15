@@ -49,16 +49,17 @@ const LeaveList = () => {
   }
 
   return (
-    <div className="w-full py-4 lg:py-6 overflow-hidden">
-      <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold">Manage Leaves</h3>
+    <div className="p-2 sm:p-3 md:p-5 overflow-hidden">
+      <div className="text-center mb-3 sm:mb-4">
+        <h3 className="text-xl sm:text-2xl font-bold">Manage Leaves</h3>
       </div>
 
-      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+      {/* Search + Filters */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
         <input
           type="text"
           placeholder="Search by Name, ID, Type, etc."
-          className="px-4 py-2 border rounded"
+          className="w-full sm:w-1/2 px-3 sm:px-4 py-2 text-sm sm:text-base border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -66,7 +67,7 @@ const LeaveList = () => {
           {["Pending", "Approved", "Rejected"].map((s) => (
             <button
               key={s}
-              className={`px-4 py-2 rounded text-white ${
+              className={`px-3 sm:px-4 py-2 rounded text-white text-sm sm:text-base ${
                 status === s
                   ? s === "Pending"
                     ? "bg-yellow-600"
@@ -87,13 +88,79 @@ const LeaveList = () => {
         </div>
       </div>
 
-      <DataTable
-        highlightOnHover
-        pagination
-        progressPending={isLoading}
-        columns={columns}
-        data={leaves}
-      />
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        ) : leaves.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No leaves found</div>
+        ) : (
+          leaves.map((leave, index) => (
+            <div
+              key={leave._id || index}
+              className="bg-white rounded-lg shadow p-3 border border-gray-200"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold flex-shrink-0">
+                  {leave.empId?.emp_name?.charAt(0)?.toUpperCase() || "E"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-semibold text-sm truncate">
+                      {leave.empId?.emp_name || "N/A"}
+                    </h4>
+                    <span className="text-xs text-gray-500 ml-2">
+                      #{index + 1}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Emp ID:</span>{" "}
+                    {leave.empId?.employeeId || "N/A"}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Type:</span>{" "}
+                    {leave.leaveType || "N/A"}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Days:</span>{" "}
+                    {calculateLeaveDays(leave.startDate, leave.endDate)}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Status:</span>{" "}
+                    {leave.status || "N/A"}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                    <span className="font-medium">Reason:</span>{" "}
+                    {leave.reason || "N/A"}
+                  </p>
+                  <div className="text-xs text-gray-500">
+                    {leave.startDate
+                      ? new Date(leave.startDate).toLocaleDateString()
+                      : ""}{" "}
+                    -{" "}
+                    {leave.endDate
+                      ? new Date(leave.endDate).toLocaleDateString()
+                      : ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto bg-white rounded shadow">
+        <DataTable
+          highlightOnHover
+          pagination
+          progressPending={isLoading}
+          columns={columns}
+          data={leaves}
+        />
+      </div>
     </div>
   );
 };

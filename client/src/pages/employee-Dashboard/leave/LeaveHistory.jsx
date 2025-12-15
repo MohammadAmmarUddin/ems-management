@@ -96,25 +96,74 @@ const LeaveHistory = () => {
     );
   }
   return (
-    <div>
-      <div className="text-center">
-        <h3 className="text-2xl font-bold">Manage Leave</h3>
+    <div className="p-2 sm:p-3 md:p-5">
+      <div className="text-center mb-3 sm:mb-4">
+        <h3 className="text-xl sm:text-2xl font-bold">Manage Leave</h3>
       </div>
-      <div className="flex justify-between">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
         <input
           type="text"
-          className="px-4 ml-5 py-0.5"
+          className="w-full sm:w-1/2 px-3 sm:px-4 py-2 text-sm sm:text-base border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder="Search By Name"
         />
         <Link
           to="/employee-dashboard/add-leave"
-          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
+          className="w-full sm:w-auto text-center px-4 sm:px-6 py-2 text-sm sm:text-base text-white rounded bg-primary hover:bg-secondary font-semibold"
         >
           Add Leave
         </Link>
       </div>
 
-      <div>
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        ) : leaves.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No leaves found</div>
+        ) : (
+          leaves.map((leave, index) => (
+            <div
+              key={leave._id || index}
+              className="bg-white rounded-lg shadow p-3 border border-gray-200"
+            >
+              <div className="flex items-start justify-between mb-1">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm truncate">
+                    {leave.leaveType || "Leave"}
+                  </h4>
+                  <p className="text-xs text-gray-600">
+                    {dateSlice(leave.startDate)} - {dateSlice(leave.endDate)}
+                  </p>
+                </div>
+                <span className="text-xs text-gray-500 ml-2">#{index + 1}</span>
+              </div>
+              <p className="text-xs text-gray-600 mb-1 line-clamp-2">
+                {leave.reason || "No description"}
+              </p>
+              <p className="text-xs text-gray-600 mb-1">
+                <span className="font-medium">Applied:</span>{" "}
+                {leave.createdAt?.slice(0, 10) || "-"}
+              </p>
+              <p className="text-xs text-gray-600 mb-2">
+                <span className="font-medium">Status:</span> {leave.status}
+              </p>
+              <div className="flex justify-end">
+                <Link
+                  to={`/employee-dashboard/edit-employee-leave/${leave._id}`}
+                  className="bg-view text-white px-2 py-1 rounded text-xs hover:bg-green-600"
+                >
+                  Edit
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded shadow">
         <DataTable
           progressPending={loading}
           highlightOnHover

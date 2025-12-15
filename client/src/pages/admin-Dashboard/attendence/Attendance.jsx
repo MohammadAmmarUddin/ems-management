@@ -136,31 +136,133 @@ const Attendance = () => {
   }
 
   return (
-    <div>
-      <div className="text-center">
-        <h3 className="text-2xl font-bold">Manage attendances</h3>
-        <p className="font-sourceSans">
+    <div className="p-2 sm:p-3 md:p-5">
+      <div className="text-center mb-3 sm:mb-4">
+        <h3 className="text-xl sm:text-2xl font-bold">Manage Attendances</h3>
+        <p className="font-sourceSans text-sm sm:text-base">
           Mark Employees for {new Date().toISOString().split("T")[0]}{" "}
         </p>
       </div>
 
-      <div className="flex justify-between my-4">
+      {/* Search + Button */}
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-4 py-1 border rounded ml-5"
+          className="w-full sm:w-1/2 px-3 sm:px-4 py-2 text-sm sm:text-base border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder="Search By Name, ID, or Department"
         />
         <Link
           to="/admin-dashboard/add-employee"
-          className="px-6 py-1 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
+          className="w-full sm:w-auto text-center px-4 sm:px-6 py-2 text-sm sm:text-base text-white rounded bg-primary hover:bg-secondary font-semibold transition-colors"
         >
           Attendance Reports
         </Link>
       </div>
 
-      <div className="overflow-hidden">
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {attendances.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No attendance records found</div>
+        ) : (
+          attendances
+            .filter(
+              (item) =>
+                item?.employeeId?.emp_name
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
+                item?.employeeId?.employeeId
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
+                item?.employeeId?.department?.dep_name
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase())
+            )
+            .map((item, index) => (
+              <div
+                key={item._id || index}
+                className="bg-white rounded-lg shadow p-3 border border-gray-200"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold flex-shrink-0">
+                    {item.employeeId?.emp_name?.charAt(0)?.toUpperCase() || "E"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-semibold text-sm truncate">
+                        {item.employeeId?.emp_name || "N/A"}
+                      </h4>
+                      <span className="text-xs text-gray-500 ml-2">
+                        #{index + 1}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-1">
+                      <span className="font-medium">Emp ID:</span>{" "}
+                      {item.employeeId?.employeeId || "N/A"}
+                    </p>
+                    <p className="text-xs text-gray-600 mb-1">
+                      <span className="font-medium">Department:</span>{" "}
+                      {item.employeeId?.department?.dep_name || "N/A"}
+                    </p>
+                    <p className="text-xs text-gray-600 mb-2">
+                      <span className="font-medium">Status:</span>{" "}
+                      {item.status ?? "Pending"}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {item?.status === null ? (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleStatusChnage(item.employeeId._id, "Present")
+                            }
+                            className="bg-view text-white px-2 py-1 rounded text-xs"
+                          >
+                            Present
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleStatusChnage(item.employeeId._id, "Absent")
+                            }
+                            className="bg-edit text-white px-2 py-1 rounded text-xs"
+                          >
+                            Absent
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleStatusChnage(item.employeeId._id, "Sick")
+                            }
+                            className="bg-accent text-white px-2 py-1 rounded text-xs"
+                          >
+                            Sick
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleStatusChnage(item.employeeId._id, "Leave")
+                            }
+                            className="bg-delete text-white px-2 py-1 rounded text-xs"
+                          >
+                            Leave
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          disabled
+                          className="bg-gray-400 text-gray-800 px-2 py-1 rounded text-xs cursor-not-allowed"
+                        >
+                          {item?.status}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto bg-white rounded shadow">
         <DataTable
           highlightOnHover
           selectableRows

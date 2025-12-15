@@ -155,6 +155,74 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
+// Update own profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { name, email, phone, preferences } = req.body;
+
+    const update = {};
+    if (name) update.name = name;
+    if (email) update.email = email;
+    if (phone) update["meta.phone"] = phone;
+    if (preferences) update["meta.preferences"] = preferences;
+
+    const updatedUser = await userModel
+      .findByIdAndUpdate(userId, { $set: update }, { new: true })
+      .select("-password");
+
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, user: updatedUser, message: "Profile updated" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Change password (requires current password)
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Current and new password required",
+      });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;

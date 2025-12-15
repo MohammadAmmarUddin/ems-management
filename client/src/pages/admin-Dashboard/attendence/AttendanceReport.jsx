@@ -110,69 +110,116 @@ function AttendanceReport() {
   }
 
   return (
-    <div className="p-8 m-8 bg-gray-50 shadow-md rounded-lg w-full mx-auto">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-800 text-center">
+    <div className="p-2 sm:p-3 md:p-5 bg-gray-50 shadow-md rounded-lg w-full mx-auto">
+      <h1 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-semibold text-gray-800 text-center">
         Attendance Report
       </h1>
 
-      <div className="mb-6 flex items-center">
-        <label htmlFor="dateFilter" className="mr-4 text-gray-600">
-          Filter by Date:
-        </label>
-        <input
-          id="dateFilter"
-          onChange={(e) => setDateFilter(e.target.value)}
-          type="date"
-          className="p-2 mr-6 border rounded-md border-gray-300 "
-        />
-        <button
-          onClick={handleDownload}
-          className="px-4 py-2 mr-6 font-semibold text-gray-100 bg-blue-900 rounded-md hover:bg-blue-800 transition "
-        >
-          Download CSV
-        </button>
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <label htmlFor="dateFilter" className="text-sm sm:text-base text-gray-600">
+            Filter by Date:
+          </label>
+          <input
+            id="dateFilter"
+            onChange={(e) => setDateFilter(e.target.value)}
+            type="date"
+            className="px-3 py-2 text-sm sm:text-base border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <button
+            onClick={handleDownload}
+            className="px-4 sm:px-5 py-2 font-semibold text-white bg-blue-900 rounded-md hover:bg-blue-800 transition text-sm sm:text-base"
+          >
+            Download CSV
+          </button>
+          {hasMore && !loading && (
+            <button
+              onClick={handleLoadMore}
+              className="px-4 sm:px-5 py-2 font-semibold text-white bg-primary rounded-md hover:bg-secondary transition text-sm sm:text-base"
+            >
+              Load More
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (
-        <div className="text-red-500 mb-6">Error loading attendance</div>
+        <div className="text-red-500 mb-6 text-sm sm:text-base">
+          Error loading attendance
+        </div>
       )}
 
-      {combinedData.length > 0 && (
-        <table className="w-full bg-gray-100 border-gray-200 rounded-md overflow-hidden">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="p-3 text-gray-700 font-semibold">Date</th>
-              <th className="p-3 text-gray-700 font-semibold">EmployeeId</th>
-              <th className="p-3 text-gray-700 font-semibold">Name</th>
-              <th className="p-3 text-gray-700 font-semibold">Department</th>
-              <th className="p-3 text-gray-700 font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {combinedData.map((item, idx) => (
-              <tr key={idx} className="border-t hover:bg-gray-50 transition">
-                <td className="p-3">{item.date}</td>
-                <td className="p-3">{item.employeeId}</td>
-                <td className="px-5">{item.name}</td>
-                <td className="p-3">{item.department}</td>
-                <td className="p-3">{item.status}</td>
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {combinedData.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 text-sm">
+            No attendance records found
+          </div>
+        ) : (
+          combinedData.map((item, idx) => (
+            <div
+              key={`${item.employeeId}-${item.date}-${idx}`}
+              className="bg-white rounded-lg shadow p-3 border border-gray-200"
+            >
+              <div className="flex items-start justify-between mb-1">
+                <div>
+                  <p className="text-sm font-semibold">{item.name || "N/A"}</p>
+                  <p className="text-xs text-gray-600">
+                    ID: {item.employeeId || "N/A"}
+                  </p>
+                </div>
+                <span className="text-xs text-gray-500 ml-2">{item.date}</span>
+              </div>
+              <p className="text-xs text-gray-600 mb-1">
+                <span className="font-medium">Department:</span>{" "}
+                {item.department || "N/A"}
+              </p>
+              <p className="text-xs text-gray-600">
+                <span className="font-medium">Status:</span> {item.status || "N/A"}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto bg-white rounded-md shadow">
+        {combinedData.length > 0 ? (
+          <table className="w-full border-gray-200">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="p-3 text-gray-700 font-semibold text-left">Date</th>
+                <th className="p-3 text-gray-700 font-semibold text-left">
+                  EmployeeId
+                </th>
+                <th className="p-3 text-gray-700 font-semibold text-left">Name</th>
+                <th className="p-3 text-gray-700 font-semibold text-left">
+                  Department
+                </th>
+                <th className="p-3 text-gray-700 font-semibold text-left">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {hasMore && !loading && (
-        <button
-          onClick={handleLoadMore}
-          className="px-4 py-2 mt-6 font-semibold text-gray-100 bg-blue-900 rounded-md hover:bg-blue-800 transition"
-        >
-          Loading more...
-        </button>
-      )}
+            </thead>
+            <tbody>
+              {combinedData.map((item, idx) => (
+                <tr key={`${item.employeeId}-${item.date}-${idx}`} className="border-t hover:bg-gray-50 transition">
+                  <td className="p-3 text-sm">{item.date}</td>
+                  <td className="p-3 text-sm">{item.employeeId}</td>
+                  <td className="p-3 text-sm">{item.name}</td>
+                  <td className="p-3 text-sm">{item.department}</td>
+                  <td className="p-3 text-sm">{item.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-center py-8 text-gray-500">No attendance records found</div>
+        )}
+      </div>
 
       {loading && (
-        <div className="animate-pulse mt-6 text-gray-500">Fetching more...</div>
+        <div className="animate-pulse mt-6 text-gray-500 text-sm">Fetching more...</div>
       )}
     </div>
   );

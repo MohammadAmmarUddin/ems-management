@@ -32,6 +32,7 @@ const salaryRouter = require("./Routes/salaryRoute");
 const userRouter = require("./Routes/userRouter");
 const attendanceRouter = require("./Routes/attendanceRouter");
 const annoucementRouter = require("./Routes/annoucementRouter");
+const feedbackRouter = require("./Routes/feedbackRouter");
 
 app.use("/api/department", depRouter);
 app.use("/api/employee", employeeRouter);
@@ -41,6 +42,7 @@ app.use("/api/user", userRouter);
 app.use("/api/attendance", attendanceRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/annoucement", annoucementRouter);
+app.use("/api/feedback", feedbackRouter);
 
 app.get("/", (req, res) => res.send("EMS Server is running 🚀"));
 

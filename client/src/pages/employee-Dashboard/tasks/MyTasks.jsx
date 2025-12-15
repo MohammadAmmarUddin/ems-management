@@ -86,12 +86,71 @@ const MyTasks = () => {
   ];
 
   return (
-    <div className="py-6">
-      <div className="text-center mb-4">
-        <h3 className="text-2xl font-bold text-gray-700">My Task List</h3>
+    <div className="p-2 sm:p-3 md:p-5">
+      <div className="text-center mb-3 sm:mb-4">
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-700">
+          My Task List
+        </h3>
       </div>
 
-      <div className="bg-white py-4 px-2 rounded shadow">
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {loading || authLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        ) : tasks.length === 0 ? (
+          <div className="py-6 text-center text-gray-500">
+            No tasks assigned yet.
+          </div>
+        ) : (
+          tasks.map((task, index) => (
+            <div
+              key={task._id || index}
+              className="bg-white rounded-lg shadow p-3 border border-gray-200"
+            >
+              <div className="flex items-start justify-between mb-1">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm truncate">
+                    {task.taskTitle || "Untitled Task"}
+                  </h4>
+                  <p className="text-xs text-gray-600 truncate">
+                    {task.project?.title || "No Project"}
+                  </p>
+                </div>
+                <span className="text-xs text-gray-500 ml-2">#{index + 1}</span>
+              </div>
+              <p className="text-xs text-gray-600 mb-1 line-clamp-2">
+                {task.taskDescription || "No description"}
+              </p>
+              <p className="text-xs text-gray-600 mb-1">
+                <span className="font-medium">Deadline:</span>{" "}
+                {task.deadline
+                  ? format(new Date(task.deadline), "PPP")
+                  : "Not set"}
+              </p>
+              <div className="flex items-center justify-between mt-2">
+                <div className="text-xs text-gray-600">
+                  <span className="font-medium">Status:</span>{" "}
+                  {task.status || "pending"}
+                </div>
+                <select
+                  value={task.status || "pending"}
+                  onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                  className="px-2 py-1 rounded border text-xs"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white py-4 px-2 rounded shadow">
         <DataTable
           columns={columns}
           data={tasks}

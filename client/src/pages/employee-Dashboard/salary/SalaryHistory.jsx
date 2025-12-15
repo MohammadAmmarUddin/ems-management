@@ -79,24 +79,84 @@ const SalaryHistory = () => {
     );
   }
   return (
-    <div>
-      <div className="text-center mb-4">
-        <h3 className="text-2xl font-bold">Salaries</h3>
+    <div className="p-2 sm:p-3 md:p-5">
+      <div className="text-center mb-3 sm:mb-4">
+        <h3 className="text-xl sm:text-2xl font-bold">Salaries</h3>
       </div>
-      <div className="flex justify-between mb-4 px-5">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 px-0 sm:px-1">
         <input
           type="text"
-          className="px-4 py-1 border rounded"
+          className="w-full sm:w-1/2 px-3 sm:px-4 py-2 text-sm sm:text-base border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder="Search by name"
         />
       </div>
 
-      <DataTable
-        highlightOnHover
-        pagination
-        columns={columns}
-        data={salaryById || []}
-      />
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        ) : (salaryById || []).length === 0 ? (
+          <div className="py-6 text-center text-gray-500">No salary records found.</div>
+        ) : (
+          salaryById.map((salary, index) => (
+            <div
+              key={salary._id || index}
+              className="bg-white rounded-lg shadow p-3 border border-gray-200"
+            >
+              <div className="flex items-start justify-between mb-1">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm truncate">
+                    {salary.emp_name || "N/A"}
+                  </h4>
+                  <p className="text-xs text-gray-600">
+                    {salary.payDate
+                      ? new Date(salary.payDate).toLocaleDateString("en-GB", {
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "No date"}
+                  </p>
+                </div>
+                <span className="text-xs text-gray-500 ml-2">#{index + 1}</span>
+              </div>
+              <p className="text-xs text-gray-600 mb-1">
+                <span className="font-medium">Basic:</span> ₹{salary.basicSalary}
+              </p>
+              <p className="text-xs text-gray-600 mb-1">
+                <span className="font-medium">Allowance:</span> ₹
+                {salary.allowance || 0}
+              </p>
+              <p className="text-xs text-gray-600 mb-1">
+                <span className="font-medium">Deductions:</span> ₹
+                {salary.deductions || 0}
+              </p>
+              <p className="text-xs text-gray-600 mb-2">
+                <span className="font-medium">Net:</span> ₹{salary.netSalary}
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => handleShowViewModal(salary)}
+                  className="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700"
+                >
+                  View
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded shadow">
+        <DataTable
+          highlightOnHover
+          pagination
+          columns={columns}
+          data={salaryById || []}
+        />
+      </div>
 
       {showViewModal && selectedSalary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">

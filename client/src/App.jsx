@@ -29,6 +29,7 @@ import LeaveAdd from "../src/pages/admin-Dashboard/leaves/LeaveAdd.jsx";
 import Salary from "../src/pages/admin-Dashboard/Salary/Salary.jsx";
 import AddSalary from "../src/pages/admin-Dashboard/Salary/AddSalary.jsx";
 import Annoucement from "../src/pages/admin-Dashboard/annoucement/Annoucement.jsx";
+import Settings from "../src/pages/settings/Settings.jsx";
 
 // Employee & Manager Shared Layout & Pages
 import EmployeeLayout from "../src/layouts/EmployeeDashboard.jsx";
@@ -56,6 +57,14 @@ function App() {
         <Route path="/" element={<Navigate to="/admin-dashboard" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoutes>
+              <Settings />
+            </PrivateRoutes>
+          }
+        />
 
         {/* Admin Dashboard Routes */}
         <Route

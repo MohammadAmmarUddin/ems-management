@@ -100,18 +100,25 @@ const Projects = () => {
     },
   ];
 
-  if (loading || isLoading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin h-16 w-16 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="py-6">
-      <div className="text-center mb-4">
-        <h3 className="text-2xl font-bold">Manage Projects</h3>
+    <div className="p-2 sm:p-3 md:p-5">
+      <div className="text-center mb-3 sm:mb-4">
+        <h3 className="text-xl sm:text-2xl font-bold">Manage Projects</h3>
       </div>
 
-      <div className="flex justify-between items-center mb-4">
+      {/* Search + Button */}
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
         <input
           type="text"
-          className="px-4 ml-5 py-1 border rounded"
+          className="w-full sm:w-1/2 px-3 sm:px-4 py-2 text-sm sm:text-base border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder="Search by project, manager, department, status..."
           value={search}
           onChange={(e) => {
@@ -121,13 +128,109 @@ const Projects = () => {
         />
         <Link
           to="/admin-dashboard/add-project"
-          className="px-6 py-2 mr-5 text-white rounded bg-primary hover:bg-secondary font-semibold"
+          className="w-full sm:w-auto text-center px-4 sm:px-6 py-2 text-sm sm:text-base text-white rounded bg-primary hover:bg-secondary font-semibold transition-colors"
         >
           Add New Project
         </Link>
       </div>
 
-      <div className="bg-white py-4 rounded shadow">
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        ) : (data?.projects || []).length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No projects found</div>
+        ) : (
+          data.projects.map((project, index) => (
+            <div
+              key={project._id}
+              className="bg-white rounded-lg shadow p-3 border border-gray-200"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold flex-shrink-0">
+                  {project.title?.charAt(0)?.toUpperCase() || "P"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-semibold text-sm truncate">
+                      {project.title}
+                    </h4>
+                    <span className="text-xs text-gray-500 ml-2">
+                      #{index + 1}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Manager:</span>{" "}
+                    {project.manager?.emp_name || "N/A"}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Dept:</span>{" "}
+                    {project.department?.dep_name || "N/A"}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Status:</span> {project.status}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    <span className="font-medium">Start:</span>{" "}
+                    {project.startDate
+                      ? new Date(project.startDate).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-2">
+                    <span className="font-medium">Due:</span>{" "}
+                    {project.endDate
+                      ? new Date(project.endDate).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <Link
+                      to={`/admin-dashboard/edit-project/${project._id}`}
+                      className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(project._id)}
+                      className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+
+        {(data?.total || 0) > limit && (
+          <div className="flex justify-center gap-2 items-center pt-2">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {Math.ceil((data?.total || 0) / limit) || 1}
+            </span>
+            <button
+              onClick={() =>
+                setPage(Math.min(Math.ceil((data?.total || 0) / limit), page + 1))
+              }
+              disabled={page >= Math.ceil((data?.total || 0) / limit)}
+              className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto bg-white rounded shadow">
         <DataTable
           highlightOnHover
           pagination
