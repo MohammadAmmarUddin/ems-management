@@ -14,7 +14,7 @@ You can explore the system using these demo accounts:
 
 | Role            | Email                      | Password       |
 | --------------- | -------------------------- | -------------- |
-| 👑 **Admin**    | `admin@gmail.com`          | `admin`        |
+| 👑 **Admin**    | `admin@gmail.com`          | `admin1`        |
 | 🧠 **Manager**  | `atia@gmail.com`           | `Manager12@@`  |
 | 👷 **Employee** | `ammaruofficial@gmail.com` | `Employee12@@` |
 
@@ -163,3 +163,4 @@ You can explore the system using these demo accounts:
 ├── uploads/
 ├── server.js
 ```
+
