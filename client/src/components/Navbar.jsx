@@ -31,24 +31,13 @@ const Navbar = ({ sidebarToggle, setSidebarToggle }) => {
   };
 
   const markAsRead = async (ids) => {
-    try {
-      await Promise.all(
-        ids.map((id) =>
-          axios.put(`${baseUrl}/api/annoucement/read/${id}`, null, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        )
-      );
-      setNotifications((prev) =>
-        prev.map((a) =>
-          ids.includes(a._id)
-            ? { ...a, readBy: [...(a.readBy || []), user._id] }
-            : a
-        )
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    await Promise.all(
+      ids.map((id) =>
+        axios.put(`${baseUrl}/api/annoucement/read/${id}`, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      )
+    );
   };
 
   useEffect(() => {
@@ -76,22 +65,29 @@ const Navbar = ({ sidebarToggle, setSidebarToggle }) => {
     (n) => !(n.readBy || []).includes(user._id)
   );
 
-  const handleBellClick = () => {
+  const handleBellClick = async () => {
     setShow((prev) => !prev);
-    if (unreadNotifications.length > 0) {
-      markAsRead(unreadNotifications.map((n) => n._id));
+
+    if (unreadNotifications.length === 0) return;
+
+    const unreadIds = unreadNotifications.map((n) => n._id);
+
+    // Optimistically update UI (badge disappears immediately)
+    setNotifications((prev) =>
+      prev.map((n) =>
+        unreadIds.includes(n._id)
+          ? { ...n, readBy: [...(n.readBy || []), user._id] }
+          : n
+      )
+    );
+
+    // Update backend
+    try {
+      await markAsRead(unreadIds);
+    } catch (err) {
+      console.error(err);
     }
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShow(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <div className="bg-primary px-2 sm:px-3 md:px-4 py-2 flex items-center justify-between min-h-[56px]">

@@ -16,7 +16,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 // ---------------- Admin Routes ---------------- //
 // Create announcement from admin to all/employee/manager/selected
-router.post("/", authMiddleware, createAnnouncement);
+router.post("/", createAnnouncement);
 
 // Get all announcements created by admin (admin dashboard)
 router.get("/admin", authMiddleware, getAdminAnnouncements);
