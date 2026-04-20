@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FaBell, FaBars } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import socket from "../socketClient.js";
@@ -11,30 +11,32 @@ const Navbar = ({ sidebarToggle, setSidebarToggle }) => {
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const [notifications, setNotifications] = useState([]);
+  const [viewerReadId, setViewerReadId] = useState(null);
+  const [locallyReadIds, setLocallyReadIds] = useState([]);
   const [show, setShow] = useState(false);
   const dropdownRef = useRef();
+  const storageKey = user?._id ? `ems_read_notifications_${user._id}` : null;
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
+    if (!user?._id) return;
     try {
-      const res = await axios.get(
-        `${baseUrl}/api/annoucement/employee/${user._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.get(`${baseUrl}/api/annoucement/employee/${user._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.data.success) {
         setNotifications(res.data.announcements);
+        setViewerReadId(user._id);
       }
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [baseUrl, token, user?._id]);
 
   const markAsRead = async (ids) => {
     try {
       await Promise.all(
         ids.map((id) =>
-          axios.put(`${baseUrl}/api/annoucement/read/${id}`, null, {
+          axios.put(`${baseUrl}/api/annoucement/read/${id}`, {}, {
             headers: { Authorization: `Bearer ${token}` },
           })
         )
@@ -42,7 +44,7 @@ const Navbar = ({ sidebarToggle, setSidebarToggle }) => {
       setNotifications((prev) =>
         prev.map((a) =>
           ids.includes(a._id)
-            ? { ...a, readBy: [...(a.readBy || []), user._id] }
+            ? { ...a, readBy: [...(a.readBy || []), viewerReadId || user._id] }
             : a
         )
       );
@@ -52,8 +54,17 @@ const Navbar = ({ sidebarToggle, setSidebarToggle }) => {
   };
 
   useEffect(() => {
-    fetchNotifications();
     if (!user?._id) return;
+    fetchNotifications();
+
+    if (storageKey) {
+      try {
+        const cached = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        setLocallyReadIds(Array.isArray(cached) ? cached : []);
+      } catch {
+        setLocallyReadIds([]);
+      }
+    }
 
     // Ensure socket is connected before joining room
     if (!socket.connected) {
@@ -63,23 +74,41 @@ const Navbar = ({ sidebarToggle, setSidebarToggle }) => {
     socket.emit("join_room", user._id);
 
     const handleNewAnnouncement = (announcement) => {
-      setNotifications((prev) => [announcement, ...prev]);
+      setNotifications((prev) => {
+        if (prev.some((item) => item._id === announcement._id)) {
+          return prev;
+        }
+        return [announcement, ...prev];
+      });
     };
 
     socket.on("new_announcement", handleNewAnnouncement);
     return () => {
       socket.off("new_announcement", handleNewAnnouncement);
     };
-  }, [user]);
+  }, [fetchNotifications, user?._id, user?.role, storageKey]);
+
+  useEffect(() => {
+    if (!storageKey) return;
+    localStorage.setItem(storageKey, JSON.stringify(locallyReadIds));
+  }, [locallyReadIds, storageKey]);
 
   const unreadNotifications = notifications.filter(
-    (n) => !(n.readBy || []).includes(user._id)
+    (n) => {
+      const isReadOnServer =
+        viewerReadId &&
+        (n.readBy || []).some((id) => String(id) === String(viewerReadId));
+      const isReadLocally = locallyReadIds.includes(String(n._id));
+      return !isReadOnServer && !isReadLocally;
+    }
   );
 
   const handleBellClick = () => {
     setShow((prev) => !prev);
-    if (unreadNotifications.length > 0) {
-      markAsRead(unreadNotifications.map((n) => n._id));
+    if (!show && unreadNotifications.length > 0) {
+      const unreadIds = unreadNotifications.map((n) => String(n._id));
+      setLocallyReadIds((prev) => [...new Set([...prev, ...unreadIds])]);
+      markAsRead(unreadIds);
     }
   };
 
@@ -135,7 +164,13 @@ const Navbar = ({ sidebarToggle, setSidebarToggle }) => {
                   </li>
                 ) : (
                   notifications.map((n, index) => {
-                    const isUnread = !(n.readBy || []).includes(user._id);
+                    const isUnread = !(
+                      ((viewerReadId &&
+                        (n.readBy || []).some(
+                          (id) => String(id) === String(viewerReadId)
+                        )) ||
+                        locallyReadIds.includes(String(n._id)))
+                    );
                     return (
                       <li
                         key={n._id || index}

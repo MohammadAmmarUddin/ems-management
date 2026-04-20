@@ -15,12 +15,14 @@ function initSocket(server) {
   io.on("connection", (socket) => {
     console.log("🟢 Socket connected:", socket.id);
 
-    // clients can call: socket.emit('join_room', userId)
-    socket.on("join_room", (userId) => {
-      if (userId) {
-        socket.join(String(userId));
-        console.log(`Socket ${socket.id} joined room ${userId}`);
-      }
+    // clients can call:
+    // socket.emit("join_room", userId) OR socket.emit("join_room", { userId })
+    socket.on("join_room", (payload) => {
+      const userId =
+        typeof payload === "string" ? payload : payload?.userId || null;
+      if (!userId) return;
+      socket.join(String(userId));
+      console.log(`Socket ${socket.id} joined room ${userId}`);
     });
 
     socket.on("disconnect", () => {

@@ -20,6 +20,7 @@ router.post("/", authMiddleware, createAnnouncement);
 
 // Get all announcements created by admin (admin dashboard)
 router.get("/admin", authMiddleware, getAdminAnnouncements);
+router.put("/read/:id", authMiddleware, markAsRead);
 router.put("/annoucement/read/:id", authMiddleware, markAsRead);
 
 // ---------------- Manager Routes ---------------- //
@@ -33,7 +34,7 @@ router.get("/manager", authMiddleware, getManagerAnnouncements);
 
 // ---------------- Employee Specific ---------------- //
 // Fetch announcements meant for a specific employee
-router.get("/employee/:id", getAnnouncementsForEmployee);
+router.get("/employee/:id", authMiddleware, getAnnouncementsForEmployee);
 
 // ---------------- Delete ---------------- //
 router.delete("/:id", authMiddleware, deleteAnnouncement);

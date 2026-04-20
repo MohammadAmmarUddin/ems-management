@@ -37,11 +37,7 @@ exports.createAnnouncement = async (req, res) => {
       createdAt: announcement.createdAt,
     };
 
-    if (type === "selected" && selectedEmployee) {
-      io.to(String(selectedEmployee)).emit("new_announcement", payload);
-    } else {
-      io.emit("new_announcement", payload);
-    }
+    io.emit("new_announcement", payload);
 
     return res.status(201).json({ success: true, announcement: payload });
   } catch (err) {
@@ -99,7 +95,20 @@ exports.createManagerAnnouncement = async (req, res) => {
       sender: managerId,
     });
 
-    res.status(201).json({ success: true, announcement });
+    const io = getIo();
+    const payload = {
+      _id: announcement._id,
+      message: announcement.message,
+      type: announcement.type,
+      selectedEmployee: announcement.selectedEmployee,
+      senderType: announcement.senderType,
+      sender: announcement.sender,
+      readBy: announcement.readBy || [],
+      createdAt: announcement.createdAt,
+    };
+    io.emit("new_announcement", payload);
+
+    res.status(201).json({ success: true, announcement: payload });
   } catch (error) {
     console.error("Error creating manager announcement:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -145,8 +154,23 @@ exports.getManagerAnnouncements = async (req, res) => {
 exports.markAsRead = async (req, res) => {
   try {
     const announcement = await Announcement.findById(req.params.id);
-    if (!announcement.readBy.includes(req.body.userId)) {
-      announcement.readBy.push(req.body.userId);
+    if (!announcement) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Announcement not found" });
+    }
+
+    const viewerId = req.body.userId || req.user?._id;
+    if (!viewerId) {
+      return res.status(400).json({ success: false, message: "User id required" });
+    }
+
+    const alreadyRead = (announcement.readBy || []).some(
+      (id) => String(id) === String(viewerId)
+    );
+
+    if (!alreadyRead) {
+      announcement.readBy.push(viewerId);
       await announcement.save();
     }
     res.json({ success: true });
@@ -158,16 +182,9 @@ exports.markAsRead = async (req, res) => {
 // Employee fetches relevant announcements
 exports.getAnnouncementsForEmployee = async (req, res) => {
   try {
-    const employeeId = req.params.id;
-
-    const announcements = await Announcement.find({
-      $or: [
-        { type: "all" },
-        { type: "employees" },
-        { type: "selected", selectedEmployee: employeeId },
-      ],
-    })
+    const announcements = await Announcement.find({})
       .populate("selectedEmployee", "emp_name emp_email")
+      .populate("sender", "emp_name emp_email")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, announcements });
